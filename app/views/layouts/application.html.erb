@@ -6,7 +6,7 @@
   <title>Spritle ATS — Spritle Software</title>
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
   <%= stylesheet_link_tag "application", media: "all" %>
   <%= javascript_importmap_tags %>
 </head>
@@ -14,7 +14,9 @@
 <div class="app-layout">
   <div class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-spritle">S</div>
+      <%= image_tag "logo.png",
+      alt: "Logo",
+      style: "width:32px;height:32px;border-radius:8px;object-fit:cover" %>
       <div>
         <div class="logo-text">Spritle<span>ATS</span></div>
         <div class="logo-sub">Spritle Software</div>
