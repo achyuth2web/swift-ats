@@ -1,0 +1,48 @@
+<% content_for :page_title, "Q&A Generator" %>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+  <div class="card">
+    <div class="card-header"><span class="fw-600">Configure</span></div>
+    <div class="card-body flex flex-col gap-3">
+      <div class="form-group"><label class="label">Select Candidate</label>
+        <select class="select" id="cand-sel" onchange="loadCand(this)">
+          <option value="">Select to auto-fill...</option>
+          <% @candidates.each do |c| %><option value="<%= c.id %>" data-skills="<%= c.skills_list %>" data-role="<%= c.role %>"><%= c.name %> — <%= c.role %></option><% end %>
+        </select>
+      </div>
+      <div class="form-group"><label class="label">Role</label><input class="input" id="gen-role" placeholder="e.g. Senior React Developer"></div>
+      <div class="form-group"><label class="label">Skills (comma-separated)</label><input class="input" id="gen-skills" placeholder="React, TypeScript, Node.js"></div>
+      <div class="form-group"><label class="label">Experience Level</label>
+        <select class="select" id="gen-level">
+          <option value="Junior">Junior (0–2 yrs)</option><option value="Mid">Mid (2–5 yrs)</option>
+          <option value="Senior" selected>Senior (5+ yrs)</option><option value="Lead">Lead / Manager</option>
+        </select>
+      </div>
+      <button class="btn btn-primary w-full" onclick="genQA()">Generate Questions</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="fw-600">Interview Questions</span><button class="btn btn-ghost btn-sm" onclick="copyAll()" id="copy-btn" style="display:none">Copy All</button></div>
+    <div id="qa-out" class="card-body"><div style="color:var(--text3);font-size:13px;text-align:center;padding:40px">Select a candidate and click Generate</div></div>
+  </div>
+</div>
+<script>
+const GEN_URL="<%= interview_gen_generate_path %>";
+const CSRF_G="<%= form_authenticity_token %>";
+function loadCand(sel){const o=sel.options[sel.selectedIndex];document.getElementById('gen-skills').value=(o.dataset.skills||'').split(',').map(s=>s.trim()).join(', ');document.getElementById('gen-role').value=o.dataset.role||'';}
+async function genQA(){
+  const skills=document.getElementById('gen-skills').value;
+  const role=document.getElementById('gen-role').value;
+  const level=document.getElementById('gen-level').value;
+  if(!skills&&!role){alert('Enter skills or role.');return;}
+  document.getElementById('qa-out').innerHTML='<div style="text-align:center;padding:40px"><div class="spinner" style="width:24px;height:24px;margin:auto"></div></div>';
+  const fd=new FormData();fd.append('skills',skills);fd.append('role',role);fd.append('level',level);fd.append('authenticity_token',CSRF_G);
+  const r=await fetch(GEN_URL,{method:'POST',body:fd});const d=await r.json();
+  document.getElementById('copy-btn').style.display='';
+  document.getElementById('qa-out').innerHTML=d.questions.map((q,i)=>`<div style="padding:14px;background:var(--bg3);border-radius:var(--r-sm);margin-bottom:10px;display:flex;gap:12px;align-items:flex-start"><div style="width:24px;height:24px;border-radius:50%;background:var(--accent-glow);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${i+1}</div><div style="font-size:13px;line-height:1.6">${q}</div></div>`).join('');
+}
+function copyAll(){
+  const qs=document.querySelectorAll('#qa-out > div');
+  const txt=Array.from(qs).map((el,i)=>(i+1)+'. '+el.querySelector('div:last-child').textContent.trim()).join('\n');
+  navigator.clipboard.writeText(txt).then(()=>{const b=document.getElementById('copy-btn');b.textContent='Copied!';b.className='btn btn-success btn-sm';setTimeout(()=>{b.textContent='Copy All';b.className='btn btn-ghost btn-sm';},2000);});
+}
+</script>

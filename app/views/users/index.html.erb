@@ -1,0 +1,26 @@
+<% content_for :page_title, "User Management" %>
+<% content_for :topbar_actions do %><%= link_to "+ Add User", new_user_path, class: "btn btn-primary btn-sm" %><% end %>
+<div class="users-grid">
+  <% @users.each do |u| %>
+    <div class="user-card">
+      <div class="user-card-header">
+        <div class="avatar" style="width:44px;height:44px;font-size:16px"><%= u.initials %></div>
+        <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:14px;margin-bottom:2px"><%= u.name %></div><div style="font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= u.email %></div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span class="badge <%= u.admin? ? 'badge-purple' : 'badge-blue' %>"><%= u.role.capitalize %></span>
+          <span class="badge <%= u.active? ? 'badge-green' : 'badge-red' %>"><%= u.active? ? 'Active' : 'Disabled' %></span>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text3)">Since <%= u.created_at.strftime("%b %Y") %></div>
+        <div style="display:flex;gap:6px">
+          <%= link_to "Edit", edit_user_path(u), class: "btn btn-ghost btn-sm" %>
+          <%= button_to u.active? ? "Disable" : "Enable", toggle_active_user_path(u), method: :patch, class: "btn #{u.active? ? 'btn-danger' : 'btn-success'} btn-sm" %>
+          <% unless u == current_user %>
+            <%= button_to "✕", user_path(u), method: :delete, class: "btn btn-danger btn-sm btn-icon", data:{confirm:"Delete #{u.name}?"} %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

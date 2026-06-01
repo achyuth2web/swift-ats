@@ -1,0 +1,36 @@
+<% content_for :page_title, "Interview Management" %>
+<% content_for :topbar_actions do %><%= link_to "+ Schedule Interview", new_interview_path, class: "btn btn-primary btn-sm" %><% end %>
+<div class="flex items-center gap-3 mb-4">
+  <span class="muted text-sm"><%= @interviews.count %> interviews</span>
+  <%= select_tag :status,
+    options_for_select([["All", ""]] + Interview::STATUSES.map { |s| [s, s] }, params[:status]),
+    class: "select",
+    style: "width:150px",
+    onchange: %(window.location='#{interviews_path}?status=' + this.value) %>
+</div>
+<div class="card"><div class="table-wrap">
+  <% if @interviews.empty? %>
+    <div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><h3>No interviews</h3><p>Schedule the first interview.</p></div>
+  <% else %>
+    <table>
+      <thead><tr><th>Candidate</th><th>Round</th><th>Interviewer</th><th>Scheduled</th><th>Status</th><th>Outcome</th><th>Rating</th><th></th></tr></thead>
+      <tbody>
+        <% @interviews.each do |iv| %>
+          <tr onclick="window.location='<%= candidate_path(iv.candidate) %>'">
+            <td><div style="font-weight:500"><%= iv.candidate.name %></div><% if iv.candidate.job %><div style="font-size:11px;color:var(--accent2)"><%= iv.candidate.job.title %></div><% end %></td>
+            <td><div style="font-weight:500"><%= iv.round_name %></div><div style="font-size:11px;color:var(--text3)">Round <%= iv.round_number %></div></td>
+            <td><%= iv.interviewer||"—" %></td>
+            <td style="font-size:12px;white-space:nowrap"><%= iv.scheduled_display %></td>
+            <td><%= render 'shared/status_badge', status: iv.status %></td>
+            <td><% if iv.outcome.present? %><% oc=iv.outcome=="Pass"?"green":iv.outcome=="Fail"?"red":"amber" %><span class="badge badge-<%= oc %>"><%= iv.outcome %></span><% else %>—<% end %></td>
+            <td><% if iv.rating %><span style="color:var(--amber)"><%= "★"*iv.rating %></span><% else %>—<% end %></td>
+            <td onclick="event.stopPropagation()" style="display:flex;gap:4px">
+              <%= link_to "Edit", edit_interview_path(iv), class: "btn btn-ghost btn-sm" %>
+              <%= button_to "✕", interview_path(iv), method: :delete, class: "btn btn-danger btn-sm btn-icon", data:{confirm:"Delete?"} %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div></div>

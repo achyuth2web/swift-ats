@@ -1,0 +1,50 @@
+<% content_for :page_title, "Job Requisitions" %>
+<% content_for :topbar_actions do %><%= link_to "+ New Job", new_job_path, class: "btn btn-primary btn-sm" %><% end %>
+<div class="flex items-center gap-3 mb-4" style="flex-wrap:wrap">
+  <div class="search-wrap">
+    <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input class="input" placeholder="Search jobs..." id="job-search" value="<%= params[:q] %>" oninput="window.location='<%= jobs_path %>?q='+this.value+'&status=<%= params[:status] %>'">
+  </div>
+  <% Job::STATUSES.each do |s| %>
+    <%= link_to s, jobs_path(status: s), class: "btn btn-sm #{params[:status]==s ? 'btn-primary' : 'btn-ghost'}" %>
+  <% end %>
+  <%= link_to "All", jobs_path, class: "btn btn-sm #{params[:status].blank? ? 'btn-primary' : 'btn-ghost'}" %>
+  <span class="muted text-sm"><%= @jobs.count %> jobs</span>
+</div>
+<div class="jobs-grid">
+  <% if @jobs.empty? %>
+    <div class="empty-state" style="grid-column:1/-1">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+      <h3>No jobs yet</h3><p>Create your first job requisition.</p>
+    </div>
+  <% end %>
+  <% @jobs.each do |j| %>
+    <div class="job-card" onclick="window.location='<%= job_path(j) %>'">
+      <div class="flex items-center justify-between mb-2">
+        <%= render 'shared/status_badge', status: j.status %>
+        <div onclick="event.stopPropagation()" style="display:flex;gap:6px">
+          <%= link_to "Edit", edit_job_path(j), class: "btn btn-ghost btn-sm", onclick: "event.stopPropagation()" %>
+          <% if current_user.admin? %>
+            <%= button_to "✕", job_path(j), method: :delete, class: "btn btn-danger btn-sm btn-icon", data: { confirm: "Delete #{j.title}?" }, onclick: "event.stopPropagation()" %>
+          <% end %>
+        </div>
+      </div>
+      <div class="job-card-title"><%= j.title %></div>
+      <div style="font-size:12px;color:var(--text3)"><%= j.company %> · <%= j.department %></div>
+      <div class="job-meta">
+        <span class="badge badge-gray"><%= j.position_type %></span>
+        <span class="badge badge-gray"><%= j.openings %> opening<%= j.openings!=1?'s':'' %></span>
+        <span class="badge badge-gray"><%= j.experience_years %>+ yrs</span>
+        <% if j.ctc_budget.present? %><span class="badge badge-purple">₹<%= j.ctc_budget %> LPA</span><% end %>
+      </div>
+      <% if j.skills.any? %>
+        <div class="skills-wrap mt-2">
+          <% j.skills.first(4).each do |s| %><span class="skill-tag"><%= s %></span><% end %>
+        </div>
+      <% end %>
+      <div style="margin-top:10px;font-size:11px;color:var(--text3)">
+        <%= j.candidate_count %> candidate<%= j.candidate_count!=1?'s':'' %> · <%= j.hiring_manager %>
+      </div>
+    </div>
+  <% end %>
+</div>

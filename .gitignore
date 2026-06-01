@@ -1,0 +1,18 @@
+/.bundle/
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+/tmp/pids/*
+!/tmp/pids/.keep
+/public/assets
+/storage/*
+!/storage/.keep
+/config/master.key
+config/credentials/*.key
+*.sqlite3
+.DS_Store
+/node_modules
+.env
+# Gemfile.lock
+Gemfile.lock

@@ -1,0 +1,5 @@
+<% c = score>=80 ? "var(--green)" : score>=60 ? "var(--amber)" : "var(--red)" %>
+<div style="display:flex;align-items:center;gap:6px">
+  <div class="score-bar"><div class="score-fill" style="width:<%= score %>%;background:<%= c %>"></div></div>
+  <span style="font-size:12px;color:<%= c %>;font-weight:500"><%= score %>%</span>
+</div>

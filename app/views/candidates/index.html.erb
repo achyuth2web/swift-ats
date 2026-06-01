@@ -1,0 +1,53 @@
+<% content_for :page_title, "Candidates" %>
+<% content_for :topbar_actions do %><%= link_to "+ Add Candidate", new_candidate_path, class: "btn btn-primary btn-sm" %><% end %>
+<%= form_tag candidates_path, method: :get, id: "cand-filter-form" do %>
+  <div class="flex items-center gap-3 mb-4" style="flex-wrap:wrap">
+    <div class="search-wrap">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <%= text_field_tag :q, params[:q], class: "input", placeholder: "Search name, email, skills...", oninput: "document.getElementById('cand-filter-form').submit()" %>
+    </div>
+    <%= select_tag :dept, options_for_select([["All Departments",""]]+Candidate::DEPARTMENTS.map{|d|[d,d]},params[:dept]), class: "select", style: "width:160px", onchange: "document.getElementById('cand-filter-form').submit()" %>
+    <%= select_tag :status, options_for_select([["All Statuses",""]]+Candidate::STATUSES.map{|s|[s,s]},params[:status]), class: "select", style: "width:140px", onchange: "document.getElementById('cand-filter-form').submit()" %>
+    <%= select_tag :job_id, options_for_select([["All Jobs",""]]+@jobs.map{|j|[j.title,j.id]},params[:job_id]), class: "select", style: "width:170px", onchange: "document.getElementById('cand-filter-form').submit()" %>
+    <span class="muted text-sm"><%= @candidates.count %> of <%= @all_count %></span>
+  </div>
+<% end %>
+<div class="card">
+  <div class="table-wrap">
+    <% if @candidates.empty? %>
+      <div class="empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <h3>No candidates</h3><p>Adjust filters or add a candidate.</p>
+      </div>
+    <% else %>
+      <table>
+        <thead><tr><th>Candidate</th><th>Role / Job</th><th>Dept</th><th>Exp</th><th>CTC</th><th>Notice</th><th>Status</th><th>Score</th><th></th></tr></thead>
+        <tbody>
+          <% @candidates.each do |c| %>
+            <tr onclick="window.location='<%= candidate_path(c) %>'">
+              <td><div style="font-weight:500"><%= c.name %></div><div style="font-size:11px;color:var(--text3)"><%= c.email %></div></td>
+              <td><div style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= c.role %></div><% if c.job %><div style="font-size:10px;color:var(--accent2)"><%= c.job.title %></div><% end %></td>
+              <td><span class="badge badge-gray"><%= c.department %></span></td>
+              <td><%= c.experience_years %>yr</td>
+              <td><span style="font-size:12px"><%= c.ctc_display %></span></td>
+              <td><span style="font-size:11px;color:var(--text2)"><%= c.notice_display %></span></td>
+              <td><%= render 'shared/status_badge', status: c.status %></td>
+              <td><%= render 'shared/score_bar', score: c.score %></td>
+              <td onclick="event.stopPropagation()">
+                <%= button_to candidate_path(c),
+                              method: :delete,
+                              class: "btn btn-ghost btn-sm btn-icon",
+                              data: { turbo_confirm: "Delete #{c.name}?" } do %>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14H6L5 6"/>
+                  </svg>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </div>
+</div>

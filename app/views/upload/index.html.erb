@@ -1,0 +1,108 @@
+<% content_for :page_title, "Upload & Parse Resumes" %>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+  <div class="flex flex-col gap-4">
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Upload Resume</span><span class="badge badge-blue">PDF · DOCX · TXT</span></div>
+      <div class="card-body">
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text3);margin:0 auto 12px;display:block"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px">Drop resume here</div>
+          <div style="font-size:12px;color:var(--text3)">or click to browse</div>
+        </div>
+        <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt,.rtf" style="display:none" onchange="handleFiles(this.files)">
+        <div id="queue-list" class="flex flex-col gap-2 mt-3"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Parse Progress</span></div>
+      <div id="parse-steps" class="card-body"><div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Upload a resume to begin</div></div>
+    </div>
+  </div>
+  <div class="card" id="parsed-form-card" style="display:none">
+    <div class="card-header"><span class="fw-600">Parsed Data</span><span class="badge badge-green">Auto-extracted</span></div>
+    <div class="card-body">
+      <form id="save-form" class="flex flex-col gap-3">
+        <input type="hidden" id="p-csrf" value="<%= form_authenticity_token %>">
+        <div class="input-row">
+          <div class="form-group"><label class="label">Full Name</label><input name="candidate[name]" class="input" id="p-name"></div>
+          <div class="form-group"><label class="label">Email</label><input name="candidate[email]" class="input" id="p-email" type="email"></div>
+        </div>
+        <div class="input-row">
+          <div class="form-group"><label class="label">Phone</label><input name="candidate[phone]" class="input" id="p-phone"></div>
+          <div class="form-group"><label class="label">Experience (years)</label><input name="candidate[experience_years]" class="input" id="p-exp" type="number" min="0"></div>
+        </div>
+        <div class="input-row">
+          <div class="form-group"><label class="label">Current CTC (LPA)</label><input name="candidate[ctc_current]" class="input" id="p-ctc-c"></div>
+          <div class="form-group"><label class="label">Expected CTC (LPA)</label><input name="candidate[ctc_expected]" class="input" id="p-ctc-e"></div>
+        </div>
+        <div class="input-row">
+          <div class="form-group"><label class="label">Department</label>
+            <select name="candidate[department]" class="select" id="p-dept">
+              <% Candidate::DEPARTMENTS.each do |d| %><option value="<%= d %>"><%= d %></option><% end %>
+            </select>
+          </div>
+          <div class="form-group"><label class="label">Notice Period (days)</label><input name="candidate[notice_period]" class="input" id="p-notice"></div>
+        </div>
+        <div class="form-group"><label class="label">Skills</label><input name="candidate[skills_list]" class="input" id="p-skills"></div>
+        <div class="form-group"><label class="label">Link to Job</label>
+          <select name="candidate[job_id]" class="select">
+            <option value="">None</option>
+            <% current_user.visible_jobs.order(:title).each do |j| %><option value="<%= j.id %>"><%= j.title %></option><% end %>
+          </select>
+        </div>
+        <input type="hidden" name="candidate[resume_filename]" id="p-fname">
+        <input type="hidden" name="candidate[score]" id="p-score" value="75">
+        <input type="hidden" name="candidate[source]" value="Upload">
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button type="button" class="btn btn-ghost" onclick="resetUpload()">Clear</button>
+          <button type="button" class="btn btn-primary" id="save-btn" onclick="saveCandidate()">Save to ATS</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+const PARSE_URL="<%= upload_parse_path %>";
+const SAVE_URL="<%= upload_save_path %>";
+function handleDrop(e){e.preventDefault();document.getElementById('upload-zone').classList.remove('drag-over');handleFiles(e.dataTransfer.files);}
+async function handleFiles(files){for(const f of files) await processFile(f);}
+function setSteps(steps){document.getElementById('parse-steps').innerHTML=steps.map((s,i)=>`<div class="parse-step ${s.state}"><div class="parse-step-icon">${s.state==='done'?'✓':s.state==='active'?'<div class="spinner" style="width:12px;height:12px"></div>':'○'}</div>${s.label}</div>`).join('');}
+async function processFile(file){
+  const steps=[{label:'Reading file...',state:'active'},{label:'Extracting text',state:'pending'},{label:'Parsing fields',state:'pending'},{label:'Ready to save',state:'pending'}];
+  setSteps(steps);
+  const qi=document.createElement('div');qi.style='display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border-radius:6px;font-size:12px';
+  qi.innerHTML=`<div class="spinner"></div><span>${file.name}</span>`;
+  document.getElementById('queue-list').appendChild(qi);
+  try{
+    steps[0].state='done';steps[1].state='active';setSteps(steps);
+    const fd=new FormData();fd.append('resume',file);fd.append('authenticity_token',document.getElementById('p-csrf').value);
+    const r=await fetch(PARSE_URL,{method:'POST',body:fd});const d=await r.json();
+    steps[1].state='done';steps[2].state='active';setSteps(steps);
+    document.getElementById('p-name').value=d.name||'';
+    document.getElementById('p-email').value=d.email||'';
+    document.getElementById('p-phone').value=d.phone||'';
+    document.getElementById('p-exp').value=d.experience||0;
+    document.getElementById('p-ctc-c').value=d.ctcCurrent||'';
+    document.getElementById('p-ctc-e').value=d.ctcExpected||'';
+    document.getElementById('p-notice').value=d.noticePeriod||'';
+    document.getElementById('p-skills').value=(d.skills||[]).join(', ');
+    document.getElementById('p-fname').value=file.name;
+    if(d.department)document.getElementById('p-dept').value=d.department;
+    const filled=[d.name,d.email,d.phone,d.experience,(d.skills||[]).length>0,d.ctcCurrent].filter(Boolean).length;
+    document.getElementById('p-score').value=Math.min(50+filled*8,99);
+    steps[2].state='done';steps[3].state='done';setSteps(steps);
+    document.getElementById('parsed-form-card').style.display='';
+    qi.innerHTML=`<span style="color:var(--green)">✓</span><span>${file.name}</span>`;
+  }catch(err){qi.innerHTML=`<span style="color:var(--red)">✕</span><span>${file.name}: ${err.message}</span>`;}
+}
+async function saveCandidate(){
+  const btn=document.getElementById('save-btn');btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Saving…';
+  const fd=new FormData(document.getElementById('save-form'));fd.set('authenticity_token',document.getElementById('p-csrf').value);
+  try{
+    const r=await fetch(SAVE_URL,{method:'POST',body:fd});const d=await r.json();
+    if(d.id){btn.innerHTML='✓ Saved!';btn.className='btn btn-success';setTimeout(()=>window.location='/candidates/'+d.id,800);}
+    else{btn.innerHTML='Save Failed';btn.className='btn btn-danger';btn.disabled=false;}
+  }catch(e){btn.innerHTML='Error';btn.disabled=false;}
+}
+function resetUpload(){document.getElementById('parsed-form-card').style.display='none';document.getElementById('queue-list').innerHTML='';document.getElementById('parse-steps').innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Upload a resume to begin</div>';}
+</script>

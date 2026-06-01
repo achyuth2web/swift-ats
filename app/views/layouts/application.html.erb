@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Swift ATS — Spritle Software</title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <%= stylesheet_link_tag "application", media: "all" %>
+  <%= javascript_importmap_tags %>
+</head>
+<body>
+<div class="app-layout">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-spritle">S</div>
+      <div>
+        <div class="logo-text">Swift<span>ATS</span></div>
+        <div class="logo-sub">Spritle Software</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <% if current_user.admin? %>
+        <div class="nav-label">Overview</div>
+        <%= link_to dashboard_path, class: "nav-item #{controller_name=='dashboard'?'active':''}" do %>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard
+        <% end %>
+        <%= link_to reports_path, class: "nav-item #{controller_name=='reports'?'active':''}" do %>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Reports &amp; Analytics
+        <% end %>
+      <% end %>
+      <div class="nav-label">Recruiting</div>
+      <%= link_to jobs_path, class: "nav-item #{controller_name=='jobs'?'active':''}" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>Job Requisitions
+      <% end %>
+      <%= link_to candidates_path, class: "nav-item #{controller_name=='candidates'?'active':''}" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Candidates
+      <% end %>
+      <%= link_to interviews_path, class: "nav-item #{controller_name=='interviews'?'active':''}" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Interviews
+      <% end %>
+      <%= link_to pipeline_path, class: "nav-item #{controller_name=='pipeline'?'active':''}" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Pipeline Board
+      <% end %>
+      <%= link_to upload_path, class: "nav-item #{controller_name=='upload'?'active':''}" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Upload Resumes
+      <% end %>
+      <%= link_to jd_match_path, class: "nav-item #{controller_name=='jd_match'?'active':''}" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>JD Matching
+      <% end %>
+      <%= link_to interview_gen_path, class: "nav-item #{controller_name=='interview_gen'?'active':''}" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Q&amp;A Generator
+      <% end %>
+      <% if current_user.admin? %>
+        <div class="nav-label">Admin</div>
+        <%= link_to users_path, class: "nav-item #{controller_name=='users'?'active':''}" do %>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>User Management
+        <% end %>
+        <%= link_to settings_path, class: "nav-item #{controller_name=='settings'?'active':''}" do %>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>Settings
+        <% end %>
+      <% end %>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="avatar"><%= current_user.initials %></div>
+        <div class="user-info">
+          <div class="user-name"><%= current_user.name %></div>
+          <div class="user-role-label"><%= current_user.admin? ? "Administrator" : "Recruiter" %></div>
+        </div>
+        <%= button_to destroy_user_session_path, method: :delete, class: "btn btn-ghost btn-icon btn-sm", title: "Sign out" do %>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title"><%= content_for?(:page_title) ? yield(:page_title) : controller_name.humanize %></div>
+        <div class="topbar-spritle">Spritle Software</div>
+      </div>
+      <div class="topbar-actions"><%= yield :topbar_actions %></div>
+    </div>
+    <% if notice.present? %><div class="flash-notice" id="flash-notice"><%= notice %></div><% end %>
+    <% if alert.present?  %><div class="flash-alert"  id="flash-alert"><%= alert %></div><% end %>
+    <div class="page-content"><%= yield %></div>
+  </div>
+</div>
+</body>
+</html>

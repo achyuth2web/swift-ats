@@ -1,0 +1,33 @@
+<% content_for :page_title, "Hiring Pipeline" %>
+<div class="pipeline">
+  <% @stages.each do |stage| %>
+    <% cands = @candidates_by_stage[stage] %>
+    <div class="pipeline-col">
+      <div class="pipeline-col-header">
+        <span class="pipeline-col-title"><%= stage %></span>
+        <span class="pipeline-count"><%= cands.count %></span>
+      </div>
+      <div class="pipeline-cards">
+        <% if cands.empty? %><div style="font-size:12px;color:var(--text3);text-align:center;padding:20px 0">Empty</div><% end %>
+        <% cands.each do |c| %>
+          <div class="pipeline-card" onclick="window.location='<%= candidate_path(c) %>'">
+            <div style="font-weight:600;font-size:13px;margin-bottom:4px"><%= c.name %></div>
+            <div style="font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:8px"><%= c.role %></div>
+            <% if c.job %><div style="font-size:11px;color:var(--accent2);margin-bottom:6px"><%= c.job.title %></div><% end %>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <% if c.score > 0 %>
+                <% clr=c.score>=80?"var(--green)":c.score>=60?"var(--amber)":"var(--red)" %>
+                <span style="font-size:11px;font-weight:600;color:<%= clr %>"><%= c.score %>%</span>
+              <% end %>
+              <% if c.ctc_current.present? %><span style="font-size:11px;color:var(--text3)"><%= c.ctc_current %> LPA</span><% end %>
+            </div>
+            <% if c.notice_period.present? %><div style="font-size:10px;color:var(--text3);margin-top:4px"><%= c.notice_period %> days notice</div><% end %>
+            <% if c.skills.any? %>
+              <div class="skills-wrap" style="margin-top:6px"><% c.skills.first(2).each do |s| %><span class="skill-tag" style="font-size:10px;padding:2px 7px"><%= s %></span><% end %></div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

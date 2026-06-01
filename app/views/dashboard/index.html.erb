@@ -1,0 +1,62 @@
+<% content_for :page_title, "Dashboard" %>
+<div class="stat-grid">
+  <div class="stat-card purple"><div class="stat-label">Total Candidates</div><div class="stat-value"><%= @candidates.count %></div><div class="stat-sub"><%= (@statuses["New"]||0)+(@statuses["Screening"]||0)+(@statuses["Interview"]||0) %> active pipeline</div></div>
+  <div class="stat-card green"><div class="stat-label">Open Jobs</div><div class="stat-value"><%= @open_jobs %></div><div class="stat-sub"><%= @closed_jobs %> closed · <%= @reopened_jobs %> reopened</div></div>
+  <div class="stat-card amber"><div class="stat-label">Avg. Time to Hire</div><div class="stat-value" style="font-size:<%= @avg_tth ? '28' : '16' %>px"><%= @avg_tth ? "#{@avg_tth} days" : "N/A" %></div><div class="stat-sub"><%= @jobs.select(&:time_to_hire).count %> hires tracked</div></div>
+  <div class="stat-card blue"><div class="stat-label">Offers Made</div><div class="stat-value"><%= (@statuses["Offer"]||0)+(@statuses["Hired"]||0) %></div><div class="stat-sub"><%= @statuses["Rejected"]||0 %> rejected</div></div>
+</div>
+<div class="dash-grid">
+  <div class="flex flex-col gap-4">
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Recent Candidates</span><%= link_to "View all →", candidates_path, class: "btn btn-ghost btn-sm" %></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Name</th><th>Role</th><th>CTC</th><th>Status</th><th>Score</th></tr></thead><tbody>
+        <% @recent_candidates.each do |c| %>
+          <tr onclick="window.location='<%= candidate_path(c) %>'">
+            <td><div style="font-weight:500"><%= c.name %></div><div style="font-size:11px;color:var(--text3)"><%= c.email %></div></td>
+            <td><%= c.role %></td>
+            <td><span style="font-size:11px;color:var(--text2)"><%= c.ctc_display %></span></td>
+            <td><%= render 'shared/status_badge', status: c.status %></td>
+            <td><%= render 'shared/score_bar', score: c.score %></td>
+          </tr>
+        <% end %>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Recruiter Performance</span></div>
+      <div class="card-body">
+        <% @recruiter_stats.each do |r| %>
+          <div class="perf-row">
+            <div class="avatar"><%= r[:user].initials %></div>
+            <div style="flex:1"><div style="font-weight:500;font-size:13px"><%= r[:user].name %></div><div style="font-size:11px;color:var(--text3)"><%= r[:jobs] %> jobs · <%= r[:candidates] %> candidates · <%= r[:interviews] %> interviews</div></div>
+            <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--green)"><%= r[:hired] %></div><div style="font-size:10px;color:var(--text3)">offers/hires</div></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col gap-4">
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Pipeline Overview</span></div>
+      <div class="card-body">
+        <% @statuses.each do |s,n| %>
+          <% clr = case s when "Offer","Hired" then "var(--green)" when "Rejected" then "var(--red)" when "Interview" then "var(--amber)" when "Screening" then "var(--blue)" else "var(--accent)" end %>
+          <div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:500"><%= s %></span><span style="font-size:12px;color:var(--text3)"><%= n %></span></div>
+            <% pct = @candidates.count > 0 ? (n.to_f/@candidates.count*100).round : 0 %>
+            <div class="progress"><div class="progress-fill" style="width:<%= pct %>%;background:<%= clr %>"></div></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Activity Feed</span></div>
+      <div class="card-body" style="max-height:300px;overflow-y:auto">
+        <% @activity_logs.each do |a| %>
+          <div class="activity-item"><div class="activity-dot"></div><div><div class="activity-text"><%= a.message %></div><div class="activity-time"><%= time_ago_in_words(a.created_at) %> ago</div></div></div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

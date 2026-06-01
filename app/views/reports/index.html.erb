@@ -1,0 +1,61 @@
+<% content_for :page_title, "Reports & Analytics" %>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+  <div class="card">
+    <div class="card-header"><span class="fw-600">Time-to-Hire Analysis</span><span class="badge badge-purple"><%= @tth_jobs.count %> records</span></div>
+    <div class="card-body">
+      <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--accent2);margin-bottom:4px"><%= @avg_tth||"—" %><span style="font-size:16px;color:var(--text3);margin-left:4px">days avg</span></div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Date of Hire – Job Open Date</div>
+      <% @tth_jobs.each do |j| %>
+        <% tth=j.time_to_hire; clr=tth<=30?"var(--green)":tth<=60?"var(--amber)":"var(--red)" %>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div><div style="font-size:13px;font-weight:500"><%= j.title %></div><div style="font-size:11px;color:var(--text3)"><%= j.department %></div></div>
+          <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:<%= clr %>"><%= tth %>d</div><div style="font-size:10px;color:var(--text3)">Hired <%= j.hire_date&.strftime("%d %b %Y") %></div></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="fw-600">Job Status Summary</span></div>
+    <div class="card-body">
+      <% [["Open","green"],["Closed","red"],["Reopened","amber"]].each do |s,c| %>
+        <% n=@jobs.select{|j|j.status==s}.count; pct=@jobs.count>0?(n.to_f/@jobs.count*100).round : 0 %>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--<%= c %>)"></div><span style="font-size:13px"><%= s %></span></div>
+          <div style="display:flex;align-items:center;gap:12px"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700"><%= n %></div><div class="progress" style="width:100px"><div class="progress-fill" style="width:<%= pct %>%;background:var(--<%= c %>)"></div></div></div>
+        </div>
+      <% end %>
+      <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+        <div style="font-size:12px;color:var(--text3);margin-bottom:10px">CANDIDATE SOURCES</div>
+        <% @source_counts.each do |s,n| %><% next if n==0 %><div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px"><span style="color:var(--text2)"><%= s %></span><span style="font-weight:500"><%= n %></span></div><% end %>
+      </div>
+    </div>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  <div class="card">
+    <div class="card-header"><span class="fw-600">Candidate Funnel</span><span class="badge badge-purple"><%= @candidates.count %> total</span></div>
+    <div class="card-body">
+      <% @status_counts.each do |s,n| %>
+        <% clr=case s when "Offer","Hired" then "var(--green)" when "Rejected" then "var(--red)" when "Interview" then "var(--amber)" when "Screening" then "var(--blue)" else "var(--accent)" end %>
+        <% pct=@candidates.count>0?(n.to_f/@candidates.count*100).round : 0 %>
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:500"><%= s %></span><span style="font-size:12px;color:var(--text3)"><%= n %></span></div>
+          <div class="progress"><div class="progress-fill" style="width:<%= pct %>%;background:<%= clr %>"></div></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="fw-600">Recruiter Performance</span></div>
+    <div class="card-body">
+      <% @recruiter_stats.each do |r| %>
+        <% pct=r[:candidates]>0?(r[:hired].to_f/r[:candidates]*100).round : 0 %>
+        <div class="perf-row">
+          <div class="avatar"><%= r[:user].initials %></div>
+          <div style="flex:1"><div style="font-weight:500;font-size:13px"><%= r[:user].name %></div><div style="font-size:11px;color:var(--text3)"><%= r[:candidates] %> candidates</div><div class="progress" style="margin-top:4px"><div class="progress-fill" style="width:<%= pct %>%;background:var(--green)"></div></div></div>
+          <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--green)"><%= r[:hired] %></div><div style="font-size:10px;color:var(--text3)">hired</div></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

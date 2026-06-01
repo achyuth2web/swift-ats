@@ -1,0 +1,102 @@
+<% content_for :page_title, @candidate.name %>
+<% content_for :topbar_actions do %>
+  <%= link_to "← Back", candidates_path, class: "btn btn-ghost btn-sm" %>
+  <%= link_to "Edit", edit_candidate_path(@candidate), class: "btn btn-ghost btn-sm" %>
+<% end %>
+<% stages = Candidate::STATUSES; idx = stages.index(@candidate.status)||0 %>
+<div class="status-steps mb-4">
+  <% stages.each_with_index do |s,i| %>
+    <% css = i<idx ? "done" : i==idx ? "current" : "" %>
+    <%= button_to s, update_status_candidate_path(@candidate), params:{status:s}, method: :patch, class: "status-step #{css}" %>
+  <% end %>
+</div>
+<div style="display:grid;grid-template-columns:1fr 320px;gap:16px">
+  <div class="flex flex-col gap-4">
+    <div class="card">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div class="avatar" style="width:44px;height:44px;font-size:16px"><%= @candidate.name.split.map(&:first).first(2).join.upcase %></div>
+          <div><div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700"><%= @candidate.name %></div>
+          <div style="font-size:13px;color:var(--text2)"><%= @candidate.role %> · <%= @candidate.department %></div>
+          <% if @job %><div style="font-size:11px;color:var(--accent2)">Applied for: <%= @job.title %></div><% end %>
+          </div>
+        </div>
+        <%= render 'shared/score_bar', score: @candidate.score %>
+      </div>
+      <div class="card-body">
+        <div class="detail-grid">
+          <div class="detail-item"><div class="detail-label">Email</div><div class="detail-value"><%= mail_to @candidate.email, @candidate.email, style: "color:var(--accent2)" %></div></div>
+          <div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value"><%= @candidate.phone||"—" %></div></div>
+          <div class="detail-item"><div class="detail-label">Experience</div><div class="detail-value"><%= @candidate.experience_years %> years</div></div>
+          <div class="detail-item"><div class="detail-label">Designation</div><div class="detail-value"><%= @candidate.designation||"—" %></div></div>
+          <div class="detail-item"><div class="detail-label">Current CTC</div><div class="detail-value"><%= @candidate.ctc_current.present? ? "#{@candidate.ctc_current} #{@candidate.ctc_unit}" : "—" %></div></div>
+          <div class="detail-item"><div class="detail-label">Expected CTC</div><div class="detail-value"><%= @candidate.ctc_expected.present? ? "#{@candidate.ctc_expected} #{@candidate.ctc_unit}" : "—" %></div></div>
+          <div class="detail-item"><div class="detail-label">Notice Period</div><div class="detail-value"><%= @candidate.notice_display %></div></div>
+          <div class="detail-item"><div class="detail-label">Source</div><div class="detail-value"><%= @candidate.source||"—" %></div></div>
+        </div>
+        <% if @candidate.skills.any? %>
+          <div style="margin-top:14px"><div class="detail-label" style="margin-bottom:6px">Skills</div><div class="skills-wrap"><% @candidate.skills.each do |s| %><span class="skill-tag"><%= s %></span><% end %></div></div>
+        <% end %>
+        <% if @candidate.notes.present? %>
+          <div style="margin-top:14px;padding:12px;background:var(--bg3);border-radius:var(--r-sm);font-size:13px;color:var(--text2)"><%= @candidate.notes %></div>
+        <% end %>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Interview Rounds</span><%= link_to "+ Schedule", new_interview_path(candidate_id: @candidate.id), class: "btn btn-primary btn-sm" %></div>
+      <div class="card-body">
+        <% if @interviews.empty? %><div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">No interviews scheduled.</div>
+        <% else %>
+          <div class="interview-timeline">
+            <% @interviews.each_with_index do |iv,i| %>
+              <div class="interview-round">
+                <div class="interview-round-line">
+                  <div class="interview-round-dot <%= iv.outcome=='Pass' ? 'done' : iv.outcome=='Fail' ? 'rejected' : '' %>"></div>
+                  <% unless i==@interviews.size-1 %><div class="interview-round-connector"></div><% end %>
+                </div>
+                <div class="interview-round-body">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                    <div><div style="font-weight:600;font-size:13px"><%= iv.round_name %></div>
+                    <div style="font-size:12px;color:var(--text3)"><%= iv.interviewer.present? ? "with #{iv.interviewer}" : "" %><%= iv.scheduled_at ? " · #{iv.scheduled_display}" : "" %></div></div>
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <% if iv.outcome.present? %>
+                        <% oc = iv.outcome=="Pass" ? "green" : iv.outcome=="Fail" ? "red" : "amber" %>
+                        <span class="badge badge-<%= oc %>"><%= iv.outcome %></span>
+                      <% end %>
+                      <%= render 'shared/status_badge', status: iv.status %>
+                      <%= link_to "Edit", edit_interview_path(iv), class: "btn btn-ghost btn-sm" %>
+                    </div>
+                  </div>
+                  <% if iv.feedback.present? %><div style="margin-top:8px;font-size:12px;color:var(--text2);line-height:1.6"><%= iv.feedback %></div><% end %>
+                  <% if iv.rating %><div style="margin-top:6px"><% iv.rating.times do %><span style="color:var(--amber)">★</span><% end %><% (5-iv.rating).times do %><span style="color:var(--bg4)">★</span><% end %></div><% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col gap-4">
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Quick Actions</span></div>
+      <div class="card-body flex flex-col gap-2">
+        <% btn_cls = {"Screening"=>"btn-ghost","Interview"=>"btn-amber","Offer"=>"btn-success","Rejected"=>"btn-danger","Hired"=>"btn-success","New"=>"btn-ghost"} %>
+        <% Candidate::STATUSES.reject{|s|s==@candidate.status}.each do |s| %>
+          <%= button_to "Move to #{s}", update_status_candidate_path(@candidate), params:{status:s}, method: :patch, class: "btn #{btn_cls[s]||'btn-ghost'} w-full" %>
+        <% end %>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Status History</span></div>
+      <div class="card-body" style="max-height:280px;overflow-y:auto">
+        <% @status_history.each do |h| %>
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px"></div>
+            <div><div style="font-size:12px;font-weight:500"><%= h.status %></div><div style="font-size:11px;color:var(--text3)"><%= h.user&.name %> · <%= time_ago_in_words(h.created_at) %> ago</div></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

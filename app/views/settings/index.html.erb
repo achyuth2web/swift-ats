@@ -1,0 +1,29 @@
+<% content_for :page_title, "Settings" %>
+<div style="max-width:600px" class="flex flex-col gap-4">
+  <div class="card">
+    <div class="card-header"><span class="fw-600">System Info</span></div>
+    <div class="card-body">
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;font-size:13px">
+        <div style="font-weight:600;color:var(--text);margin-bottom:10px">Default Login Credentials</div>
+        <div style="margin-bottom:6px"><span class="badge badge-purple" style="margin-right:8px">Admin</span>admin@swiftats.com / admin123</div>
+        <div><span class="badge badge-blue" style="margin-right:8px">Recruiter</span>recruiter@swiftats.com / recruiter123</div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text3)">Change passwords via User Management</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="fw-600">Data Summary</span></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">
+        <div class="stat-card purple" style="margin:0"><div class="stat-label">Candidates</div><div class="stat-value" style="font-size:24px"><%= Candidate.count %></div></div>
+        <div class="stat-card green" style="margin:0"><div class="stat-label">Jobs</div><div class="stat-value" style="font-size:24px"><%= Job.count %></div></div>
+        <div class="stat-card blue" style="margin:0"><div class="stat-label">Interviews</div><div class="stat-value" style="font-size:24px"><%= Interview.count %></div></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <%= link_to "All Candidates", candidates_path, class: "btn btn-ghost btn-sm" %>
+        <%= link_to "All Jobs", jobs_path, class: "btn btn-ghost btn-sm" %>
+        <%= link_to "User Management", users_path, class: "btn btn-ghost btn-sm" %>
+      </div>
+    </div>
+  </div>
+</div>

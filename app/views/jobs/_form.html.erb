@@ -1,0 +1,47 @@
+<%= form_with model: job, html: { class: "flex flex-col gap-3" } do |f| %>
+  <% if job.errors.any? %><div class="flash-alert"><%= job.errors.full_messages.first %></div><% end %>
+  <div class="input-row">
+    <div class="form-group"><label class="label">Job Title *</label><%= f.text_field :title, class: "input", placeholder: "e.g. Senior React Developer" %></div>
+    <div class="form-group"><label class="label">Company</label><%= f.text_field :company, class: "input" %></div>
+  </div>
+  <div class="input-row">
+    <div class="form-group"><label class="label">Department</label><%= f.select :department, Job::DEPARTMENTS, { include_blank: "Select" }, class: "select" %></div>
+    <div class="form-group"><label class="label">Hiring Manager</label><%= f.text_field :hiring_manager, class: "input" %></div>
+  </div>
+  <div class="input-row">
+    <div class="form-group"><label class="label">Position Type</label><%= f.select :position_type, Job::POSITION_TYPES, {}, class: "select" %></div>
+    <div class="form-group" id="replace-grp" style="<%= job.position_type=='Replacement' ? '' : 'display:none' %>">
+      <label class="label">Replacing Employee</label><%= f.text_field :replacing_employee, class: "input" %>
+    </div>
+  </div>
+  <div class="input-row">
+    <div class="form-group"><label class="label">Status</label><%= f.select :status, Job::STATUSES, {}, class: "select" %></div>
+    <div class="form-group"><label class="label">Open Date</label><%= f.date_field :open_date, class: "input" %></div>
+  </div>
+  <div class="input-row">
+    <div class="form-group"><label class="label">Openings</label><%= f.number_field :openings, class: "input", min: 1, value: job.openings||1 %></div>
+    <div class="form-group"><label class="label">Experience (years)</label><%= f.number_field :experience_years, class: "input", min: 0 %></div>
+  </div>
+  <div class="form-group"><label class="label">Skills (comma-separated)</label><%= f.text_field :skills_list, class: "input", placeholder: "React, TypeScript, Node.js" %></div>
+  <div class="input-row">
+    <div class="form-group"><label class="label">CTC Budget (LPA)</label><%= f.text_field :ctc_budget, class: "input", placeholder: "28" %></div>
+    <div class="form-group"><label class="label">Naukri URL</label><%= f.text_field :naukri_url, class: "input", placeholder: "https://naukri.com/..." %></div>
+  </div>
+  <div class="form-group"><label class="label">Description</label><%= f.text_area :description, class: "textarea" %></div>
+  <% if defined?(recruiters) && recruiters&.any? %>
+    <div class="form-group"><label class="label">Assign Recruiters</label>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <% recruiters.each do |r| %>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);cursor:pointer">
+            <input type="checkbox" name="job[recruiter_ids][]" value="<%= r.id %>" <%= job.recruiters.include?(r) ? "checked" : "" %> style="accent-color:var(--accent)"> <%= r.name %>
+          </label>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+  <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px">
+    <%= link_to "Cancel", jobs_path, class: "btn btn-ghost" %>
+    <%= f.submit job.persisted? ? "Update Job" : "Create Job", class: "btn btn-primary" %>
+  </div>
+<% end %>
+<script>document.querySelector('select[name="job[position_type]"]')?.addEventListener('change',function(){document.getElementById('replace-grp').style.display=this.value==='Replacement'?'':'none';});</script>

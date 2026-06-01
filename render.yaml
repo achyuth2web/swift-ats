@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: swift-ats
+    runtime: ruby
+    buildCommand: "bundle install && bundle exec rails assets:precompile && bundle exec rails assets:clean"
+    startCommand: "bundle exec puma -C config/puma.rb"
+    envVars:
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_LOG_TO_STDOUT
+        value: "true"
+      - key: RAILS_SERVE_STATIC_FILES
+        value: "true"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: swift-ats-db
+          property: connectionString
+      - key: RAILS_MASTER_KEY
+        generateValue: true
+      - key: SECRET_KEY_BASE
+        generateValue: true
+    autoDeploy: true
+
+databases:
+  - name: swift-ats-db
+    databaseName: swift_ats_production
+    user: swift_ats
+    plan: free

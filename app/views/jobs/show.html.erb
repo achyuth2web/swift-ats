@@ -1,0 +1,74 @@
+<% content_for :page_title, @job.title %>
+<% content_for :topbar_actions do %>
+  <%= link_to "Edit", edit_job_path(@job), class: "btn btn-ghost btn-sm" %>
+  <% Job::STATUSES.reject{|s|s==@job.status}.each do |s| %>
+    <%= button_to s, update_status_job_path(@job), params:{status:s}, method: :patch, class: "btn btn-ghost btn-sm" %>
+  <% end %>
+<% end %>
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+  <div class="flex flex-col gap-4">
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Details</span><%= render 'shared/status_badge', status: @job.status %></div>
+      <div class="card-body">
+        <div class="detail-grid">
+          <div class="detail-item"><div class="detail-label">Company</div><div class="detail-value"><%= @job.company %></div></div>
+          <div class="detail-item"><div class="detail-label">Department</div><div class="detail-value"><%= @job.department %></div></div>
+          <div class="detail-item"><div class="detail-label">Hiring Manager</div><div class="detail-value"><%= @job.hiring_manager||"—" %></div></div>
+          <div class="detail-item"><div class="detail-label">Position Type</div><div class="detail-value"><%= @job.position_type %></div></div>
+          <div class="detail-item"><div class="detail-label">Openings</div><div class="detail-value"><%= @job.openings %></div></div>
+          <div class="detail-item"><div class="detail-label">Experience</div><div class="detail-value"><%= @job.experience_years %>+ years</div></div>
+          <div class="detail-item"><div class="detail-label">CTC Budget</div><div class="detail-value"><%= @job.ctc_budget.present? ? "#{@job.ctc_budget} LPA" : "—" %></div></div>
+          <div class="detail-item"><div class="detail-label">Open Date</div><div class="detail-value"><%= @job.open_date&.strftime("%d %b %Y")||"—" %></div></div>
+          <% if @job.time_to_hire %><div class="detail-item"><div class="detail-label">Time to Hire</div><div class="detail-value" style="color:var(--green)"><%= @job.time_to_hire %> days</div></div><% end %>
+        </div>
+        <% if @job.description.present? %><div style="margin-top:14px;font-size:13px;color:var(--text2);line-height:1.7"><%= @job.description %></div><% end %>
+        <% if @job.skills.any? %><div class="skills-wrap mt-3"><% @job.skills.each do |s| %><span class="skill-tag"><%= s %></span><% end %></div><% end %>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Candidates (<%= @candidates.count %>)</span><%= link_to "+ Add", new_candidate_path(job_id: @job.id), class: "btn btn-primary btn-sm" %></div>
+      <div class="table-wrap">
+        <% if @candidates.empty? %><div class="empty-state" style="padding:30px"><p>No candidates linked.</p></div>
+        <% else %>
+          <table><thead><tr><th>Name</th><th>Status</th><th>Score</th><th>CTC</th></tr></thead><tbody>
+          <% @candidates.each do |c| %>
+            <tr onclick="window.location='<%= candidate_path(c) %>'">
+              <td><div style="font-weight:500"><%= c.name %></div><div style="font-size:11px;color:var(--text3)"><%= c.email %></div></td>
+              <td><%= render 'shared/status_badge', status: c.status %></td>
+              <td><%= render 'shared/score_bar', score: c.score %></td>
+              <td><span style="font-size:11px"><%= c.ctc_display %></span></td>
+            </tr>
+          <% end %>
+          </tbody></table>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col gap-4">
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Recruiters</span></div>
+      <div class="card-body">
+        <% if @job.recruiters.empty? %><div style="color:var(--text3);font-size:13px">None assigned</div>
+        <% else %>
+          <% @job.recruiters.each do |r| %>
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
+              <div class="avatar"><%= r.initials %></div>
+              <div><div style="font-size:13px;font-weight:500"><%= r.name %></div><div style="font-size:11px;color:var(--text3)">Recruiter</div></div>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="fw-600">Status History</span></div>
+      <div class="card-body">
+        <% @job.status_histories.order(created_at: :desc).each do |h| %>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px">
+            <%= render 'shared/status_badge', status: h.status %>
+            <span style="color:var(--text3)"><%= h.created_at.strftime("%d %b %Y") %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

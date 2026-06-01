@@ -1,0 +1,49 @@
+<% content_for :page_title, "JD Matching" %>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+  <div class="card">
+    <div class="card-header"><span class="fw-600">Job Description</span></div>
+    <div class="card-body flex flex-col gap-3">
+      <div class="form-group"><label class="label">Load from job</label>
+        <select class="select" id="jd-job-sel" onchange="loadJD(this)">
+          <option value="">Select to auto-fill...</option>
+          <% @jobs.each do |j| %><option value="<%= j.id %>" data-desc="<%= j.description.to_s.gsub('"','&quot;') %>" data-skills="<%= j.skills_list %>"><%= j.title %></option><% end %>
+        </select>
+      </div>
+      <div class="form-group"><label class="label">Job Description Text</label><textarea class="textarea" id="jd-text" style="min-height:200px" placeholder="Paste the full JD here..."></textarea></div>
+      <button class="btn btn-primary w-full" onclick="runMatch()">Match Candidates</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="fw-600">Match Results</span><span class="badge badge-purple" id="match-count">0 matched</span></div>
+    <div id="match-results" class="card-body"><div style="color:var(--text3);font-size:13px;text-align:center;padding:40px">Paste a JD and click Match</div></div>
+  </div>
+</div>
+<script>
+const MATCH_URL="<%= jd_match_match_path %>";
+const CSRF_T="<%= form_authenticity_token %>";
+function loadJD(sel){
+  const o=sel.options[sel.selectedIndex];
+  document.getElementById('jd-text').value=(o.dataset.desc||'')+'\n\nRequired skills: '+(o.dataset.skills||'');
+}
+async function runMatch(){
+  const txt=document.getElementById('jd-text').value.trim();
+  if(!txt){alert('Paste a JD first.');return;}
+  document.getElementById('match-results').innerHTML='<div style="text-align:center;padding:40px"><div class="spinner" style="width:24px;height:24px;margin:auto"></div></div>';
+  const fd=new FormData();fd.append('jd_text',txt);fd.append('authenticity_token',CSRF_T);
+  const r=await fetch(MATCH_URL,{method:'POST',body:fd});const items=await r.json();
+  document.getElementById('match-count').textContent=items.length+' matched';
+  if(!items.length){document.getElementById('match-results').innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:40px">No candidates found.</div>';return;}
+  document.getElementById('match-results').innerHTML=items.map(c=>{
+    const clr=c.score>=80?'var(--green)':c.score>=60?'var(--amber)':'var(--red)';
+    const ms=c.matched_skills.map(s=>`<span class="skill-tag matched">${s}</span>`).join('');
+    const us=c.skills.filter(s=>!c.matched_skills.includes(s)).map(s=>`<span class="skill-tag">${s}</span>`).join('');
+    return `<div class="match-card" onclick="window.location='/candidates/${c.id}'" style="cursor:pointer;margin-bottom:10px">
+      <div style="flex:1"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-weight:600;font-size:13px">${c.name}</div>
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:${clr}">${c.score}%</div>
+      </div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px">${c.role} · ${c.status} · ${c.ctc}</div>
+      <div class="skills-wrap">${ms}${us}</div></div></div>`;
+  }).join('');
+}
+</script>
