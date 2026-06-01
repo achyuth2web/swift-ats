@@ -14,5 +14,3 @@ config/credentials/*.key
 .DS_Store
 /node_modules
 .env
-# Gemfile.lock
-Gemfile.lock
