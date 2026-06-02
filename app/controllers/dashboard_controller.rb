@@ -1,4 +1,5 @@
 class DashboardController < ApplicationController
+  before_action :require_current_user!
   before_action :require_admin!
   def index
     @candidates    = Candidate.all

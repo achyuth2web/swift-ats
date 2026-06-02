@@ -6,8 +6,17 @@ class ApplicationController < ActionController::Base
   helper_method :admin?, :log_activity
   private
   def admin? = current_user&.admin?
+  def recruiter? = current_user&.recruiter?
+  def require_current_user!
+    unless current_user
+      redirect_to login_path, alert: "Please login first."
+    end
+  end
   def require_admin!
     redirect_to root_path, alert: "Access denied." unless admin?
+  end
+  def require_recruiter!
+    redirect_to jobs_path, alert: "Access denied." unless recruiter?
   end
   def check_active!
     if current_user && !current_user.active?
