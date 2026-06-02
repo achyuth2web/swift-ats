@@ -15,8 +15,8 @@
             <div style="font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:8px"><%= c.role %></div>
             <% if c.job %><div style="font-size:11px;color:var(--accent2);margin-bottom:6px"><%= c.job.title %></div><% end %>
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <% if c.score > 0 %>
-                <% clr=c.score>=80?"var(--green)":c.score>=60?"var(--amber)":"var(--red)" %>
+              <% if c.score.to_i > 0 %>
+                <% clr = c.score >= 80 ? "var(--green)" : c.score >= 60 ? "var(--amber)" : "var(--red)" %>
                 <span style="font-size:11px;font-weight:600;color:<%= clr %>"><%= c.score %>%</span>
               <% end %>
               <% if c.ctc_current.present? %><span style="font-size:11px;color:var(--text3)"><%= c.ctc_current %> LPA</span><% end %>
