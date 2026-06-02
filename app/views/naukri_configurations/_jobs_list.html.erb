@@ -1,0 +1,132 @@
+<div>
+
+    <div class="card">
+
+      <div class="card-header">
+
+        <span class="fw-600">
+          Naukri Job Posts (<%= @naukri_jobs.count %>)
+        </span>
+
+        <button class="btn btn-orange btn-sm"
+                onclick="openNaukriModal()">
+        + Add Job Post
+        </button>
+
+      </div>
+
+      <% if @naukri_jobs.empty? %>
+
+        <div class="empty-state" style="padding:60px">
+
+          <svg width="48"
+               height="48"
+               fill="none"
+               stroke="currentColor"
+               stroke-width="1.5"
+               viewBox="0 0 24 24">
+
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+
+          </svg>
+
+          <h3>No Naukri job posts</h3>
+
+          <p>
+            Add your Naukri job posts to track
+            applicants and link to requisitions.
+          </p>
+
+        </div>
+
+      <% else %>
+
+        <div class="card-body">
+
+          <% @naukri_jobs.each do |job| %>
+
+            <div class="naukri-job-card" style="margin-bottom:12px">
+
+              <div style="display:flex;justify-content:space-between">
+
+                <div>
+
+                  <div style="font-size:14px;font-weight:600">
+                    <%= job.title %>
+                  </div>
+
+                  <div style="font-size:11px;color:var(--text3)">
+                    <%= job.location.presence || "Remote" %>
+                    · Posted
+                    <%= job.posted_on&.strftime("%d %b %Y") %>
+                  </div>
+
+                  <% if job.job.present? %>
+
+                    <div style="margin-top:8px">
+
+                      <span class="badge badge-purple">
+                        ↗ Linked:
+                        <%= job.job.title %>
+                      </span>
+
+                    </div>
+
+                  <% end %>
+
+                </div>
+
+                <div style="text-align:right">
+
+                  <div style="font-size:24px;font-weight:800;color:var(--orange)">
+                    <%= Candidate.where(
+                      source: "Naukri",
+                      job_id: job.job_id
+                    ).count %>
+                  </div>
+
+                  <div style="font-size:11px;color:var(--text3)">
+                    applicants
+                  </div>
+
+                </div>
+
+              </div>
+
+              <div style="margin-top:12px;display:flex;gap:8px">
+
+                <% if job.url.present? %>
+
+                  <%= link_to "View on Naukri",
+                      job.url,
+                      target: "_blank",
+                      class: "btn btn-orange btn-sm" %>
+
+                <% end %>
+
+                <button class="btn btn-ghost btn-sm"
+                        onclick="editNaukriJob(<%= job.id %>)">
+                  Edit
+                </button>
+
+                <%= link_to "Remove",
+                    naukri_job_path(job),
+                    data: {
+                      turbo_method: :delete,
+                      turbo_confirm: "Remove this job?"
+                    },
+                    class: "btn btn-danger btn-sm" %>
+
+              </div>
+
+            </div>
+
+          <% end %>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+  </div>

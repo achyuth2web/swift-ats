@@ -1,0 +1,84 @@
+<% content_for :page_title, "Naukri Connect" %>
+
+<div style="display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start">
+
+  <!-- LEFT SIDE -->
+  <div class="flex flex-col gap-4">
+
+    <!-- Configuration Card -->
+    <%= render 'configuration_form' %>
+
+    <!-- CSV Import -->
+    <%= render 'csv_import' %>
+
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <%= render 'jobs_list' %>
+
+</div>
+
+<dialog id="naukri-job-modal" class="ats-modal">
+  <div class="modal">
+
+    <div class="modal-header">
+      <span class="fw-600" id="modal-title" style="color: #ff6b35;">
+        Add Naukri Job Post
+      </span>
+
+      <button class="btn btn-ghost btn-sm"
+              onclick="closeNaukriModal()">
+        ✕
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <%= render "naukri_jobs/form",
+          naukri_job: NaukriJob.new %>
+    </div>
+
+  </div>
+</dialog>
+
+
+<script>
+function closeNaukriModal() {
+  document
+    .getElementById('naukri-job-modal')
+    .close();
+}
+
+async function editNaukriJob(id) {
+  const response = await fetch(`/naukri_jobs/${id}/edit`)
+  const html = await response.text()
+
+  document.querySelector(
+    "#naukri-job-modal .modal-body"
+  ).innerHTML = html
+
+  document.getElementById(
+    "modal-title"
+  ).textContent = "Edit Naukri Job Post"
+
+  document
+    .getElementById("naukri-job-modal")
+    .showModal()
+}
+
+async function openNaukriModal() {
+  const response = await fetch("/naukri_jobs/new")
+  const html = await response.text()
+
+  document.querySelector(
+    "#naukri-job-modal .modal-body"
+  ).innerHTML = html
+
+  document.getElementById(
+    "modal-title"
+  ).textContent = "Add Naukri Job Post"
+
+  document
+    .getElementById("naukri-job-modal")
+    .showModal()
+}
+</script>

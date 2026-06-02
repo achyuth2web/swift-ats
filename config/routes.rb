@@ -27,4 +27,12 @@ Rails.application.routes.draw do
     member { patch :toggle_active }
   end
   get  "/settings",               to: "settings#index",           as: :settings
+
+  resources :naukri_configurations, only: [:index, :create]
+
+  resources :naukri_jobs do
+    collection do
+      post :import_csv
+    end
+  end
 end

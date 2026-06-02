@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_01_000008) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_02_074642) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -118,6 +118,32 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_000008) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "naukri_configurations", force: :cascade do |t|
+    t.string "email", null: false
+    t.string "company"
+    t.boolean "connected", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_naukri_configurations_on_email"
+  end
+
+  create_table "naukri_jobs", force: :cascade do |t|
+    t.bigint "naukri_configuration_id", null: false
+    t.bigint "job_id"
+    t.string "title", null: false
+    t.string "location"
+    t.string "external_id"
+    t.date "posted_on"
+    t.string "url"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_naukri_jobs_on_external_id"
+    t.index ["job_id"], name: "index_naukri_jobs_on_job_id"
+    t.index ["naukri_configuration_id"], name: "index_naukri_jobs_on_naukri_configuration_id"
+    t.index ["title"], name: "index_naukri_jobs_on_title"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name", default: "", null: false
     t.string "email", default: "", null: false
@@ -143,4 +169,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_000008) do
   add_foreign_key "job_recruiters", "users"
   add_foreign_key "job_status_histories", "jobs"
   add_foreign_key "job_status_histories", "users"
+  add_foreign_key "naukri_jobs", "jobs"
+  add_foreign_key "naukri_jobs", "naukri_configurations"
 end

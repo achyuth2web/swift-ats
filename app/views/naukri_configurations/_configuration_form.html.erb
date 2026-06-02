@@ -1,0 +1,76 @@
+<div class="card" style="background:linear-gradient(135deg,rgba(255,107,53,.12),rgba(255,107,53,.04));border-color:rgba(255,107,53,.25)">
+
+      <div class="card-body">
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+
+          <div class="naukri-logo">
+            N
+          </div>
+
+          <div>
+            <div style="font-weight:700;font-size:16px">
+              Naukri.com
+            </div>
+
+            <div style="font-size:11px;color:var(--text3)">
+              Job board integration
+            </div>
+          </div>
+
+          <span class="badge <%= @configuration.connected? ? 'badge-green' : 'badge-gray' %>" style="margin-left:auto">
+            <%= @configuration.connected? ? "● Connected" : "○ Disconnected" %>
+          </span>
+
+        </div>
+
+        <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px;margin-bottom:16px;color:var(--amber);font-size:12px;line-height:1.6">
+          ⚠ Naukri doesn't provide a public API.
+          This integration works via
+          <strong>manual CSV export + import</strong>
+          from your recruiter dashboard.
+        </div>
+
+        <%= form_with model: @configuration,
+                      url: naukri_configurations_path,
+                      local: true do |f| %>
+
+          <div class="form-group">
+            <label class="label">
+              Your Naukri Email
+            </label>
+
+            <%= f.email_field :email,
+                class: "input",
+                placeholder: "recruiter@company.com" %>
+          </div>
+
+          <div class="form-group" style="margin-top:12px">
+            <label class="label">
+              Company Account
+            </label>
+
+            <%= f.text_field :company,
+                class: "input",
+                placeholder: "Company name on Naukri" %>
+          </div>
+
+          <%= f.hidden_field :connected,
+              value: true %>
+
+          <div style="margin-top:16px">
+
+            <%= f.submit(
+              @configuration.connected? ?
+              "Update Configuration" :
+              "Connect Naukri Account",
+              class: "btn btn-orange w-full"
+            ) %>
+
+          </div>
+
+        <% end %>
+
+      </div>
+
+    </div>

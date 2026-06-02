@@ -1,0 +1,77 @@
+<div class="card">
+
+      <div class="card-header">
+        <span class="fw-600">
+          Import Applicants from Naukri
+        </span>
+      </div>
+
+      <div class="card-body" style="padding-top: 0px;">
+
+        <div style="font-size:12px;color:var(--text3);line-height:1.8; margin-bottom:14px;">
+
+          <div style="font-weight:600;color:var(--text);margin-bottom:10px">
+            How to import:
+          </div>
+
+          <ol style="padding-left:18px">
+            <li>Login to naukri.com/recruiter</li>
+            <li>Open Job Posting → Applicants</li>
+            <li>Download Applicant Data (CSV)</li>
+            <li>Upload CSV file here</li>
+            <li>Candidates auto-import into ATS</li>
+          </ol>
+
+        </div>
+
+        <%= form_with url: import_csv_naukri_jobs_path,
+                      multipart: true,
+                      local: true do |f| %>
+
+          <div class="form-group">
+
+            <label class="label">
+              Link to Job Requisition
+            </label>
+
+            <%= select_tag :job_id,
+                options_from_collection_for_select(
+                  @jobs,
+                  :id,
+                  :title
+                ),
+                prompt: "— Select requisition —",
+                class: "select" %>
+
+          </div>
+
+          <div class="form-group" style="margin-top:14px">
+
+            <label class="upload-zone" style="padding: 10px !important;">
+
+              <div style="font-weight:600;color:var(--orange)">
+                Upload Naukri CSV Export
+              </div>
+
+              <div style="font-size:11px;color:var(--text3)">
+                Drag & drop or click to browse
+              </div>
+
+              <%= file_field_tag :file,
+                  accept: ".csv",
+                  class: "hidden", style: "display: none;" %>
+
+            </label>
+
+          </div>
+
+          <div style="margin-top:12px">
+            <%= submit_tag "Import Applicants",
+                class: "btn btn-orange w-full" %>
+          </div>
+
+        <% end %>
+
+      </div>
+
+    </div>
