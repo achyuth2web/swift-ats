@@ -61,28 +61,20 @@
   </div>
 </div>
 <script>
-let searchTimer;
-
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("turbo:load", () => {
   const searchInput = document.getElementById("candidate-search");
 
   if (!searchInput) return;
 
   searchInput.addEventListener("input", function() {
-    clearTimeout(searchTimer);
+    clearTimeout(window.candidateSearchTimer);
 
-    searchTimer = setTimeout(() => {
+    window.candidateSearchTimer = setTimeout(() => {
       document.getElementById("cand-filter-form").submit();
     }, 500);
   });
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const searchInput = document.getElementById("candidate-search");
 
-  if (!searchInput) return;
-
+  // Restore cursor position
   if (searchInput.value.length > 0) {
     searchInput.focus();
     searchInput.setSelectionRange(

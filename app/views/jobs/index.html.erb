@@ -57,18 +57,17 @@
     </div>
   <% end %>
 </div>
-<script>
-let jobSearchTimer;
 
-document.addEventListener("DOMContentLoaded", () => {
+<script>
+document.addEventListener("turbo:load", () => {
   const input = document.getElementById("job-search");
 
   if (!input) return;
 
   input.addEventListener("input", function() {
-    clearTimeout(jobSearchTimer);
+    clearTimeout(window.jobSearchTimer);
 
-    jobSearchTimer = setTimeout(() => {
+    window.jobSearchTimer = setTimeout(() => {
       const q = encodeURIComponent(this.value);
       const status = encodeURIComponent("<%= params[:status] %>");
 
@@ -77,27 +76,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 500);
   });
 
-  // Restore cursor after page reload
   if (input.value.length > 0) {
     input.focus();
     input.setSelectionRange(
       input.value.length,
       input.value.length
-    );
-  }
-});
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const searchInput = document.getElementById("job-search");
-
-  if (!searchInput) return;
-
-  if (searchInput.value.length > 0) {
-    searchInput.focus();
-    searchInput.setSelectionRange(
-      searchInput.value.length,
-      searchInput.value.length
     );
   }
 });
