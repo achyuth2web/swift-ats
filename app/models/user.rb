@@ -21,7 +21,7 @@ class User < ApplicationRecord
       Candidate.all
     else
       my_job_ids = visible_jobs.pluck(:id)
-      Candidate.where(recruiter_id: id).or(Candidate.where(job_id: my_job_ids))
+      Candidate.where(recruiter_id: id).or(Candidate.where(job_id: my_job_ids).where.not(recruiter_id: nil))
     end
   end
   def visible_interviews

@@ -7,6 +7,7 @@ class UploadController < ApplicationController
     parsed = parse_resume(text)
     render json: parsed
   rescue => e
+    Rails.logger.error "Error parsing resume: #{e.message}"
     render json: { error: e.message }, status: :internal_server_error
   end
   def create
@@ -21,7 +22,10 @@ class UploadController < ApplicationController
       log_activity("#{current_user.name} uploaded resume: #{candidate.name}")
       render json: { id: candidate.id, name: candidate.name }
     else
-      render json: { errors: candidate.errors.full_messages }, status: :unprocessable_entity
+      Rails.logger.error(
+        "Candidate save failed: #{candidate.errors.full_messages.join(', ')}"
+      )
+      render json: { errors: candidate.errors.full_messages }, status: :unprocessable_content
     end
   end
   private

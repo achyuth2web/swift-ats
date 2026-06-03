@@ -13,10 +13,11 @@ class ApplicationController < ActionController::Base
     end
   end
   def require_admin!
-    redirect_to root_path, alert: "Access denied." unless admin?
+    redirect_to not_found_path unless admin?
   end
+
   def require_recruiter!
-    redirect_to jobs_path, alert: "Access denied." unless recruiter?
+    redirect_to not_found_path unless recruiter?
   end
   def check_active!
     if current_user && !current_user.active?
@@ -34,4 +35,17 @@ class ApplicationController < ActionController::Base
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "Fri, 01 Jan 1990 00:00:00 GMT"
   end
+  def home_path_for(user)
+    return new_user_session_path unless user
+
+    if user.admin?
+      dashboard_path
+    elsif user.recruiter?
+      jobs_path
+    else
+      root_path
+    end
+  end
+
+  helper_method :home_path_for
 end

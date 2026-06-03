@@ -58,6 +58,7 @@
           <button type="button" class="btn btn-primary" id="save-btn" onclick="saveCandidate()">Save to ATS</button>
         </div>
       </form>
+      <div id="form-errors" style="color:var(--red);font-size:14px;margin-top:10px;"></div>
     </div>
   </div>
 </div>
@@ -96,13 +97,61 @@ async function processFile(file){
   }catch(err){qi.innerHTML=`<span style="color:var(--red)">✕</span><span>${file.name}: ${err.message}</span>`;}
 }
 async function saveCandidate(){
-  const btn=document.getElementById('save-btn');btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Saving…';
-  const fd=new FormData(document.getElementById('save-form'));fd.set('authenticity_token',document.getElementById('p-csrf').value);
-  try{
-    const r=await fetch(SAVE_URL,{method:'POST',body:fd});const d=await r.json();
-    if(d.id){btn.innerHTML='✓ Saved!';btn.className='btn btn-success';setTimeout(()=>window.location='/candidates/'+d.id,800);}
-    else{btn.innerHTML='Save Failed';btn.className='btn btn-danger';btn.disabled=false;}
-  }catch(e){btn.innerHTML='Error';btn.disabled=false;}
+  const btn = document.getElementById('save-btn');
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Saving…';
+
+  const fd = new FormData(document.getElementById('save-form'));
+  fd.set('authenticity_token', document.getElementById('p-csrf').value);
+
+  try {
+    const r = await fetch(SAVE_URL, {
+      method: 'POST',
+      body: fd
+    });
+
+    const d = await r.json();
+
+    console.log("Save response:", d);
+
+    if (r.ok && d.id) {
+      btn.innerHTML = '✓ Saved!';
+      btn.className = 'btn btn-success';
+
+      setTimeout(() => {
+        window.location = '/candidates/' + d.id;
+      }, 800);
+
+    } else {
+      btn.innerHTML = 'Save Failed';
+      btn.className = 'btn btn-danger';
+      btn.disabled = false;
+
+      const msg = d.errors
+        ? d.errors.join("<br>")
+        : "Unable to save candidate";
+
+      document.getElementById('form-errors').innerHTML = `
+        <div class="alert alert-danger">
+          ${msg}
+        </div>
+      `;
+    }
+
+  } catch (e) {
+    console.error(e);
+
+    btn.innerHTML = 'Error';
+    btn.className = 'btn btn-danger';
+    btn.disabled = false;
+
+    document.getElementById('form-errors').innerHTML = `
+      <div class="alert alert-danger">
+        Something went wrong. Please try again.
+      </div>
+    `;
+  }
 }
 function resetUpload(){document.getElementById('parsed-form-card').style.display='none';document.getElementById('queue-list').innerHTML='';document.getElementById('parse-steps').innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Upload a resume to begin</div>';}
 </script>

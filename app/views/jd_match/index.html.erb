@@ -27,9 +27,10 @@ function loadJD(sel){
 }
 async function runMatch(){
   const txt=document.getElementById('jd-text').value.trim();
-  if(!txt){alert('Paste a JD first.');return;}
+  const jobId = document.getElementById('jd-job-sel').value;
+  if(jobId && !txt){alert('Paste a JD first.');return;}
   document.getElementById('match-results').innerHTML='<div style="text-align:center;padding:40px"><div class="spinner" style="width:24px;height:24px;margin:auto"></div></div>';
-  const fd=new FormData();fd.append('jd_text',txt);fd.append('authenticity_token',CSRF_T);
+  const fd=new FormData();fd.append('jd_text',txt);fd.append('job_id',jobId);fd.append('authenticity_token',CSRF_T);
   const r=await fetch(MATCH_URL,{method:'POST',body:fd});const items=await r.json();
   document.getElementById('match-count').textContent=items.length+' matched';
   if(!items.length){document.getElementById('match-results').innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:40px">No candidates found.</div>';return;}

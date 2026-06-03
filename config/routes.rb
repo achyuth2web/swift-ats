@@ -35,4 +35,10 @@ Rails.application.routes.draw do
       post :import_csv
     end
   end
+
+  get "/not_found", to: "errors#not_found"
+
+  match "*path",
+      to: "errors#not_found",
+      via: :all
 end

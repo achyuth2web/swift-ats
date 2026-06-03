@@ -8,6 +8,12 @@ class Candidate < ApplicationRecord
   DEPARTMENTS = %w[Tech HR Sales Finance Operations Marketing].freeze
   validates :name,   presence: true
   validates :email,  presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :phone,
+          format: {
+            with: /\A\+?[\d\s\-()]{10,20}\z/,
+            message: "is not a valid phone number"
+          },
+          allow_blank: true
   validates :status, inclusion: { in: STATUSES }
   def skills
     (skills_list || "").split(",").map(&:strip).reject(&:empty?)
