@@ -12,7 +12,8 @@
           params[:q],
           id: "candidate-search",
           class: "input",
-          placeholder: "Search name, email, skills..." %>
+          placeholder: "Search name, email, skills...",
+          autocomplete: "off" %>
     </div>
     <%= select_tag :dept, options_for_select([["All Departments",""]]+Candidate::DEPARTMENTS.map{|d|[d,d]},params[:dept]), class: "select", style: "width:160px", onchange: "document.getElementById('cand-filter-form').submit()" %>
     <%= select_tag :status, options_for_select([["All Statuses",""]]+Candidate::STATUSES.map{|s|[s,s]},params[:status]), class: "select", style: "width:140px", onchange: "document.getElementById('cand-filter-form').submit()" %>

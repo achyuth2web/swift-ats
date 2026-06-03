@@ -11,7 +11,8 @@
       class="input"
       placeholder="Search jobs..."
       id="job-search"
-      value="<%= params[:q] %>">
+      value="<%= params[:q] %>"
+      autocomplete="off">
   </div>
   <% Job::STATUSES.each do |s| %>
     <%= link_to s, jobs_path(status: s), class: "btn btn-sm #{params[:status]==s ? 'btn-primary' : 'btn-ghost'}" %>
