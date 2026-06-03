@@ -10,8 +10,8 @@ class Candidate < ApplicationRecord
   validates :email,  presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :phone,
           format: {
-            with: /\A\+?[\d\s\-()]{10,20}\z/,
-            message: "is not a valid phone number"
+            with: /\A\d+\z/,
+            message: "must contain only numbers"
           },
           allow_blank: true
   validates :status, inclusion: { in: STATUSES }

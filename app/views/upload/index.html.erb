@@ -10,6 +10,7 @@
           <div style="font-size:12px;color:var(--text3)">or click to browse</div>
         </div>
         <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt,.rtf" style="display:none" onchange="handleFiles(this.files)">
+        <div id="upload-errors" style="color:var(--red);font-size:14px;margin-top:10px;"></div>
         <div id="queue-list" class="flex flex-col gap-2 mt-3"></div>
       </div>
     </div>
@@ -66,8 +67,42 @@
 const PARSE_URL="<%= upload_parse_path %>";
 const SAVE_URL="<%= upload_save_path %>";
 function handleDrop(e){e.preventDefault();document.getElementById('upload-zone').classList.remove('drag-over');handleFiles(e.dataTransfer.files);}
-async function handleFiles(files){for(const f of files) await processFile(f);}
 function setSteps(steps){document.getElementById('parse-steps').innerHTML=steps.map((s,i)=>`<div class="parse-step ${s.state}"><div class="parse-step-icon">${s.state==='done'?'✓':s.state==='active'?'<div class="spinner" style="width:12px;height:12px"></div>':'○'}</div>${s.label}</div>`).join('');}
+async function handleFiles(files) {
+  document.getElementById('upload-errors').innerHTML = '';
+  const allowedTypes = [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain'
+  ];
+
+  const allowedExtensions = ['pdf', 'docx', 'txt'];
+
+  for (const file of files) {
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    if (
+      !allowedTypes.includes(file.type) &&
+      !allowedExtensions.includes(ext)
+    ) {
+      showUploadError(
+        `${file.name} is not supported. Only PDF, DOCX and TXT files are allowed.`
+      );
+      continue;
+    }
+
+    await processFile(file);
+  }
+}
+function showUploadError(message) {
+  const errors = document.getElementById('upload-errors');
+
+  errors.innerHTML += `
+    <div class="alert alert-danger" style="margin-top:8px;">
+      ${message}
+    </div>
+  `;
+}
 async function processFile(file){
   const steps=[{label:'Reading file...',state:'active'},{label:'Extracting text',state:'pending'},{label:'Parsing fields',state:'pending'},{label:'Ready to save',state:'pending'}];
   setSteps(steps);
@@ -153,5 +188,8 @@ async function saveCandidate(){
     `;
   }
 }
-function resetUpload(){document.getElementById('parsed-form-card').style.display='none';document.getElementById('queue-list').innerHTML='';document.getElementById('parse-steps').innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Upload a resume to begin</div>';}
+function resetUpload(){document.getElementById('form-errors').innerHTML = '';
+  const btn = document.getElementById('save-btn');
+  btn.innerHTML = 'Save to ATS';
+  btn.className = 'btn btn-primary';document.getElementById('parsed-form-card').style.display='none';document.getElementById('queue-list').innerHTML='';document.getElementById('parse-steps').innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Upload a resume to begin</div>';}
 </script>
