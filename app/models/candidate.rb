@@ -7,6 +7,7 @@ class Candidate < ApplicationRecord
   SOURCES     = ["LinkedIn","Naukri","Referral","Job Board","Other"].freeze
   DEPARTMENTS = %w[Tech HR Sales Finance Operations Marketing].freeze
   validates :name,   presence: true
+  validates :email,  presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :status, inclusion: { in: STATUSES }
   def skills
     (skills_list || "").split(",").map(&:strip).reject(&:empty?)
