@@ -182,13 +182,31 @@ class UploadController < ApplicationController
       ctcCurrent: ctc_c, ctcExpected: ctc_e, noticePeriod: notice,
       skills: skills, department: dept }
   end
+  TITLE_WORDS = %w[
+    Engineer Developer Architect Consultant Analyst
+    Manager Lead Director Specialist Designer
+    Scientist Recruiter Administrator Programmer
+    Vision AI ML Data Software Full Stack Backend Frontend
+  ]
   def extract_name(text)
     lines = text.split("\n").map(&:strip).reject(&:empty?)
-    lines.first(3).each do |line|
-      next if line.match?(/resume|curriculum|vitae|cv|@/i) || line.length > 60
+
+    lines.first(10).each do |line|
+      next if line.match?(/resume|curriculum|vitae|cv|@/i)
+      next if line.length > 60
+
       words = line.split
-      return line if words.length.between?(2,4) && words.all? { |w| w.match?(/\A[A-Z]/) }
+
+      Rails.logger.info "Name candidate: #{line}"
+
+      # Skip job titles
+      next if words.any? { |w| TITLE_WORDS.include?(w.gsub(/[^\w]/, '')) }
+
+      if line.match?(/\A[A-Z][A-Za-z.\s]+\z/)
+        return line
+      end
     end
+
     "Unknown"
   end
 end
