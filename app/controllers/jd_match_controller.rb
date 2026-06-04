@@ -11,33 +11,80 @@ class JdMatchController < ApplicationController
     candidates = current_user.visible_candidates
                             .where(job_id: job.id)
 
-    results = candidates.filter_map do |c|
-      skills = c.skills
+    jd_experience = jd.match(/(\d+)\+?\s*(?:years|yrs)/i)&.captures&.first&.to_i
+
+    results = candidates.map do |candidate|
+
+      skills = candidate.skills_list.to_s.split(",").map(&:strip) || []
 
       matched_skills = skills.select do |skill|
         jd.include?(skill.downcase)
       end
 
-      next if matched_skills.empty?
-
-      score =
+      skill_score =
         if skills.any?
-          (matched_skills.size.to_f / skills.size * 100).round
+          (matched_skills.size.to_f / skills.size * 50)
         else
           0
         end
 
+      role_score =
+        if candidate.role.present? &&
+          jd.include?(candidate.role.downcase)
+          20
+        else
+          0
+        end
+
+      designation_score =
+        if candidate.designation.present? &&
+          jd.include?(candidate.designation.downcase)
+          10
+        else
+          0
+        end
+
+      department_score =
+        if candidate.department.present? &&
+          jd.include?(candidate.department.downcase)
+          10
+        else
+          0
+        end
+
+      experience_score = 0
+
+      if jd_experience.present? &&
+        candidate.experience_years.present?
+
+        experience_score =
+          candidate.experience_years >= jd_experience ? 10 : 5
+      end
+
+      total_score =
+        (
+          skill_score +
+          role_score +
+          designation_score +
+          department_score +
+          experience_score
+        ).round
+
+      next if total_score.zero?
+
       {
-        id: c.id,
-        name: c.name,
-        role: c.role,
+        id: candidate.id,
+        name: candidate.name,
+        role: candidate.role,
+        designation: candidate.designation,
+        department: candidate.department,
         skills: skills,
         matched_skills: matched_skills,
-        score: score,
-        status: c.status,
-        ctc: c.ctc_display
+        score: total_score,
+        status: candidate.status,
+        ctc: candidate.ctc_display
       }
-    end
+    end.compact
 
     render json: results.sort_by { |r| -r[:score] }
   end
