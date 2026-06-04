@@ -60,10 +60,119 @@ class UploadController < ApplicationController
       nm[2].downcase.include?("month") ? (nm[1].to_i * 30).to_s : nm[1]
     elsif text.match?(/immediate|no\s*notice/i) then "0"
     else "" end
-    skill_lib = %w[React Angular Vue Node.js Python Java TypeScript JavaScript AWS Azure GCP
-                   Docker Kubernetes Terraform SQL MySQL PostgreSQL MongoDB Redis GraphQL
-                   Agile Scrum Jira Figma HRBP Salesforce SEO Power\ BI Tableau]
-    skills = skill_lib.select { |s| text.match?(/\b#{Regexp.escape(s)}\b/i) }.first(12)
+    skill_lib = [
+      # Programming Languages
+      "Ruby", "Python", "Java", "JavaScript", "TypeScript", "C", "C++", "C#",
+      "Go", "Rust", "Kotlin", "Scala", "Swift", "PHP", "Perl", "R", "MATLAB",
+      "Dart", "Groovy", "Elixir", "Haskell", "Bash", "PowerShell",
+
+      # Frontend
+      "React", "Angular", "Vue", "Next.js", "Nuxt.js", "Svelte", "Redux",
+      "Zustand", "jQuery", "HTML", "CSS", "SCSS", "Sass", "Bootstrap",
+      "Tailwind CSS", "Material UI", "Chakra UI", "Ant Design",
+      "Webpack", "Vite",
+
+      # Backend
+      "Ruby on Rails", "Rails", "Django", "Flask", "FastAPI", "Spring",
+      "Spring Boot", "Hibernate", "Express", "NestJS", "Node.js",
+      "ASP.NET", "Laravel", "CodeIgniter", "Phoenix", "GraphQL", "REST", "SOAP",
+
+      # Mobile
+      "Android", "iOS", "React Native", "Flutter", "Xamarin", "Ionic",
+
+      # Databases
+      "PostgreSQL", "MySQL", "MariaDB", "SQLite", "Oracle", "SQL Server",
+      "MongoDB", "Cassandra", "DynamoDB", "Redis", "Elasticsearch",
+      "OpenSearch", "Neo4j", "CouchDB", "Firestore", "BigQuery", "Snowflake",
+
+      # Cloud Platforms
+      "AWS", "Azure", "GCP", "DigitalOcean", "Heroku", "Render",
+      "Vercel", "Netlify", "Firebase", "Cloudflare",
+
+      # AWS Services
+      "EC2", "S3", "RDS", "Lambda", "ECS", "EKS", "Fargate",
+      "CloudFormation", "CloudWatch", "IAM", "SNS", "SQS", "SES",
+      "Route 53", "API Gateway", "Secrets Manager",
+
+      # DevOps
+      "Docker", "Kubernetes", "Terraform", "Ansible", "Chef", "Puppet",
+      "Jenkins", "GitHub Actions", "GitLab CI", "CircleCI",
+      "ArgoCD", "Helm", "Nginx", "Apache", "HAProxy",
+      "Linux", "Ubuntu", "CentOS",
+
+      # Data Engineering
+      "Apache Airflow", "Apache Spark", "Hadoop", "Kafka", "Databricks",
+      "dbt", "ETL", "ELT", "Hive", "Pig", "Presto", "Trino",
+
+      # AI / ML
+      "TensorFlow", "PyTorch", "Keras", "Scikit-learn", "XGBoost",
+      "LightGBM", "Pandas", "Polars", "NumPy", "OpenCV", "NLP",
+      "LangChain", "LlamaIndex", "Hugging Face", "MLflow",
+      "Deep Learning", "Machine Learning",
+
+      # BI & Analytics
+      "Tableau", "Power BI", "Looker", "Qlik Sense", "Metabase",
+      "Google Analytics", "Mixpanel", "Amplitude",
+
+      # Testing
+      "RSpec", "Minitest", "JUnit", "Mockito", "Selenium",
+      "Cypress", "Playwright", "Cucumber", "Jest", "Vitest",
+
+      # Version Control
+      "Git", "GitHub", "GitLab", "Bitbucket", "SVN",
+
+      # Security
+      "OAuth", "OAuth 2.0", "JWT", "SAML", "OpenID Connect",
+      "PCI DSS", "GDPR", "OWASP", "Cybersecurity",
+      "Penetration Testing",
+
+      # Project Management
+      "Agile", "Scrum", "Kanban", "Jira", "Confluence",
+      "Trello", "Asana", "ClickUp", "Notion",
+
+      # CRM / ERP
+      "Salesforce", "HubSpot", "Zoho CRM", "SAP",
+      "Oracle ERP", "Microsoft Dynamics",
+
+      # Design
+      "Figma", "Adobe XD", "Sketch", "Photoshop",
+      "Illustrator", "InDesign", "Canva",
+
+      # Networking
+      "TCP/IP", "DNS", "DHCP", "VPN",
+      "Load Balancing", "Reverse Proxy",
+
+      # Healthcare
+      "HL7", "FHIR", "HIPAA", "EHR", "EMR",
+      "Azalea Health", "Epic", "Cerner",
+
+      # HR
+      "HRBP", "Talent Acquisition", "Recruiting",
+      "Onboarding", "Payroll", "Performance Management",
+      "Employee Relations", "ATS", "Workday",
+      "BambooHR", "Greenhouse", "Lever",
+
+      # Finance
+      "QuickBooks", "Tally", "SAP Finance",
+      "Oracle Finance", "Financial Analysis", "Accounting",
+
+      # Marketing
+      "SEO", "SEM", "Google Ads", "Facebook Ads",
+      "Content Marketing", "Email Marketing",
+
+      # Soft Skills
+      "Leadership", "Communication", "Teamwork",
+      "Problem Solving", "Critical Thinking",
+      "Time Management", "Mentoring",
+      "Stakeholder Management", "Collaboration"
+    ]
+    skills = skill_lib
+    .sort_by { |skill| -skill.length }
+    .select do |skill|
+      text.match?(/(?<!\w)#{Regexp.escape(skill)}(?!\w)/i)
+    end
+    .uniq
+    .first(12)
     dept_kw = {"Tech"=>%w[developer engineer devops scientist software python java react node],
                "HR"=>%w[hr talent recruitment hrbp],"Sales"=>%w[sales business development],
                "Finance"=>%w[finance accounting],"Marketing"=>%w[marketing seo]}
