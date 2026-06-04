@@ -70,6 +70,7 @@ function handleDrop(e){e.preventDefault();document.getElementById('upload-zone')
 function setSteps(steps){document.getElementById('parse-steps').innerHTML=steps.map((s,i)=>`<div class="parse-step ${s.state}"><div class="parse-step-icon">${s.state==='done'?'✓':s.state==='active'?'<div class="spinner" style="width:12px;height:12px"></div>':'○'}</div>${s.label}</div>`).join('');}
 async function handleFiles(files) {
   document.getElementById('upload-errors').innerHTML = '';
+  resetUpload();
   const allowedTypes = [
     'application/pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
