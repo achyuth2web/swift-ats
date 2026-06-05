@@ -58,7 +58,7 @@ class JobsController < ApplicationController
   end
   def destroy
     require_admin!
-    @job.destroy
+    @job.discard
     redirect_to jobs_path, notice: "Job deleted."
   end
   private

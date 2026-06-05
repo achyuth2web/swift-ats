@@ -1,4 +1,5 @@
 class User < ApplicationRecord
+  include Discard::Model
   devise :database_authenticatable, :rememberable, :validatable
   ROLES = %w[admin recruiter].freeze
   has_many :job_recruiters, foreign_key: :user_id, dependent: :destroy
@@ -13,18 +14,34 @@ class User < ApplicationRecord
   def initials
     name.split.map(&:first).first(2).join.upcase
   end
+  def active_for_authentication?
+    super && kept?
+  end
+  def inactive_message
+    discarded? ? :deleted_account : super
+  end
   def visible_jobs
-    admin? ? Job.all : jobs
+    admin? ? Job.kept : jobs.kept
   end
   def visible_candidates
     if admin?
-      Candidate.all
+      Candidate.kept
     else
-      my_job_ids = visible_jobs.pluck(:id)
-      Candidate.where(recruiter_id: id).or(Candidate.where(job_id: my_job_ids).where.not(recruiter_id: nil))
+      my_job_ids = visible_jobs.select(:id)
+
+      Candidate.kept.where(recruiter_id: id)
+              .or(
+                Candidate.kept
+                          .where(job_id: my_job_ids)
+                          .where.not(recruiter_id: nil)
+              )
     end
   end
   def visible_interviews
-    admin? ? Interview.all : Interview.where(candidate_id: visible_candidates.select(:id))
+    if admin?
+      Interview.kept
+    else
+      Interview.kept.where(candidate_id: visible_candidates.select(:id))
+    end
   end
 end

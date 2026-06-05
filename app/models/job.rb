@@ -1,4 +1,5 @@
 class Job < ApplicationRecord
+  include Discard::Model
   has_many :job_recruiters, dependent: :destroy
   has_many :recruiters, through: :job_recruiters, source: :user
   has_many :candidates, dependent: :nullify

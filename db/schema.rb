@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_02_074642) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_05_062824) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -57,6 +57,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_02_074642) do
     t.bigint "recruiter_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "discarded_at"
+    t.string "resume_file_key"
+    t.index ["discarded_at"], name: "index_candidates_on_discarded_at"
     t.index ["job_id"], name: "index_candidates_on_job_id"
     t.index ["recruiter_id"], name: "index_candidates_on_recruiter_id"
   end
@@ -73,7 +76,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_02_074642) do
     t.integer "rating"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "discarded_at"
     t.index ["candidate_id"], name: "index_interviews_on_candidate_id"
+    t.index ["discarded_at"], name: "index_interviews_on_discarded_at"
   end
 
   create_table "job_recruiters", force: :cascade do |t|
@@ -116,6 +121,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_02_074642) do
     t.string "naukri_url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_jobs_on_discarded_at"
   end
 
   create_table "naukri_configurations", force: :cascade do |t|
@@ -155,6 +162,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_02_074642) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "discarded_at"
+    t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

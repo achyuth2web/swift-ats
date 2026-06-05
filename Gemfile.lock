@@ -82,6 +82,25 @@ GEM
       securerandom (>= 0.3)
       tzinfo (~> 2.0)
     afm (1.0.0)
+    aws-eventstream (1.4.0)
+    aws-partitions (1.1257.0)
+    aws-sdk-core (3.251.0)
+      aws-eventstream (~> 1, >= 1.3.0)
+      aws-partitions (~> 1, >= 1.992.0)
+      aws-sigv4 (~> 1.9)
+      base64
+      bigdecimal
+      jmespath (~> 1, >= 1.6.1)
+      logger
+    aws-sdk-kms (1.129.0)
+      aws-sdk-core (~> 3, >= 3.248.0)
+      aws-sigv4 (~> 1.5)
+    aws-sdk-s3 (1.225.0)
+      aws-sdk-core (~> 3, >= 3.248.0)
+      aws-sdk-kms (~> 1)
+      aws-sigv4 (~> 1.5)
+    aws-sigv4 (1.12.1)
+      aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.3.0)
     bcrypt (3.1.22)
     benchmark (0.5.0)
@@ -104,6 +123,8 @@ GEM
       railties (>= 7.0)
       responders
       warden (~> 1.2.3)
+    discard (2.0.0)
+      activerecord (>= 7.0, < 9.0)
     docx (0.13.0)
       nokogiri (~> 1.13, >= 1.13.0)
       rubyzip (>= 2.0, < 4)
@@ -132,6 +153,7 @@ GEM
     jbuilder (2.15.1)
       actionview (>= 7.0.0)
       activesupport (>= 7.0.0)
+    jmespath (1.6.2)
     logger (1.7.0)
     loofah (2.25.1)
       crass (~> 1.0.2)
@@ -301,9 +323,11 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  aws-sdk-s3
   bootsnap
   debug
   devise
+  discard
   docx
   dotenv-rails
   importmap-rails

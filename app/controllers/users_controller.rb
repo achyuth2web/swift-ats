@@ -2,7 +2,7 @@ class UsersController < ApplicationController
   before_action :require_admin!
   before_action :set_user, only: [:edit, :update, :destroy, :toggle_active]
   def index
-    @users = User.all.order(:name)
+    @users = User.kept.order(:name)
   end
   def new
     @user = User.new(role: "recruiter", active: true)
@@ -31,7 +31,11 @@ class UsersController < ApplicationController
     if @user == current_user
       redirect_to users_path, alert: "Cannot delete yourself."
     else
-      @user.destroy
+      @user.update_column(
+        :email,
+        "discarded_#{@user.id}_#{Time.current.to_i}_#{@user.email}"
+      )
+      @user.discard
       redirect_to users_path, notice: "User deleted."
     end
   end

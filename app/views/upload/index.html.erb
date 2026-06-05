@@ -66,6 +66,7 @@
 <script>
 const PARSE_URL="<%= upload_parse_path %>";
 const SAVE_URL="<%= upload_save_path %>";
+let uploadedResumeFile = null;
 function handleDrop(e){e.preventDefault();document.getElementById('upload-zone').classList.remove('drag-over');handleFiles(e.dataTransfer.files);}
 function setSteps(steps){document.getElementById('parse-steps').innerHTML=steps.map((s,i)=>`<div class="parse-step ${s.state}"><div class="parse-step-icon">${s.state==='done'?'✓':s.state==='active'?'<div class="spinner" style="width:12px;height:12px"></div>':'○'}</div>${s.label}</div>`).join('');}
 async function handleFiles(files) {
@@ -105,6 +106,7 @@ function showUploadError(message) {
   `;
 }
 async function processFile(file){
+  uploadedResumeFile = file;
   const steps=[{label:'Reading file...',state:'active'},{label:'Extracting text',state:'pending'},{label:'Parsing fields',state:'pending'},{label:'Ready to save',state:'pending'}];
   setSteps(steps);
   const qi=document.createElement('div');qi.style='display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg3);border-radius:6px;font-size:12px';
@@ -139,6 +141,9 @@ async function saveCandidate(){
   btn.innerHTML = '<div class="spinner"></div> Saving…';
 
   const fd = new FormData(document.getElementById('save-form'));
+  if (uploadedResumeFile) {
+    fd.append('candidate[resume]', uploadedResumeFile);
+  }
   fd.set('authenticity_token', document.getElementById('p-csrf').value);
 
   try {

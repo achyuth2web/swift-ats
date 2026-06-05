@@ -17,6 +17,10 @@ gem "pdf-reader"
 gem "docx"
 gem "bootsnap", require: false
 gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
+gem "discard"
+
+# AWS Gem
+gem 'aws-sdk-s3'
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

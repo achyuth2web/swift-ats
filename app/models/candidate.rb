@@ -1,4 +1,5 @@
 class Candidate < ApplicationRecord
+  include Discard::Model
   belongs_to :job,       optional: true
   belongs_to :recruiter, class_name: "User", foreign_key: :recruiter_id, optional: true
   has_many :interviews, dependent: :destroy
@@ -29,4 +30,15 @@ class Candidate < ApplicationRecord
     return all unless q.present?
     where("name ILIKE :q OR email ILIKE :q OR role ILIKE :q OR skills_list ILIKE :q", q: "%#{q}%")
   }
+  def resume_url
+    return if resume_file_key.blank?
+    Uploads::S3Bucket.new.generate_presigned_url(resume_file_key)
+  end
+  def soft_delete!
+    update_column(
+      :email,
+      "discarded_#{id}_#{Time.current.to_i}_#{email}"
+    )
+    discard
+  end
 end

@@ -56,9 +56,12 @@ class CandidatesController < ApplicationController
   end
   def destroy
     name = @candidate.name
-    @candidate.destroy
-    log_activity("#{current_user.name} deleted candidate: #{name}")
-    redirect_to candidates_path, notice: "Candidate deleted."
+    if @candidate.soft_delete!
+      log_activity("#{current_user.name} deleted candidate: #{name}")
+      redirect_to candidates_path, notice: "Candidate deleted."
+    else
+      redirect_to candidates_path, alert: "Unable to delete candidate."
+    end
   end
   private
   def set_candidate

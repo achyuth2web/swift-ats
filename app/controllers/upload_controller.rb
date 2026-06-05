@@ -14,11 +14,24 @@ class UploadController < ApplicationController
     attrs = params.require(:candidate).permit(
       :name,:email,:phone,:role,:department,:designation,:skills_list,
       :experience_years,:ctc_current,:ctc_expected,:ctc_unit,:notice_period,
-      :score,:source,:job_id,:resume_text,:resume_filename)
-    candidate = Candidate.new(attrs)
+      :score,:source,:job_id,:resume_text,:resume_filename,:resume)
+    candidate = Candidate.new(attrs.except(:resume))
     candidate.recruiter = current_user unless admin?
     candidate.status    = "New"
     if candidate.save
+      if params[:candidate][:resume].present?
+        Rails.logger.info "Uploading resume for candidate #{candidate.id}: #{params[:candidate][:resume].original_filename}"
+        resume = params[:candidate][:resume]
+        file_key = "resumes/#{candidate.id}/#{SecureRandom.uuid}_#{resume.original_filename}"
+
+        Uploads::S3Bucket.new.update_file(
+          file_key,
+          resume.tempfile,
+          resume.content_type
+        )
+
+        candidate.update_column(:resume_file_key, file_key)
+      end
       log_activity("#{current_user.name} uploaded resume: #{candidate.name}")
       render json: { id: candidate.id, name: candidate.name }
     else

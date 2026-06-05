@@ -30,7 +30,7 @@ class InterviewsController < ApplicationController
     end
   end
   def destroy
-    @interview.destroy
+    @interview.discard
     redirect_to interviews_path, notice: "Interview deleted."
   end
   private
