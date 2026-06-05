@@ -15,9 +15,9 @@
     <div class="card-header"><span class="fw-600">Data Summary</span></div>
     <div class="card-body">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">
-        <div class="stat-card purple" style="margin:0"><div class="stat-label">Candidates</div><div class="stat-value" style="font-size:24px"><%= Candidate.count %></div></div>
-        <div class="stat-card green" style="margin:0"><div class="stat-label">Jobs</div><div class="stat-value" style="font-size:24px"><%= Job.count %></div></div>
-        <div class="stat-card blue" style="margin:0"><div class="stat-label">Interviews</div><div class="stat-value" style="font-size:24px"><%= Interview.count %></div></div>
+        <div class="stat-card purple" style="margin:0"><div class="stat-label">Candidates</div><div class="stat-value" style="font-size:24px"><%= Candidate.kept.count %></div></div>
+        <div class="stat-card green" style="margin:0"><div class="stat-label">Jobs</div><div class="stat-value" style="font-size:24px"><%= Job.kept.count %></div></div>
+        <div class="stat-card blue" style="margin:0"><div class="stat-label">Interviews</div><div class="stat-value" style="font-size:24px"><%= Interview.kept.count %></div></div>
       </div>
       <div style="margin-top:14px;display:flex;gap:8px">
         <%= link_to "All Candidates", candidates_path, class: "btn btn-ghost btn-sm" %>
