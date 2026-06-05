@@ -1,8 +1,8 @@
 class ReportsController < ApplicationController
   before_action :require_admin!
   def index
-    @jobs       = Job.all.includes(:candidates)
-    @candidates = Candidate.all
+    @jobs       = Job.kept.includes(:candidates)
+    @candidates = Candidate.kept
     @recruiters = User.where(role: "recruiter", active: true)
     tth = @jobs.select(&:time_to_hire)
     @avg_tth      = tth.any? ? (tth.sum(&:time_to_hire) / tth.size).round : nil

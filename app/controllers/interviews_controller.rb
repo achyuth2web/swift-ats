@@ -23,6 +23,7 @@ class InterviewsController < ApplicationController
   end
   def update
     if @interview.update(interview_params)
+      log_activity("Interview updated: #{@interview.round_name} for #{@interview.candidate.name}")
       redirect_to interviews_path, notice: "Interview updated."
     else
       @candidates = current_user.visible_candidates.order(:name)
@@ -31,6 +32,7 @@ class InterviewsController < ApplicationController
   end
   def destroy
     @interview.discard
+    log_activity("#{current_user.name} deleted interview for #{@interview.candidate.name}")
     redirect_to interviews_path, notice: "Interview deleted."
   end
   private

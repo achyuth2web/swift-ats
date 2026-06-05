@@ -2,10 +2,10 @@ class DashboardController < ApplicationController
   before_action :require_current_user!
   before_action :require_admin!
   def index
-    @candidates    = Candidate.all
-    @jobs          = Job.all
-    @interviews    = Interview.all
-    @recruiters    = User.where(role: "recruiter", active: true)
+    @candidates    = Candidate.kept
+    @jobs          = Job.kept
+    @interviews    = Interview.kept
+    @recruiters    = User.kept.where(role: "recruiter", active: true)
     @activity_logs = ActivityLog.recent.includes(:user)
     @statuses      = Candidate::STATUSES.index_with { |s| @candidates.where(status: s).count }
     @open_jobs     = @jobs.open.count

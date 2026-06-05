@@ -41,4 +41,14 @@ class Candidate < ApplicationRecord
     )
     discard
   end
+  def delete_resume_from_s3
+    return if resume_file_key.blank?
+
+    Uploads::S3Bucket.new.delete_file(resume_file_key)
+
+    update_column(:resume_file_key, nil)
+  rescue => e
+    Rails.logger.error("Failed to delete resume from S3 for Candidate #{id}: #{e.message}")
+    false
+  end
 end

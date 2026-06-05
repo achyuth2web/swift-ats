@@ -22,6 +22,7 @@ class UsersController < ApplicationController
     attrs.delete(:password) if attrs[:password].blank?
     attrs.delete(:password_confirmation) if attrs[:password_confirmation].blank?
     if @user.update(attrs)
+      log_activity("Admin updated user: #{@user.name}")
       redirect_to users_path, notice: "User updated."
     else
       render :edit, status: :unprocessable_entity
@@ -36,11 +37,13 @@ class UsersController < ApplicationController
         "discarded_#{@user.id}_#{Time.current.to_i}_#{@user.email}"
       )
       @user.discard
+      log_activity("Admin deleted user: #{@user.name}")
       redirect_to users_path, notice: "User deleted."
     end
   end
   def toggle_active
     @user.update!(active: !@user.active)
+    log_activity("Admin toggled active status for user: #{@user.name}")
     redirect_to users_path, notice: "User #{@user.active? ? 'enabled' : 'disabled'}."
   end
   private
