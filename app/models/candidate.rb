@@ -62,4 +62,7 @@ class Candidate < ApplicationRecord
     Rails.logger.error("Failed to delete resume from S3 for Candidate #{id}: #{e.message}")
     false
   end
+  def show_feedback
+    interviews.kept.any? ? interviews.kept.order(id: :desc).first.feedback : "No Feedback Available"
+  end
 end

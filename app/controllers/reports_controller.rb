@@ -3,7 +3,7 @@ class ReportsController < ApplicationController
   def index
     @jobs       = Job.kept.includes(:candidates)
     @candidates = Candidate.kept
-    @recruiters = User.where(role: "recruiter", active: true)
+    @recruiters = User.kept.where(role: "recruiter", active: true)
     tth = @jobs.select(&:time_to_hire)
     @avg_tth      = tth.any? ? (tth.sum(&:time_to_hire) / tth.size).round : nil
     @tth_jobs     = tth.sort_by(&:time_to_hire)
