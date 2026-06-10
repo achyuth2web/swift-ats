@@ -95,7 +95,7 @@
         <% @status_history.each do |h| %>
           <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
             <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px"></div>
-            <div><div style="font-size:12px;font-weight:500"><%= h.status %></div><div style="font-size:11px;color:var(--text3)"><%= h.user&.name %> · <%= time_ago_in_words(h.created_at) %> ago</div></div>
+            <div><div style="font-size:12px;font-weight:500"><%= h.status %></div><div style="font-size:11px;color:var(--text3)"><%= h.user&.name %> · <%= h.created_at.strftime("%d-%m-%Y %I:%M:%S %p") %></div></div>
           </div>
         <% end %>
       </div>

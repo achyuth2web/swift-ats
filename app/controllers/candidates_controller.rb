@@ -6,6 +6,7 @@ class CandidatesController < ApplicationController
     @candidates = @candidates.where(status: params[:status])     if params[:status].present?
     @candidates = @candidates.where(job_id: params[:job_id])     if params[:job_id].present?
     @all_count  = current_user.visible_candidates.count
+    @candidates = @candidates.page(params[:page]).per(10)
     @jobs       = current_user.visible_jobs.order(:title)
   end
   def show

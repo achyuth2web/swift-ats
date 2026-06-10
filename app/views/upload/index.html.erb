@@ -116,22 +116,30 @@ async function processFile(file){
     steps[0].state='done';steps[1].state='active';setSteps(steps);
     const fd=new FormData();fd.append('resume',file);fd.append('authenticity_token',document.getElementById('p-csrf').value);
     const r=await fetch(PARSE_URL,{method:'POST',body:fd});const d=await r.json();
-    steps[1].state='done';steps[2].state='active';setSteps(steps);
-    document.getElementById('p-name').value=d.name||'';
-    document.getElementById('p-email').value=d.email||'';
-    document.getElementById('p-phone').value=d.phone||'';
-    document.getElementById('p-exp').value=d.experience||0;
-    document.getElementById('p-ctc-c').value=d.ctcCurrent||'';
-    document.getElementById('p-ctc-e').value=d.ctcExpected||'';
-    document.getElementById('p-notice').value=d.noticePeriod||'';
-    document.getElementById('p-skills').value=(d.skills||[]).join(', ');
-    document.getElementById('p-fname').value=file.name;
-    if(d.department)document.getElementById('p-dept').value=d.department;
-    const filled=[d.name,d.email,d.phone,d.experience,(d.skills||[]).length>0,d.ctcCurrent].filter(Boolean).length;
-    document.getElementById('p-score').value=Math.min(50+filled*8,99);
-    steps[2].state='done';steps[3].state='done';setSteps(steps);
-    document.getElementById('parsed-form-card').style.display='';
-    qi.innerHTML=`<span style="color:var(--green)">✓</span><span>${file.name}</span>`;
+    if (d.error) {
+      setSteps([]);
+      document.getElementById('parse-steps').innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Upload a resume to begin</div>';
+      qi.style = `display:none;`;
+      showUploadError(`${file.name}: ${d.error}`);
+      return;
+    } else{
+      steps[1].state='done';steps[2].state='active';setSteps(steps);
+      document.getElementById('p-name').value=d.name||'';
+      document.getElementById('p-email').value=d.email||'';
+      document.getElementById('p-phone').value=d.phone||'';
+      document.getElementById('p-exp').value=d.experience||0;
+      document.getElementById('p-ctc-c').value=d.ctcCurrent||'';
+      document.getElementById('p-ctc-e').value=d.ctcExpected||'';
+      document.getElementById('p-notice').value=d.noticePeriod||'';
+      document.getElementById('p-skills').value=(d.skills||[]).join(', ');
+      document.getElementById('p-fname').value=file.name;
+      if(d.department)document.getElementById('p-dept').value=d.department;
+      const filled=[d.name,d.email,d.phone,d.experience,(d.skills||[]).length>0,d.ctcCurrent].filter(Boolean).length;
+      document.getElementById('p-score').value=Math.min(50+filled*8,99);
+      steps[2].state='done';steps[3].state='done';setSteps(steps);
+      document.getElementById('parsed-form-card').style.display='';
+      qi.innerHTML=`<span style="color:var(--green)">✓</span><span>${file.name}</span>`;
+    }
   }catch(err){qi.innerHTML=`<span style="color:var(--red)">✕</span><span>${file.name}: ${err.message}</span>`;}
 }
 async function saveCandidate(){

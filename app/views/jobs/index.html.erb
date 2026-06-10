@@ -34,7 +34,7 @@
         <div onclick="event.stopPropagation()" style="display:flex;gap:6px">
           <%= link_to "Edit", edit_job_path(j), class: "btn btn-ghost btn-sm", onclick: "event.stopPropagation()" %>
           <% if current_user.admin? %>
-            <%= button_to "✕", job_path(j), method: :delete, class: "btn btn-danger btn-sm btn-icon", data: { confirm: "Delete #{j.title}?" }, onclick: "event.stopPropagation()" %>
+            <%= button_to "✕", job_path(j), method: :delete, class: "btn btn-danger btn-sm btn-icon", data: { turbo_confirm: "Delete #{j.title}?" }, onclick: "event.stopPropagation()" %>
           <% end %>
         </div>
       </div>
@@ -57,6 +57,11 @@
     </div>
   <% end %>
 </div>
+  <% if @jobs.total_pages > 1 %>
+    <div class="pagination-wrap">
+      <%= paginate @jobs, params: request.query_parameters %>
+    </div>
+  <% end %>
 
 <script>
 document.addEventListener("turbo:load", () => {

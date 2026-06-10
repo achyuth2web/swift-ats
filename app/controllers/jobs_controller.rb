@@ -4,6 +4,7 @@ class JobsController < ApplicationController
     @jobs = current_user.visible_jobs.order(created_at: :desc).includes(:recruiters, :candidates)
     @jobs = @jobs.where(status: params[:status]) if params[:status].present?
     @jobs = @jobs.where("title ILIKE ?", "%#{params[:q]}%") if params[:q].present?
+    @jobs = @jobs.page(params[:page]).per(6)
   end
   def show
     @candidates = @job.candidates.order(created_at: :desc)

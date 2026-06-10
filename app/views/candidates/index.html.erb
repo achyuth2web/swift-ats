@@ -18,7 +18,9 @@
     <%= select_tag :dept, options_for_select([["All Departments",""]]+Candidate::DEPARTMENTS.map{|d|[d,d]},params[:dept]), class: "select", style: "width:160px", onchange: "document.getElementById('cand-filter-form').submit()" %>
     <%= select_tag :status, options_for_select([["All Statuses",""]]+Candidate::STATUSES.map{|s|[s,s]},params[:status]), class: "select", style: "width:140px", onchange: "document.getElementById('cand-filter-form').submit()" %>
     <%= select_tag :job_id, options_for_select([["All Jobs",""]]+@jobs.map{|j|[j.title,j.id]},params[:job_id]), class: "select", style: "width:170px", onchange: "document.getElementById('cand-filter-form').submit()" %>
-    <span class="muted text-sm"><%= @candidates.count %> of <%= @all_count %></span>
+    <span class="muted text-sm">
+      Showing <%= @candidates.size %> of <%= @candidates.total_count %> filtered candidates
+    </span>
   </div>
 <% end %>
 <div class="card">
@@ -59,6 +61,11 @@
       </table>
     <% end %>
   </div>
+  <% if @candidates.total_pages > 1 %>
+    <div class="pagination-wrap">
+      <%= paginate @candidates, params: request.query_parameters %>
+    </div>
+  <% end %>
 </div>
 <script>
 document.addEventListener("turbo:load", () => {
