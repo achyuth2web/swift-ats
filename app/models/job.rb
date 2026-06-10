@@ -21,7 +21,7 @@ class Job < ApplicationRecord
     return nil unless hire_date && open_date
     (hire_date - open_date).to_i
   end
-  def candidate_count = candidates.count
+  def candidate_count = candidates.kept.count
   scope :open,     -> { where(status: "Open") }
   scope :closed,   -> { where(status: "Closed") }
   scope :reopened, -> { where(status: "Reopened") }
