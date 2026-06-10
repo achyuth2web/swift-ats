@@ -63,6 +63,8 @@ class Candidate < ApplicationRecord
     false
   end
   def show_feedback
-    interviews.kept.any? ? interviews.kept.order(id: :desc).first.feedback : "No Feedback Available"
+    interview = interviews.kept.order(created_at: :desc).first
+    return "No Feedback Available" unless interview&.feedback.present?
+    interview.feedback
   end
 end
