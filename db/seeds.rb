@@ -1,10 +1,10 @@
-puts "Seeding Swift ATS..."
+puts "Seeding Spritle ATS..."
 
-admin = User.find_or_create_by!(email: "admin@swiftats.com") do |u|
+admin = User.find_or_create_by!(email: "admin@spritle.com") do |u|
   u.name = "Admin User"; u.password = "admin123"; u.role = "admin"; u.active = true
 end
 
-recruiter = User.find_or_create_by!(email: "recruiter@swiftats.com") do |u|
+recruiter = User.find_or_create_by!(email: "recruiter@spritle.com") do |u|
   u.name = "Priya Recruiter"; u.password = "recruiter123"; u.role = "recruiter"; u.active = true
 end
 
@@ -82,5 +82,5 @@ j4.recruiters << recruiter unless j4.recruiters.include?(recruiter)
   end
 end
 
-ActivityLog.create!(message: "Swift ATS initialized", user: admin) if ActivityLog.count == 0
-puts "Done! admin@swiftats.com / admin123  |  recruiter@swiftats.com / recruiter123"
+ActivityLog.create!(message: "Spritle ATS initialized", user: admin) if ActivityLog.count == 0
+puts "Done! admin@spritle.com / admin123  |  recruiter@spritle.com / recruiter123"
