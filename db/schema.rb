@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_05_062824) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_10_073352) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -45,8 +45,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_05_062824) do
     t.string "status", default: "New"
     t.integer "score", default: 0
     t.string "source"
-    t.string "ctc_current"
-    t.string "ctc_expected"
+    t.decimal "ctc_current", precision: 10, scale: 2
+    t.decimal "ctc_expected", precision: 10, scale: 2
     t.string "ctc_unit", default: "LPA"
     t.string "notice_period"
     t.text "notes"
@@ -117,7 +117,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_05_062824) do
     t.text "description"
     t.string "skills_list"
     t.integer "experience_years", default: 0
-    t.string "ctc_budget"
+    t.decimal "ctc_budget", precision: 10, scale: 2
     t.string "naukri_url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

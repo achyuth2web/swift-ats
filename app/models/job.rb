@@ -7,8 +7,13 @@ class Job < ApplicationRecord
   STATUSES       = %w[Open Closed Reopened].freeze
   DEPARTMENTS    = %w[Tech HR Sales Finance Operations Marketing].freeze
   POSITION_TYPES = %w[New Replacement].freeze
-  validates :title, presence: true
+  validates :title, presence: true, length: { minimum: 5, maximum: 50 }
   validates :status, inclusion: { in: STATUSES }
+  validates :ctc_budget,
+            numericality: {
+              greater_than_or_equal_to: 0
+            },
+            allow_blank: true
   def skills
     (skills_list || "").split(",").map(&:strip).reject(&:empty?)
   end

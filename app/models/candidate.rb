@@ -7,7 +7,7 @@ class Candidate < ApplicationRecord
   STATUSES    = %w[New Screening Interview Offer Rejected Hired].freeze
   SOURCES     = ["LinkedIn","Naukri","Referral","Job Board","Other"].freeze
   DEPARTMENTS = %w[Tech HR Sales Finance Operations Marketing].freeze
-  validates :name,   presence: true
+  validates :name,   presence: true, length: { minimum: 5, maximum: 50 }
   validates :email,  presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :phone,
           format: {
@@ -15,6 +15,17 @@ class Candidate < ApplicationRecord
             message: "must contain only numbers"
           },
           allow_blank: true
+  validates :ctc_current,
+            numericality: {
+              greater_than_or_equal_to: 0
+            },
+            allow_blank: true
+
+  validates :ctc_expected,
+            numericality: {
+              greater_than_or_equal_to: 0
+            },
+            allow_blank: true
   validates :status, inclusion: { in: STATUSES }
   def skills
     (skills_list || "").split(",").map(&:strip).reject(&:empty?)
