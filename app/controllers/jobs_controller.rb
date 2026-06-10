@@ -7,7 +7,7 @@ class JobsController < ApplicationController
     @jobs = @jobs.page(params[:page]).per(6)
   end
   def show
-    @candidates = @job.candidates.order(created_at: :desc)
+    @candidates = @job.candidates.kept.order(created_at: :desc)
   end
   def new
     @job = Job.new(status: "Open", open_date: Date.today)
