@@ -11,7 +11,7 @@ class JobsController < ApplicationController
   end
   def new
     @job = Job.new(status: "Open", open_date: Date.today)
-    @recruiters = User.where(role: "recruiter", active: true)
+    @recruiters = User.kept.where(role: "recruiter", active: true)
   end
   def create
     @job = Job.new(job_params)
@@ -22,12 +22,12 @@ class JobsController < ApplicationController
       log_activity("#{current_user.name} created job: #{@job.title}")
       redirect_to jobs_path, notice: "Job '#{@job.title}' created."
     else
-      @recruiters = User.where(role: "recruiter", active: true)
+      @recruiters = User.kept.where(role: "recruiter", active: true)
       render :new, status: :unprocessable_entity
     end
   end
   def edit
-    @recruiters = User.where(role: "recruiter", active: true)
+    @recruiters = User.kept.where(role: "recruiter", active: true)
   end
   def update
     old_status = @job.status
@@ -43,7 +43,7 @@ class JobsController < ApplicationController
       log_activity("#{current_user.name} updated job: #{@job.title}")
       redirect_to jobs_path, notice: "Job updated."
     else
-      @recruiters = User.where(role: "recruiter", active: true)
+      @recruiters = User.kept.where(role: "recruiter", active: true)
       render :edit, status: :unprocessable_entity
     end
   end

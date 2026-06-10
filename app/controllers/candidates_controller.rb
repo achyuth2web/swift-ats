@@ -17,7 +17,7 @@ class CandidatesController < ApplicationController
   def new
     @candidate  = Candidate.new
     @jobs       = current_user.visible_jobs
-    @recruiters = User.where(role: "recruiter", active: true) if admin?
+    @recruiters = User.kept.where(role: "recruiter", active: true) if admin?
   end
   def create
     @candidate = Candidate.new(candidate_params)
@@ -28,13 +28,13 @@ class CandidatesController < ApplicationController
       redirect_to candidates_path, notice: "Candidate added."
     else
       @jobs = current_user.visible_jobs
-      @recruiters = User.where(role: "recruiter", active: true) if admin?
+      @recruiters = User.kept.where(role: "recruiter", active: true) if admin?
       render :new, status: :unprocessable_entity
     end
   end
   def edit
     @jobs       = current_user.visible_jobs
-    @recruiters = User.where(role: "recruiter", active: true) if admin?
+    @recruiters = User.kept.where(role: "recruiter", active: true) if admin?
   end
   def update
     if @candidate.update(candidate_params)
@@ -42,7 +42,7 @@ class CandidatesController < ApplicationController
       redirect_to candidates_path, notice: "Candidate updated."
     else
       @jobs = current_user.visible_jobs
-      @recruiters = User.where(role: "recruiter", active: true) if admin?
+      @recruiters = User.kept.where(role: "recruiter", active: true) if admin?
       render :edit, status: :unprocessable_entity
     end
   end
