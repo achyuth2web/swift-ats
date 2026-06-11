@@ -15,7 +15,7 @@
   </div>
   <div class="input-row">
     <div class="form-group"><label class="label">Status</label><%= f.select :status, Interview::STATUSES, {}, class:"select" %></div>
-    <div class="form-group"><label class="label">Outcome</label><%= f.select :outcome, Interview::OUTCOMES, {include_blank:"Pending"}, class:"select" %></div>
+    <div class="form-group"><label class="label">Outcome</label><%= f.select :outcome, Interview::OUTCOMES, {}, class:"select" %></div>
   </div>
   <div class="form-group"><label class="label">Rating (1–5)</label>
     <%= f.select :rating, [[1,"★"],[2,"★★"],[3,"★★★"],[4,"★★★★"],[5,"★★★★★"]].map{|v,l|[l,v]},{include_blank:"No rating"},class:"select",style:"max-width:200px" %>

@@ -22,7 +22,7 @@
             <td><%= iv.interviewer||"—" %></td>
             <td style="font-size:12px;white-space:nowrap"><%= iv.scheduled_display %></td>
             <td><%= render 'shared/status_badge', status: iv.status %></td>
-            <td><% if iv.outcome.present? %><% oc=iv.outcome=="Pass"?"green":iv.outcome=="Rejected"?"red":"amber" %><span class="badge badge-<%= oc %>"><%= iv.outcome %></span><% else %>—<% end %></td>
+            <td><% if iv.outcome.present? %><% oc=iv.outcome=="Pass"?"green":iv.outcome=="Rejected"?"red":iv.outcome=="Pending"?"amber":"blue" %><span class="badge badge-<%= oc %>"><%= iv.outcome %></span><% else %>—<% end %></td>
             <td><% if iv.rating %><span style="color:var(--amber)"><%= "★"*iv.rating %></span><% else %>—<% end %></td>
             <td onclick="event.stopPropagation()" style="display:flex;gap:4px">
               <%= link_to "Edit", edit_interview_path(iv), class: "btn btn-ghost btn-sm" %>
