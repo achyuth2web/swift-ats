@@ -3,8 +3,8 @@ class UploadController < ApplicationController
   def parse
     file = params[:resume]
     return render(json: { error: "No file" }, status: :bad_request) unless file
-    # max_size = 5.megabytes
-    max_size = 200.kilobytes # for testing
+    max_size = 5.megabytes
+    # max_size = 200.kilobytes # for testing
     allowed_types = [
       "application/pdf",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -22,7 +22,7 @@ class UploadController < ApplicationController
     Rails.logger.info "Uploaded file: #{file.original_filename}, size: #{file.size} bytes, content type: #{file.content_type}"
     if file.size > max_size
       return render(
-        json: { error: "File size cannot exceed 200 KB" },
+        json: { error: "File size cannot exceed 5 MB" },
         status: :unprocessable_content
       )
     end
