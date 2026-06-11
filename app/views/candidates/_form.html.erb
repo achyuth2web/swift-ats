@@ -1,4 +1,4 @@
-<%= form_with model: candidate, html: { class: "flex flex-col gap-3" } do |f| %>
+<%= form_with model: candidate, html: { class: "flex flex-col gap-3", multipart: true } do |f| %>
   <% if candidate.errors.any? %><div class="flash-alert"><%= candidate.errors.full_messages.first %></div><% end %>
   <div class="input-row">
     <div class="form-group"><label class="label">Full Name *</label><%= f.text_field :name, class: "input" %></div>
@@ -31,8 +31,118 @@
     <div class="form-group"><label class="label">Recruiter</label><%= f.select :recruiter_id, @recruiters.map{|r|[r.name,r.id]}, { include_blank: "None" }, class: "select" %></div>
   <% end %>
   <div class="form-group"><label class="label">Notes</label><%= f.text_area :notes, class: "textarea" %></div>
+  <% unless candidate.resume_file_key.present? %>
+    <div class="card">
+      <div class="card-header">
+        <span class="fw-600">Upload Resume</span>
+        <span class="badge badge-blue">PDF · DOCX · TXT</span>
+      </div>
+      <div class="card-body">
+        <div class="upload-zone"
+            id="upload-zone"
+            onclick="document.getElementById('file-input').click()"
+            ondragover="event.preventDefault();this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="handleDrop(event)">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text3);margin:0 auto 12px;display:block"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px">Drop resume here</div>
+          <div style="font-size:12px;color:var(--text3)">or click to browse</div>
+        </div>
+
+        <%= f.file_field :resume,
+                 id: "file-input",
+                 accept: ".pdf,.docx,.doc,.txt,.rtf",
+                 style: "display:none",
+                 onchange: "handleFiles(this.files)" %>
+
+        <div id="upload-errors" style="color:var(--red);"></div>
+        <div id="queue-list"></div>
+      </div>
+    </div>
+  <% else %>
+    <div class="card">
+      <div class="card-header">
+        <span class="fw-600">Resume</span>
+      </div>
+      <div class="card-body">
+        <p style="margin:0;color:var(--green)">
+          ✓ Resume already uploaded
+        </p>
+
+        <% if candidate.respond_to?(:resume_url) %>
+          <%= link_to "View Resume",
+                      candidate.resume_url,
+                      target: "_blank",
+                      class: "btn btn-sm btn-primary mt-2" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
   <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px">
     <%= link_to "Cancel", candidates_path, class: "btn btn-ghost" %>
     <%= f.submit candidate.persisted? ? "Update Candidate" : "Add Candidate", class: "btn btn-primary" %>
   </div>
 <% end %>
+<script>
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+}
+
+async function handleFiles(files) {
+  document.getElementById('upload-errors').innerHTML = '';
+  resetUpload();
+
+  const allowedTypes = [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain'
+  ];
+
+  const allowedExtensions = ['pdf', 'docx', 'txt'];
+  const maxSize = 5 * 1024 * 1024;
+
+  for (const file of files) {
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    if (
+      !allowedTypes.includes(file.type) &&
+      !allowedExtensions.includes(ext)
+    ) {
+      showUploadError(
+        `${file.name} is not supported. Only PDF, DOCX and TXT files are allowed.`
+      );
+      continue;
+    }
+
+    if (file.size > maxSize) {
+      showUploadError(
+        `${file.name} exceeds the 5 MB limit.`
+      );
+      continue;
+    }
+
+    document.getElementById('queue-list').innerHTML = `
+      <div style="padding:8px;background:var(--bg3);border-radius:6px">
+        ✓ ${file.name}
+      </div>
+    `;
+  }
+}
+
+function showUploadError(message) {
+  document.getElementById('upload-errors').innerHTML += `
+    <div class="alert alert-danger" style="margin-top:8px;">
+      ${message}
+    </div>
+  `;
+}
+
+function resetUpload() {
+  const uploadErrors = document.getElementById('upload-errors');
+  if (uploadErrors) uploadErrors.innerHTML = '';
+
+  document.getElementById('queue-list').innerHTML = '';
+}
+</script>

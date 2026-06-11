@@ -20,11 +20,25 @@ class CandidatesController < ApplicationController
     @recruiters = User.kept.where(role: "recruiter", active: true) if admin?
   end
   def create
-    @candidate = Candidate.new(candidate_params)
+    @candidate = Candidate.new(candidate_params.except(:resume))
     @candidate.recruiter ||= current_user unless admin?
+    resume = params.dig(:candidate, :resume)
     if @candidate.save
       @candidate.status_histories.create!(status: @candidate.status, user: current_user)
       log_activity("#{current_user.name} added candidate: #{@candidate.name}")
+
+      if resume.present?
+        Rails.logger.info "Uploading resume for candidate #{@candidate.id}: #{resume.original_filename}"
+        file_key = "resumes/#{@candidate.id}/#{SecureRandom.uuid}_#{resume.original_filename}"
+
+        Uploads::S3Bucket.new.update_file(
+          file_key,
+          resume.tempfile,
+          resume.content_type
+        )
+
+        @candidate.update_column(:resume_file_key, file_key)
+      end
       redirect_to candidates_path, notice: "Candidate added."
     else
       @jobs = current_user.visible_jobs
@@ -37,8 +51,21 @@ class CandidatesController < ApplicationController
     @recruiters = User.kept.where(role: "recruiter", active: true) if admin?
   end
   def update
-    if @candidate.update(candidate_params)
+    resume = params.dig(:candidate, :resume)
+    if @candidate.update(candidate_params.except(:resume))
       log_activity("#{current_user.name} updated candidate: #{@candidate.name}")
+      if resume.present?
+        Rails.logger.info "Uploading resume for candidate #{@candidate.id}: #{resume.original_filename}"
+        file_key = "resumes/#{@candidate.id}/#{SecureRandom.uuid}_#{resume.original_filename}"
+
+        Uploads::S3Bucket.new.update_file(
+          file_key,
+          resume.tempfile,
+          resume.content_type
+        )
+
+        @candidate.update_column(:resume_file_key, file_key)
+      end
       redirect_to candidates_path, notice: "Candidate updated."
     else
       @jobs = current_user.visible_jobs
