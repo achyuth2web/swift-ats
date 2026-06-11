@@ -72,6 +72,7 @@ function setSteps(steps){document.getElementById('parse-steps').innerHTML=steps.
 async function handleFiles(files) {
   document.getElementById('upload-errors').innerHTML = '';
   resetUpload();
+
   const allowedTypes = [
     'application/pdf',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -79,6 +80,7 @@ async function handleFiles(files) {
   ];
 
   const allowedExtensions = ['pdf', 'docx', 'txt'];
+  const maxFileSize = 5 * 1024 * 1024; // 5 MB
 
   for (const file of files) {
     const ext = file.name.split('.').pop().toLowerCase();
@@ -89,6 +91,13 @@ async function handleFiles(files) {
     ) {
       showUploadError(
         `${file.name} is not supported. Only PDF, DOCX and TXT files are allowed.`
+      );
+      continue;
+    }
+
+    if (file.size > maxFileSize) {
+      showUploadError(
+        `${file.name} exceeds the maximum allowed file size of 5 MB.`
       );
       continue;
     }
