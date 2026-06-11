@@ -36,7 +36,7 @@
         <tbody>
           <% @candidates.each do |c| %>
             <tr onclick="window.location='<%= candidate_path(c) %>'">
-              <td><div style="font-weight:500"><%= c.name %></div><div style="font-size:11px;color:var(--text3)"><%= c.email %></div></td>
+              <td><div style="font-weight:500"><%= truncate(c.name, length: 30) %></div><div style="font-size:11px;color:var(--text3)"><%= c.email %></div></td>
               <td><div style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= c.role %></div><% if c.job %><div style="font-size:10px;color:var(--accent2)"><%= c.job.title %></div><% end %></td>
               <td><span class="badge badge-gray"><%= c.department %></span></td>
               <td><%= c.experience_years %>yr</td>

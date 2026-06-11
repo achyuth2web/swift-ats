@@ -38,7 +38,7 @@
           <% end %>
         </div>
       </div>
-      <div class="job-card-title"><%= j.title %></div>
+      <div class="job-card-title"><%= truncate(j.title, length: 30) %></div>
       <div style="font-size:12px;color:var(--text3)"><%= j.company %> · <%= j.department %></div>
       <div class="job-meta">
         <span class="badge badge-gray"><%= j.position_type %></span>
