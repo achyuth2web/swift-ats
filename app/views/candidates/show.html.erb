@@ -5,13 +5,13 @@
     class: "btn btn-ghost btn-sm" %>
   <%= link_to "Edit", edit_candidate_path(@candidate), class: "btn btn-ghost btn-sm" %>
 <% end %>
-<% stages = Candidate::STATUSES; idx = stages.index(@candidate.status)||0 %>
+<!--<% stages = Candidate::STATUSES; idx = stages.index(@candidate.status)||0 %>
 <div class="status-steps mb-4">
   <% stages.each_with_index do |s,i| %>
     <% css = i<idx ? "done" : i==idx ? "current" : "" %>
     <%= button_to s, update_status_candidate_path(@candidate), params:{status:s}, method: :patch, class: "status-step #{css}" %>
   <% end %>
-</div>
+</div>-->
 <div style="display:grid;grid-template-columns:1fr 320px;gap:16px">
   <div class="flex flex-col gap-4">
     <div class="card">

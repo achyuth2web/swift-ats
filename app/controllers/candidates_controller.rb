@@ -91,6 +91,60 @@ class CandidatesController < ApplicationController
       redirect_to candidates_path, alert: "Unable to delete candidate."
     end
   end
+  def import
+    file = params[:file]
+
+    unless file.present?
+      redirect_to candidates_path, alert: "Please select an Excel file."
+      return
+    end
+
+    begin
+      spreadsheet = Roo::Excelx.new(file.path)
+
+      imported_count = 0
+      errors = []
+
+      headers = spreadsheet.row(1).map(&:to_s)
+
+      (2..spreadsheet.last_row).each do |i|
+        row = Hash[[headers, spreadsheet.row(i)].transpose]
+
+        candidate = Candidate.new(
+          name:             row["Name"],
+          email:            row["Email"],
+          phone:            row["Phone"],
+          role:             row["Role"],
+          designation:      row["Designation"],
+          experience_years: row["Experience (Years)"],
+          ctc_current:      row["Current CTC (LPA)"],
+          ctc_expected:     row["Expected CTC (LPA)"],
+          notice_period:    row["Notice Period (days)"]
+        )
+
+        if candidate.save
+          candidate.status_histories.create!(
+            status: candidate.status,
+            user: current_user
+          )
+          imported_count += 1
+        else
+          errors << "Row #{i}: #{candidate.errors.full_messages.join(', ')}"
+        end
+      end
+
+      if errors.any?
+        flash[:alert] = "#{imported_count} candidates imported. Errors: #{errors.first(5).join(' | ')}"
+      else
+        flash[:notice] = "#{imported_count} candidates imported successfully."
+      end
+
+      redirect_to candidates_path
+
+    rescue => e
+      redirect_to candidates_path, alert: "Import failed: #{e.message}"
+    end
+  end
   private
   def set_candidate
     @candidate = current_user.visible_candidates.find(params[:id])

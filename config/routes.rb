@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   end
   resources :candidates do
     member { patch :update_status }
+    collection { post :import }
   end
   resources :interviews
   get  "/pipeline",               to: "pipeline#index",           as: :pipeline
@@ -37,6 +38,7 @@ Rails.application.routes.draw do
   end
 
   get "/not_found", to: "errors#not_found"
+  get "templates/candidate_import_template", to: "templates#candidate_import_template", as: :candidate_import_template
 
   match "*path",
       to: "errors#not_found",

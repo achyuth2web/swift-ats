@@ -1,0 +1,97 @@
+<div>
+<%= form_with url: import_candidates_path,
+              multipart: true,
+              local: true do |f| %>
+  <div class="flex flex-col gap-4">
+    <div class="card">
+    <div class="card-header"><span class="fw-600"></span><span class="badge badge-blue">Excel (XLSX)</span></div>
+      <div class="card-body">
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text3);margin:0 auto 12px;display:block"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div style="font-size:15px;font-weight:600;margin-bottom:4px; color:var(--text3)">Drop Excel file here</div>
+          <div style="font-size:12px;color:var(--text3)">or click to browse</div>
+        </div>
+        <%= f.file_field :file,
+                 id: "file-input",
+                 accept: ".xlsx",
+                 style: "display:none",
+                 onchange: "handleFiles(this.files)" %>
+        <div id="upload-errors" style="color:var(--red);font-size:14px;margin-top:10px;"></div>
+        <div id="queue-list" class="flex flex-col gap-2 mt-3" style="color:var(--text3)"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:6px; color:var(--text3); font-size:13px">
+       Don't have a template? 
+       <%= link_to "Download Template",
+            candidate_import_template_path,
+            class: "btn btn-ghost btn-sm" %>
+    </div>
+
+    <div style="margin-top:16px"><%= f.submit "Import Candidates",
+               class: "btn btn-primary" %></div>
+    
+  </div>
+  <% end %>
+</div>
+<script>
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+}
+
+async function handleFiles(files) {
+  document.getElementById('upload-errors').innerHTML = '';
+  resetUpload();
+
+  const allowedTypes = [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ];
+
+  const allowedExtensions = ['xlsx'];
+  const maxSize = 5 * 1024 * 1024;
+
+  for (const file of files) {
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    if (
+      !allowedTypes.includes(file.type) &&
+      !allowedExtensions.includes(ext)
+    ) {
+      showUploadError(
+        `${file.name} is not supported. Only XLSX files are allowed.`
+      );
+      continue;
+    }
+
+    if (file.size > maxSize) {
+      showUploadError(
+        `${file.name} exceeds the 5 MB limit.`
+      );
+      continue;
+    }
+
+    document.getElementById('queue-list').innerHTML = `
+      <div style="padding:8px;background:var(--bg3);border-radius:6px">
+        ✓ ${file.name}
+      </div>
+    `;
+  }
+}
+
+function showUploadError(message) {
+  document.getElementById('upload-errors').innerHTML += `
+    <div class="alert alert-danger" style="margin-top:8px;">
+      ${message}
+    </div>
+  `;
+}
+
+function resetUpload() {
+  const uploadErrors = document.getElementById('upload-errors');
+  if (uploadErrors) uploadErrors.innerHTML = '';
+
+  document.getElementById('queue-list').innerHTML = '';
+}
+</script>
