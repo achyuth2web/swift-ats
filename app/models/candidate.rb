@@ -15,17 +15,6 @@ class Candidate < ApplicationRecord
             message: "must contain only numbers"
           },
           allow_blank: true
-  validates :ctc_current,
-            numericality: {
-              greater_than_or_equal_to: 0
-            },
-            allow_blank: true
-
-  validates :ctc_expected,
-            numericality: {
-              greater_than_or_equal_to: 0
-            },
-            allow_blank: true
   validates :status, inclusion: { in: STATUSES }
   def skills
     (skills_list || "").split(",").map(&:strip).reject(&:empty?)
