@@ -102,17 +102,43 @@ class CandidatesController < ApplicationController
     begin
       spreadsheet = Roo::Excelx.new(file.path)
 
+      required_headers = [
+        "Name",
+        "Email",
+        "Phone",
+        "Role",
+        "Designation",
+        "Experience (Years)",
+        "Current CTC (LPA)",
+        "Expected CTC (LPA)",
+        "Notice Period (days)"
+      ]
+
+      headers = spreadsheet.row(1).map(&:to_s).map(&:strip)
+
+      # ✅ 1. Validate template headers
+      unless headers == required_headers
+        redirect_to candidates_path,
+          alert: "The uploaded file does not match the required template. Please use the provided template."
+        return
+      end
+
       imported_count = 0
+      skipped_count = 0
       errors = []
 
-      headers = spreadsheet.row(1).map(&:to_s)
+      # Email regex
+      email_regex = URI::MailTo::EMAIL_REGEXP
 
       (2..spreadsheet.last_row).each do |i|
         row = Hash[[headers, spreadsheet.row(i)].transpose]
 
+        name  = row["Name"]&.to_s&.strip
+        email = row["Email"]&.to_s&.strip
+
         candidate = Candidate.new(
-          name:             row["Name"],
-          email:            row["Email"],
+          name:             name,
+          email:            email,
           phone:            row["Phone"],
           role:             row["Role"],
           designation:      row["Designation"],
@@ -129,12 +155,13 @@ class CandidatesController < ApplicationController
           )
           imported_count += 1
         else
+          skipped_count += 1
           errors << "Row #{i}: #{candidate.errors.full_messages.join(', ')}"
         end
       end
 
       if errors.any?
-        flash[:alert] = "#{imported_count} candidates imported. Errors: #{errors.first(5).join(' | ')}"
+        flash[:alert] = "Import completed. Rows with invalid data have been skipped."
       else
         flash[:notice] = "#{imported_count} candidates imported successfully."
       end
