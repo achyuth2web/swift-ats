@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_05_062824) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_25_052552) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -81,6 +81,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_05_062824) do
     t.index ["discarded_at"], name: "index_interviews_on_discarded_at"
   end
 
+  create_table "job_openings", force: :cascade do |t|
+    t.bigint "job_id"
+    t.integer "sequence_no"
+    t.date "closed_date"
+    t.date "onboarded_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_id"], name: "index_job_openings_on_job_id"
+  end
+
   create_table "job_recruiters", force: :cascade do |t|
     t.bigint "job_id", null: false
     t.bigint "user_id", null: false
@@ -122,6 +132,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_05_062824) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "discarded_at"
+    t.string "job_type", default: "Full-Time"
+    t.string "stipend"
     t.index ["discarded_at"], name: "index_jobs_on_discarded_at"
   end
 
@@ -174,6 +186,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_05_062824) do
   add_foreign_key "candidates", "jobs"
   add_foreign_key "candidates", "users", column: "recruiter_id"
   add_foreign_key "interviews", "candidates"
+  add_foreign_key "job_openings", "jobs"
   add_foreign_key "job_recruiters", "jobs"
   add_foreign_key "job_recruiters", "users"
   add_foreign_key "job_status_histories", "jobs"

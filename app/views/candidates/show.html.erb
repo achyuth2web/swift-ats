@@ -53,7 +53,7 @@
             <% @interviews.each_with_index do |iv,i| %>
               <div class="interview-round">
                 <div class="interview-round-line">
-                  <div class="interview-round-dot <%= iv.outcome=='Pass' ? 'done' : iv.outcome=='Fail' ? 'rejected' : '' %>"></div>
+                  <div class="interview-round-dot <%= iv.outcome=='Pass' ? 'done' : iv.outcome=='Rejected' ? 'rejected' : '' %>"></div>
                   <% unless i==@interviews.size-1 %><div class="interview-round-connector"></div><% end %>
                 </div>
                 <div class="interview-round-body">
@@ -62,7 +62,7 @@
                     <div style="font-size:12px;color:var(--text3)"><%= iv.interviewer.present? ? "with #{iv.interviewer}" : "" %><%= iv.scheduled_at ? " · #{iv.scheduled_display}" : "" %></div></div>
                     <div style="display:flex;gap:6px;align-items:center">
                       <% if iv.outcome.present? %>
-                        <% oc = iv.outcome=="Pass" ? "green" : iv.outcome=="Fail" ? "red" : "amber" %>
+                        <% oc = iv.outcome=="Pass" ? "green" : iv.outcome=="Rejected" ? "red" : "amber" %>
                         <span class="badge badge-<%= oc %>"><%= iv.outcome %></span>
                       <% end %>
                       <%= render 'shared/status_badge', status: iv.status %>

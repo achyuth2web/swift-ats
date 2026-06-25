@@ -22,9 +22,47 @@
     <div class="form-group"><label class="label">Openings</label><%= f.number_field :openings, class: "input", min: 1, value: job.openings||1 %></div>
     <div class="form-group"><label class="label">Experience (years)</label><%= f.number_field :experience_years, class: "input", min: 0 %></div>
   </div>
+  <div id="opening-details-wrapper">
+    <h4>Opening Details</h4>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Closed Date</th>
+          <th>Onboarded Date</th>
+        </tr>
+      </thead>
+
+      <tbody id="opening-details-body">
+        <%= f.fields_for :job_openings do |of| %>
+          <tr>
+            <td>
+              <%= of.hidden_field :sequence_no, class: "sequence-no" %>
+              <span class="row-number"><%= of.object.sequence_no %></span>
+            </td>
+
+            <td>
+              <%= of.date_field :closed_date, class: "input" %>
+            </td>
+
+            <td>
+              <%= of.date_field :onboarded_date, class: "input" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
   <div class="form-group"><label class="label">Skills (comma-separated)</label><%= f.text_field :skills_list, class: "input", placeholder: "React, TypeScript, Node.js" %></div>
   <div class="input-row">
-    <div class="form-group"><label class="label">CTC Budget (LPA)</label><%= f.text_field :ctc_budget, class: "input", placeholder: "28" %></div>
+    <div class="form-group"><label class="label">Job Type</label><%= f.select :job_type, Job::JOB_TYPES, {}, class: "select" %></div>
+    <div class="form-group" id="ctc-grp" style="<%= job.job_type != 'Full-Time' ? 'display:none' : '' %>"><label class="label">CTC Budget (LPA)</label><%= f.text_field :ctc_budget, class: "input", placeholder: "28" %></div>
+    <div class="form-group" id="stipend-grp" style="<%= job.job_type == 'Full-Time' ? 'display:none' : '' %>">
+      <label class="label">Stipend</label><%= f.text_field :stipend, class: "input" %>
+    </div>
+  </div>
+  <div class="input-row">
     <div class="form-group"><label class="label">Naukri URL</label><%= f.text_field :naukri_url, class: "input", placeholder: "https://naukri.com/..." %></div>
   </div>
   <div class="form-group"><label class="label">Description</label><%= f.text_area :description, class: "textarea" %></div>
@@ -44,4 +82,81 @@
     <%= f.submit job.persisted? ? "Update Job" : "Create Job", class: "btn btn-primary" %>
   </div>
 <% end %>
-<script>document.querySelector('select[name="job[position_type]"]')?.addEventListener('change',function(){document.getElementById('replace-grp').style.display=this.value==='Replacement'?'':'none';});</script>
+<script>
+document.addEventListener("turbo:load", function() {
+  const positionType = document.querySelector('select[name="job[position_type]"]');
+  const jobType = document.querySelector('select[name="job[job_type]"]');
+
+  positionType?.addEventListener("change", function() {
+    document.getElementById("replace-grp").style.display =
+      this.value === "Replacement" ? "" : "none";
+  });
+
+  jobType?.addEventListener("change", function() {
+    document.getElementById("stipend-grp").style.display =
+      this.value === "Full-Time" ? "none" : "";
+    document.getElementById("ctc-grp").style.display =
+      this.value !== "Full-Time" ? "none" : "";
+  });
+
+  // Set initial visibility on page load
+  if (positionType) {
+    document.getElementById("replace-grp").style.display =
+      positionType.value === "Replacement" ? "" : "none";
+  }
+
+  if (jobType) {
+    document.getElementById("stipend-grp").style.display =
+      jobType.value === "Full-Time" ? "none" : "";
+    document.getElementById("ctc-grp").style.display =
+      jobType.value !== "Full-Time" ? "none" : "";
+  }
+});
+</script>
+<script>
+document.addEventListener("turbo:load", function() {
+  const openingsInput = document.querySelector('input[name="job[openings]"]');
+  const tbody = document.getElementById("opening-details-body");
+
+  if (!openingsInput || !tbody) return;
+
+  function syncRows() {
+    const openings = parseInt(openingsInput.value || 0);
+    const currentRows = tbody.querySelectorAll("tr").length;
+
+    // Add rows
+    for (let i = currentRows + 1; i <= openings; i++) {
+      tbody.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td>
+            ${i}
+            <input type="hidden"
+              name="job[job_openings_attributes][${i-1}][sequence_no]"
+              value="${i}">
+          </td>
+
+          <td>
+            <input type="date"
+              class="input"
+              name="job[job_openings_attributes][${i-1}][closed_date]">
+          </td>
+
+          <td>
+            <input type="date"
+              class="input"
+              name="job[job_openings_attributes][${i-1}][onboarded_date]">
+          </td>
+        </tr>
+      `);
+    }
+
+    // Remove extra rows
+    while (tbody.querySelectorAll("tr").length > openings) {
+      tbody.lastElementChild.remove();
+    }
+  }
+
+  openingsInput.addEventListener("change", syncRows);
+  syncRows();
+});
+</script>

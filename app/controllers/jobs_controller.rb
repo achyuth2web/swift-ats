@@ -11,6 +11,7 @@ class JobsController < ApplicationController
   end
   def new
     @job = Job.new(status: "Open", open_date: Date.today)
+    @job.job_openings.build(sequence_no: 1)
     @recruiters = User.kept.where(role: "recruiter", active: true)
   end
   def create
@@ -27,6 +28,13 @@ class JobsController < ApplicationController
     end
   end
   def edit
+    existing_count = @job.job_openings.count
+
+    if existing_count < @job.openings
+      ((existing_count + 1)..@job.openings).each do |i|
+        @job.job_openings.build(sequence_no: i)
+      end
+    end
     @recruiters = User.kept.where(role: "recruiter", active: true)
   end
   def update
@@ -72,7 +80,13 @@ class JobsController < ApplicationController
   def job_params
     params.require(:job).permit(:title,:company,:department,:hiring_manager,:position_type,
       :replacing_employee,:openings,:status,:open_date,:description,:skills_list,
-      :experience_years,:ctc_budget,:naukri_url)
+      :experience_years,:ctc_budget,:naukri_url, :job_type, :stipend, job_openings_attributes: [
+      :id,
+      :sequence_no,
+      :closed_date,
+      :onboarded_date,
+      :_destroy
+    ])
   end
   def update_recruiters
     ids = params[:job][:recruiter_ids]&.reject(&:blank?) || []
