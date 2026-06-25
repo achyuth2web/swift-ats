@@ -35,6 +35,15 @@
           <div class="detail-item"><div class="detail-label">Expected CTC</div><div class="detail-value"><%= @candidate.ctc_expected.present? ? "#{@candidate.ctc_expected} #{@candidate.ctc_unit}" : "—" %></div></div>
           <div class="detail-item"><div class="detail-label">Notice Period</div><div class="detail-value"><%= @candidate.notice_display %></div></div>
           <div class="detail-item"><div class="detail-label">Source</div><div class="detail-value"><%= @candidate.source||"—" %></div></div>
+          <div class="detail-item"><div class="detail-label">Resume</div><div class="detail-value">
+          <% if @candidate.resume_file_key.present? && @candidate.resume_url.present? %>
+            <%= link_to "View Resume",
+                        @candidate.resume_url,
+                        target: "_blank",
+                        class: "btn btn-sm btn-primary mt-2" %>
+          <% else %>
+            Resume Not Uploaded
+          <% end %></div></div>
         </div>
         <% if @candidate.skills.any? %>
           <div style="margin-top:14px"><div class="detail-label" style="margin-bottom:6px">Skills</div><div class="skills-wrap"><% @candidate.skills.each do |s| %><span class="skill-tag"><%= s %></span><% end %></div></div>

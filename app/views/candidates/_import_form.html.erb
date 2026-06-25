@@ -6,7 +6,7 @@
     <div class="card">
     <div class="card-header"><span class="fw-600"></span><span class="badge badge-blue">Excel (XLSX)</span></div>
       <div class="card-body">
-        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+        <div class="upload-zone" id="import-upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="importHandleDrop(event)">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text3);margin:0 auto 12px;display:block"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <div style="font-size:15px;font-weight:600;margin-bottom:4px; color:var(--text3)">Drop Excel file here</div>
           <div style="font-size:12px;color:var(--text3)">or click to browse</div>
@@ -15,9 +15,9 @@
                  id: "file-input",
                  accept: ".xlsx",
                  style: "display:none",
-                 onchange: "handleFiles(this.files)" %>
-        <div id="upload-errors" style="color:var(--red);font-size:14px;margin-top:10px;"></div>
-        <div id="queue-list" class="flex flex-col gap-2 mt-3" style="color:var(--text3)"></div>
+                 onchange: "importHandleFiles(this.files)" %>
+        <div id="import-upload-errors" style="color:var(--red);font-size:14px;margin-top:10px;"></div>
+        <div id="import-queue-list" class="flex flex-col gap-2 mt-3" style="color:var(--text3)"></div>
       </div>
     </div>
 
@@ -35,14 +35,14 @@
   <% end %>
 </div>
 <script>
-function handleDrop(e) {
+function importHandleDrop(e) {
   e.preventDefault();
-  document.getElementById('upload-zone').classList.remove('drag-over');
-  handleFiles(e.dataTransfer.files);
+  document.getElementById('import-upload-zone').classList.remove('drag-over');
+  importHandleFiles(e.dataTransfer.files);
 }
 
-async function handleFiles(files) {
-  document.getElementById('upload-errors').innerHTML = '';
+async function importHandleFiles(files) {
+  document.getElementById('import-upload-errors').innerHTML = '';
   resetUpload();
 
   const allowedTypes = [
@@ -72,7 +72,7 @@ async function handleFiles(files) {
       continue;
     }
 
-    document.getElementById('queue-list').innerHTML = `
+    document.getElementById('import-queue-list').innerHTML = `
       <div style="padding:8px;background:var(--bg3);border-radius:6px">
         ✓ ${file.name}
       </div>
@@ -81,7 +81,7 @@ async function handleFiles(files) {
 }
 
 function showUploadError(message) {
-  document.getElementById('upload-errors').innerHTML += `
+  document.getElementById('import-upload-errors').innerHTML += `
     <div class="alert alert-danger" style="margin-top:8px;">
       ${message}
     </div>
@@ -89,9 +89,9 @@ function showUploadError(message) {
 }
 
 function resetUpload() {
-  const uploadErrors = document.getElementById('upload-errors');
+  const uploadErrors = document.getElementById('import-upload-errors');
   if (uploadErrors) uploadErrors.innerHTML = '';
 
-  document.getElementById('queue-list').innerHTML = '';
+  document.getElementById('import-queue-list').innerHTML = '';
 }
 </script>
