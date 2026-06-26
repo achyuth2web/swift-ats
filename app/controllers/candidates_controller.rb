@@ -176,6 +176,10 @@ class CandidatesController < ApplicationController
     require 'csv'
     candidates = Candidate.kept
 
+    if params[:job_id].present?
+      candidates = candidates.where(job_id: params[:job_id])
+    end
+
     csv_data = CSV.generate(headers: true) do |csv|
       csv << [
         "Name",
@@ -215,7 +219,7 @@ class CandidatesController < ApplicationController
     end
 
     send_data csv_data,
-              filename: "active_candidates_#{Date.current}.csv",
+              filename: "candidates_#{Time.current.strftime('%Y-%m-%d_%H-%M-%S')}.csv",
               type: "text/csv"
   end
 

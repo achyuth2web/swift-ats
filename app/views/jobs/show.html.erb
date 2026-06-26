@@ -29,7 +29,13 @@
       </div>
     </div>
     <div class="card">
-      <div class="card-header"><span class="fw-600">Candidates (<%= @candidates.count %>)</span><%= link_to "+ Add", new_candidate_path(job_id: @job.id), class: "btn btn-primary btn-sm" %></div>
+      <div class="card-header">
+        <span class="fw-600">Candidates (<%= @candidates.count %>)</span>
+        <div>
+          <%= link_to "📤 Export", export_candidates_path(job_id: @job.id), class: "btn btn-primary btn-sm" %> 
+          <%= link_to "+ Add", new_candidate_path(job_id: @job.id), class: "btn btn-primary btn-sm" %>
+        </div>
+      </div>
       <div class="table-wrap">
         <% if @candidates.empty? %><div class="empty-state" style="padding:30px"><p>No candidates linked.</p></div>
         <% else %>

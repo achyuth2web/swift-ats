@@ -32,9 +32,9 @@ class UsersController < ApplicationController
     if @user == current_user
       redirect_to users_path, alert: "Cannot delete yourself."
     else
-      @user.update_column(
-        :email,
-        "discarded_#{@user.id}_#{Time.current.to_i}_#{@user.email}"
+      @user.update_columns(
+        email: "discarded_#{@user.id}_#{Time.current.to_i}_#{@user.email}",
+        active: false
       )
       @user.discard
       log_activity("Admin deleted user: #{@user.name}")

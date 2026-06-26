@@ -1,10 +1,18 @@
 <% content_for :page_title, "Dashboard" %>
 <div class="stat-grid">
-  <div class="stat-card purple"><div class="stat-label">Total Candidates</div><div class="stat-value"><%= @candidates.count %></div><div class="stat-sub"><%= (@statuses["New"]||0)+(@statuses["Screening"]||0)+(@statuses["Interview"]||0) %> active pipeline</div></div>
-  <div class="stat-card green"><div class="stat-label">Open Jobs</div><div class="stat-value"><%= @open_jobs %></div><div class="stat-sub"><%= @closed_jobs %> closed · <%= @reopened_jobs %> reopened</div></div>
-  <div class="stat-card amber"><div class="stat-label">Avg. Time to Hire</div><div class="stat-value" style="font-size:<%= @avg_tth ? '28' : '16' %>px"><%= @avg_tth ? "#{@avg_tth} days" : "N/A" %></div><div class="stat-sub"><%= @jobs.select(&:time_to_hire).count %> hires tracked</div></div>
-  <div class="stat-card blue"><div class="stat-label">Offers Made</div><div class="stat-value"><%= (@statuses["Offer"]||0)+(@statuses["Hired"]||0) %></div><div class="stat-sub"><%= @statuses["Rejected"]||0 %> rejected</div></div>
+  <% if current_user.admin? %>
+    <div class="stat-card purple"><div class="stat-label">Total Candidates</div><div class="stat-value"><%= @candidates.count %></div><div class="stat-sub"><%= (@statuses["New"]||0)+(@statuses["Screening"]||0)+(@statuses["Interview"]||0) %> active pipeline</div></div>
+    <div class="stat-card green"><div class="stat-label">Open Jobs</div><div class="stat-value"><%= @open_jobs %></div><div class="stat-sub"><%= @closed_jobs %> closed · <%= @reopened_jobs %> reopened</div></div>
+    <div class="stat-card amber"><div class="stat-label">Avg. Time to Hire</div><div class="stat-value" style="font-size:<%= @avg_tth ? '28' : '16' %>px"><%= @avg_tth ? "#{@avg_tth} days" : "N/A" %></div><div class="stat-sub"><%= @jobs.select(&:time_to_hire).count %> hires tracked</div></div>
+    <div class="stat-card blue"><div class="stat-label">Offers Made</div><div class="stat-value"><%= (@statuses["Offer"]||0)+(@statuses["Hired"]||0) %></div><div class="stat-sub"><%= @statuses["Rejected"]||0 %> rejected</div></div>
+  <% elsif current_user.recruiter? %>
+    <div class="stat-card green"><div class="stat-label">Open Jobs</div><div class="stat-value"><%= @open_jobs %></div><div class="stat-sub"><%= @closed_jobs %> closed · <%= @reopened_jobs %> reopened</div></div>
+    <div class="stat-card purple"><div class="stat-label">Candidates</div><div class="stat-value"><%= @candidates.count %></div><div class="stat-sub"><%= (@statuses["New"]||0)+(@statuses["Screening"]||0)+(@statuses["Interview"]||0) %> active pipeline</div></div>
+    <div class="stat-card blue"><div class="stat-label">Offers Made</div><div class="stat-value"><%= (@statuses["Offer"]||0)%></div><div class="stat-sub"><%= @statuses["Rejected"]||0 %> rejected</div></div>
+    <div class="stat-card blue"><div class="stat-label">Hired</div><div class="stat-value"><%= (@statuses["Hired"]||0) %></div></div>
+  <% end %>
 </div>
+<% if current_user.admin? %>
 <div class="dash-grid">
   <div class="flex flex-col gap-4">
     <div class="card">
@@ -60,3 +68,4 @@
     </div>
   </div>
 </div>
+<% end %>
