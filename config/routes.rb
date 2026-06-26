@@ -12,7 +12,10 @@ Rails.application.routes.draw do
   end
   resources :candidates do
     member { patch :update_status }
-    collection { post :import }
+    collection do
+      post :import
+      get :export
+    end
   end
   resources :interviews
   get  "/pipeline",               to: "pipeline#index",           as: :pipeline

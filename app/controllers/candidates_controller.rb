@@ -172,6 +172,53 @@ class CandidatesController < ApplicationController
       redirect_to candidates_path, alert: "Import failed: #{e.message}"
     end
   end
+  def export
+    require 'csv'
+    candidates = Candidate.kept
+
+    csv_data = CSV.generate(headers: true) do |csv|
+      csv << [
+        "Name",
+        "Email",
+        "Phone",
+        "Role",
+        "Department",
+        "Designation",
+        "Skills",
+        "Experience (Yrs)",
+        "Status",
+        "Score",
+        "Source",
+        "Current CTC (LPA)",
+        "Expected CTC (LPA)",
+        "Notice Period"
+      ]
+
+      candidates.find_each do |candidate|
+        csv << [
+          candidate.name,
+          candidate.email,
+          candidate.phone,
+          candidate.role,
+          candidate.department,
+          candidate.designation,
+          candidate.skills_list,
+          candidate.experience_years,
+          candidate.status,
+          candidate.score,
+          candidate.source,
+          candidate.ctc_current,
+          candidate.ctc_expected,
+          candidate.notice_period
+        ]
+      end
+    end
+
+    send_data csv_data,
+              filename: "active_candidates_#{Date.current}.csv",
+              type: "text/csv"
+  end
+
   private
   def set_candidate
     @candidate = current_user.visible_candidates.find(params[:id])

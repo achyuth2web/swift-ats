@@ -1,8 +1,18 @@
 class InterviewsController < ApplicationController
   before_action :set_interview, only: [:edit, :update, :destroy]
   def index
-    @interviews = current_user.visible_interviews.order(Arel.sql("scheduled_at ASC NULLS LAST")).includes(candidate: [:job])
+    # @interviews = current_user.visible_interviews.order(Arel.sql("scheduled_at ASC NULLS LAST")).includes(candidate: [:job])
+    @interviews = current_user.visible_interviews
+                          .left_joins(candidate: :job)
+                          .where(candidates: { discarded_at: nil })
+                          .where("jobs.discarded_at IS NULL OR jobs.id IS NULL")
+                          .includes(candidate: :job)
+                          .order(Arel.sql("scheduled_at ASC NULLS LAST"))
     @interviews = @interviews.where(status: params[:status]) if params[:status].present?
+    if params[:job_id].present?
+      @interviews = @interviews.joins(candidate: :job)
+                              .where(candidates: { job_id: params[:job_id] })
+    end
   end
   def new
     @interview  = Interview.new(round_number: 1, candidate_id: params[:candidate_id])
