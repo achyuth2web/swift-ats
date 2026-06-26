@@ -2,17 +2,28 @@ class InterviewsController < ApplicationController
   before_action :set_interview, only: [:edit, :update, :destroy]
   def index
     # @interviews = current_user.visible_interviews.order(Arel.sql("scheduled_at ASC NULLS LAST")).includes(candidate: [:job])
-    @interviews = current_user.visible_interviews
-                          .left_joins(candidate: :job)
-                          .where(candidates: { discarded_at: nil })
-                          .where("jobs.discarded_at IS NULL OR jobs.id IS NULL")
-                          .includes(candidate: :job)
-                          .order(Arel.sql("scheduled_at ASC NULLS LAST"))
-    @interviews = @interviews.where(status: params[:status]) if params[:status].present?
-    if params[:job_id].present?
-      @interviews = @interviews.joins(candidate: :job)
-                              .where(candidates: { job_id: params[:job_id] })
-    end
+    base_scope = current_user.visible_interviews
+                         .left_joins(candidate: :job)
+                         .where(candidates: { discarded_at: nil })
+                         .where("jobs.discarded_at IS NULL OR jobs.id IS NULL")
+
+    base_scope = base_scope.where(status: params[:status]) if params[:status].present?
+    base_scope = base_scope.where(candidates: { job_id: params[:job_id] }) if params[:job_id].present?
+
+    @interviews = Interview
+                    .from(
+                      base_scope.select(
+                        "interviews.*,
+                        ROW_NUMBER() OVER (
+                          PARTITION BY candidate_id
+                          ORDER BY scheduled_at DESC NULLS LAST
+                        ) AS rn"
+                      ),
+                      :interviews
+                    )
+                    .where("rn = 1")
+                    .includes(candidate: :job)
+                    .order("scheduled_at ASC NULLS LAST")
   end
   def new
     @interview  = Interview.new(round_number: 1, candidate_id: params[:candidate_id])

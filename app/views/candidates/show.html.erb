@@ -76,6 +76,7 @@
                       <% end %>
                       <%= render 'shared/status_badge', status: iv.status %>
                       <%= link_to "Edit", edit_interview_path(iv), class: "btn btn-ghost btn-sm" %>
+                      <%= button_to "✕", interview_path(iv), method: :delete, class: "btn btn-danger btn-sm btn-icon", data:{confirm:"Delete?"} %>
                     </div>
                   </div>
                   <% if iv.feedback.present? %><div style="margin-top:8px;font-size:12px;color:var(--text2);line-height:1.6"><%= iv.feedback %></div><% end %>
