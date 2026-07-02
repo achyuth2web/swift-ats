@@ -4,6 +4,7 @@ class Candidate < ApplicationRecord
   belongs_to :recruiter, class_name: "User", foreign_key: :recruiter_id, optional: true
   has_many :interviews, dependent: :destroy
   has_many :status_histories, class_name: "CandidateStatusHistory", dependent: :destroy
+  has_many :email_logs, dependent: :destroy
   STATUSES    = %w[New Screening Interview Offer Rejected Hired].freeze
   SOURCES     = ["LinkedIn","Naukri","Referral","Job Board","Other"].freeze
   DEPARTMENTS = %w[Tech HR Sales Finance Operations Marketing].freeze

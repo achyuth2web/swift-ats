@@ -40,6 +40,10 @@ Rails.application.routes.draw do
     end
   end
 
+  get "email_hub", to: "email_hub#index"
+  post "email_hub/send_email", to: "email_hub#send_email", as: :send_email_hubs
+  delete "email_hub/clear_log", to: "email_hub#clear_log"
+
   get "/not_found", to: "errors#not_found"
   get "templates/candidate_import_template", to: "templates#candidate_import_template", as: :candidate_import_template
 

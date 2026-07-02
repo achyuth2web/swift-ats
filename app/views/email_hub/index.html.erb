@@ -1,0 +1,193 @@
+<div style="display:grid;grid-template-columns:340px 1fr;gap:16px">
+  <!-- LEFT: Compose -->
+  <div class="flex flex-col gap-4">
+    <div class="card">
+      <div class="card-header">
+        Compose Email
+      </div>
+
+      <div class="card-body flex flex-col gap-3">
+        <%= form_with url: send_email_hubs_path, method: :post do |f| %>
+          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
+            <div class="label">Template</div>
+            <select class="select" id="em-template">
+              <option value="">— Select a template —</option>
+              <% @email_templates.each do |template| %>
+                <option value="<%= template[:id] %>">
+                  <%= template[:name] %>
+                </option>
+              <% end %>
+            </select>
+          </div>
+          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
+            <div class="label">Candidate</div>
+            <%= select_tag :candidate_id,
+                        options_from_collection_for_select(@candidates, :id, :name),
+                        prompt: "Select Candidate",
+                        class: "select",
+                        id: "em-candidate",
+                        onchange: "prefillEmailCandidate()" %>
+          </div>
+          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
+            <div class="label">Email</div>
+            <%= text_field_tag :to, nil,
+                            placeholder: "Email",
+                            class: "input" %>
+          </div>
+          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
+            <div class="label">Subject</div>              
+            <%= text_field_tag :subject, nil,
+                            placeholder: "Subject",
+                            class: "input",
+                            id: "em-subject" %>
+          </div>
+          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
+            <div class="label">Body</div>
+            <%= text_area_tag :body, nil,
+                            rows: 10,
+                            class: "textarea",
+                            id: "em-body" %>
+          </div>
+          <div class="form-group" style="gap: 0 !important;">
+            <%= submit_tag "Send Email",
+                        class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <div class="flex flex-col gap-4">
+    <div class="card">
+      <div class="card-header">
+        Email Log
+      </div>
+
+      <div class="card-body">
+        <% @email_logs.each do |log| %>
+          <div class="email-log-item">
+            <strong><%= log.subject %></strong>
+            <div>
+              To: <%= log.recipient_email %>
+            </div>
+            <div>
+              <%= time_ago_in_words(log.created_at) %> ago
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        Quick Templates Preview
+      </div>
+
+      <div class="card-body">
+        <% @email_templates.each do |t| %>
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;cursor:pointer"
+              onclick="quickLoadTemplate('<%= t[:id] %>')"
+              onmouseover="this.style.borderColor='var(--accent)'"
+              onmouseout="this.style.borderColor='var(--border)'">
+
+            <div style="font-weight:500;font-size:13px;margin-bottom:3px">
+              <%= t[:name] %>
+            </div>
+
+            <div style="font-size:11px;color:var(--text3)">
+              <%= t[:subject] %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <div>
+</div>
+<script>
+window._emailTemplates = <%= raw(@email_templates.to_json) %>;
+
+document.addEventListener("turbo:load", () => {
+
+  window.loadEmailTemplate = function() {
+    const templateId = document.getElementById('em-template')?.value;
+    if (!templateId) return;
+
+    const template = (window._emailTemplates || []).find(
+      t => t.id === templateId
+    );
+
+    if (!template) {
+      console.log('Template not found:', templateId);
+      return;
+    }
+
+    const subjectField = document.getElementById('em-subject');
+    const bodyField = document.getElementById('em-body');
+
+    if (subjectField) {
+      subjectField.value = template.subject || '';
+    }
+
+    if (bodyField) {
+      bodyField.innerHTML = template.body || '';
+    }
+
+    prefillEmailCandidate();
+  };
+
+  window.quickLoadTemplate = function(id) {
+    const sel = document.getElementById('em-template');
+
+    if (sel) {
+      sel.value = id;
+      window.loadEmailTemplate();
+    }
+  };
+
+  function prefillEmailCandidate() {
+    const candId = document.getElementById('em-candidate')?.value;
+    if (!candId) return;
+
+    const c = (getVisibleCandidates() || []).find(
+      x => String(x.id) === String(candId)
+    );
+    if (!c) return;
+
+    const toField = document.getElementById('em-to');
+    if (toField) toField.value = c.email || '';
+
+    const job = (DB.get('jobs') || []).find(
+      j => String(j.id) === String(c.jobId)
+    );
+
+    const replacements = {
+      name: c.name || '',
+      role: c.role || '',
+      company: job?.company || 'Spritle Software',
+      ctc: c.ctcExpected || '—',
+      date: '[Date]',
+      time: '[Time]',
+      interviewer: '[Interviewer]',
+      mode: 'Video Call / In-Person',
+      location: '[Location / Meeting Link]',
+      recruiter: currentUser?.name || ''
+    };
+
+    ['em-subject', 'em-body'].forEach(fieldId => {
+      const el = document.getElementById(fieldId);
+      if (!el) return;
+
+      let content = el.value;
+
+      Object.entries(replacements).forEach(([key, value]) => {
+        content = content.replace(
+          new RegExp(`\\{${key}\\}`, 'g'),
+          value || ''
+        );
+      });
+
+      el.value = content;
+    });
+  }
+
+});
+</script>

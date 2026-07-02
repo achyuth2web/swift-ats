@@ -42,7 +42,7 @@
             <td><% if iv.rating %><span style="color:var(--amber)"><%= "★"*iv.rating %></span><% else %>—<% end %></td>
             <!--<td onclick="event.stopPropagation()" style="display:flex;gap:4px">
               <%= link_to "Edit", edit_interview_path(iv), class: "btn btn-ghost btn-sm" %>
-              <%= button_to "✕", interview_path(iv), method: :delete, class: "btn btn-danger btn-sm btn-icon", data:{confirm:"Delete?"} %>
+              <%= button_to "✕", interview_path(iv), method: :delete, class: "btn btn-danger btn-sm btn-icon", data:{turbo_confirm:"Delete?"} %>
             </td>-->
           </tr>
         <% end %>

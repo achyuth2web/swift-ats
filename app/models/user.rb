@@ -6,6 +6,7 @@ class User < ApplicationRecord
   has_many :jobs, through: :job_recruiters
   has_many :owned_candidates, class_name: "Candidate", foreign_key: :recruiter_id, dependent: :nullify
   has_many :activity_logs, dependent: :nullify
+  has_many :email_logs, dependent: :destroy
   validates :name, presence: true
   validates :role, inclusion: { in: ROLES }
 

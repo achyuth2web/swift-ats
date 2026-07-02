@@ -17,7 +17,7 @@
           <%= link_to "Edit", edit_user_path(u), class: "btn btn-ghost btn-sm" %>
           <%= button_to u.active? ? "Disable" : "Enable", toggle_active_user_path(u), method: :patch, class: "btn #{u.active? ? 'btn-danger' : 'btn-success'} btn-sm" %>
           <% unless u == current_user %>
-            <%= button_to "✕", user_path(u), method: :delete, class: "btn btn-danger btn-sm btn-icon", data:{confirm:"Delete #{u.name}?"} %>
+            <%= button_to "✕", user_path(u), method: :delete, class: "btn btn-danger btn-sm btn-icon", data:{turbo_confirm:"Delete #{u.name}?"} %>
           <% end %>
         </div>
       </div>

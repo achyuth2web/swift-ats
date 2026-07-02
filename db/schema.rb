@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_25_052552) do
+ActiveRecord::Schema[7.1].define(version: 2026_06_26_114204) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -62,6 +62,19 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_25_052552) do
     t.index ["discarded_at"], name: "index_candidates_on_discarded_at"
     t.index ["job_id"], name: "index_candidates_on_job_id"
     t.index ["recruiter_id"], name: "index_candidates_on_recruiter_id"
+  end
+
+  create_table "email_logs", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "candidate_id"
+    t.string "recipient_email"
+    t.string "subject"
+    t.string "template_name"
+    t.string "status", default: "sent"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["candidate_id"], name: "index_email_logs_on_candidate_id"
+    t.index ["user_id"], name: "index_email_logs_on_user_id"
   end
 
   create_table "interviews", force: :cascade do |t|
