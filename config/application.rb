@@ -7,5 +7,6 @@ module SwiftAts
     config.load_defaults 7.1
     config.time_zone = "Chennai"
     config.active_record.default_timezone = :local
+    config.active_job.queue_adapter = :async
   end
 end

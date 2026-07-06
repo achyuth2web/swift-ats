@@ -1,4 +1,9 @@
-<div style="display:grid;grid-template-columns:340px 1fr;gap:16px">
+<div style="display:grid;grid-template-columns:340px 1fr;gap:16px"
+     data-controller="email-hub"
+     data-email-hub-candidates-value="<%= @candidates_json.to_json %>"
+     data-email-hub-templates-value="<%= @email_templates.to_json %>"
+     data-email-hub-current-user-name-value="<%= current_user.name %>"
+     data-email-hub-default-company-value="Spritle Software">
   <!-- LEFT: Compose -->
   <div class="flex flex-col gap-4">
     <div class="card">
@@ -10,14 +15,12 @@
         <%= form_with url: send_email_hubs_path, method: :post do |f| %>
           <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
             <div class="label">Template</div>
-            <select class="select" id="em-template">
-              <option value="">— Select a template —</option>
-              <% @email_templates.each do |template| %>
-                <option value="<%= template[:id] %>">
-                  <%= template[:name] %>
-                </option>
-              <% end %>
-            </select>
+            <%= select_tag :template_name,
+                        options_for_select(@email_templates.map { |t| [t[:name], t[:id]] }),
+                        include_blank: "— Select a template —",
+                        class: "select",
+                        id: "em-template",
+                        data: { email_hub_target: "template", action: "change->email-hub#loadTemplate" } %>
           </div>
           <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
             <div class="label">Candidate</div>
@@ -26,27 +29,42 @@
                         prompt: "Select Candidate",
                         class: "select",
                         id: "em-candidate",
-                        onchange: "prefillEmailCandidate()" %>
+                        data: { email_hub_target: "candidate", action: "change->email-hub#selectCandidate" } %>
           </div>
           <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
-            <div class="label">Email</div>
-            <%= text_field_tag :to, nil,
-                            placeholder: "Email",
-                            class: "input" %>
+            <div class="label">To Email</div>
+            <%= text_field_tag :to_email, nil,
+                            placeholder: "To Email",
+                            required: true,
+                            class: "input",
+                            id: "em-to",
+                            data: { email_hub_target: "toEmail" } %>
           </div>
           <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
-            <div class="label">Subject</div>              
+            <div class="label">CC</div>
+            <%= text_field_tag :cc, nil,
+                            placeholder: "CC (comma-separated)",
+                            class: "input",
+                            id: "em-cc",
+                            data: { email_hub_target: "cc" } %>
+          </div>
+          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
+            <div class="label">Subject</div>
             <%= text_field_tag :subject, nil,
                             placeholder: "Subject",
+                            required: true,
                             class: "input",
-                            id: "em-subject" %>
+                            id: "em-subject",
+                            data: { email_hub_target: "subject" } %>
           </div>
           <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
             <div class="label">Body</div>
             <%= text_area_tag :body, nil,
                             rows: 10,
+                            required: true,
                             class: "textarea",
-                            id: "em-body" %>
+                            id: "em-body",
+                            data: { email_hub_target: "body" } %>
           </div>
           <div class="form-group" style="gap: 0 !important;">
             <%= submit_tag "Send Email",
@@ -58,17 +76,29 @@
   </div>
   <div class="flex flex-col gap-4">
     <div class="card">
-      <div class="card-header">
-        Email Log
+      <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Email Log</span>
+        <%= button_to "Clear Log", email_hub_clear_log_path,
+                    method: :delete,
+                    class: "btn btn-sm",
+                    data: { turbo_confirm: "Clear all email logs?" } %>
       </div>
 
       <div class="card-body">
+        <% if @email_logs.empty? %>
+          <div style="color:var(--text3);font-size:13px">No emails sent yet.</div>
+        <% end %>
         <% @email_logs.each do |log| %>
+          <% status_color = { "pending" => "amber", "sent" => "green", "failed" => "red" }[log.status] || "gray" %>
           <div class="email-log-item">
             <strong><%= log.subject %></strong>
+            <span class="badge badge-<%= status_color %>"><%= log.status %></span>
             <div>
-              To: <%= log.recipient_email %>
+              To: <%= log.recipient_email %><% if log.cc_email.present? %> · CC: <%= log.cc_email %><% end %>
             </div>
+            <% if log.status == "failed" && log.error_message.present? %>
+              <div style="color:var(--danger, #c0392b);font-size:12px"><%= log.error_message %></div>
+            <% end %>
             <div>
               <%= time_ago_in_words(log.created_at) %> ago
             </div>
@@ -85,7 +115,8 @@
       <div class="card-body">
         <% @email_templates.each do |t| %>
           <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;cursor:pointer"
-              onclick="quickLoadTemplate('<%= t[:id] %>')"
+              data-action="click->email-hub#quickLoad"
+              data-email-hub-id-param="<%= t[:id] %>"
               onmouseover="this.style.borderColor='var(--accent)'"
               onmouseout="this.style.borderColor='var(--border)'">
 
@@ -100,94 +131,5 @@
         <% end %>
       </div>
     </div>
-  <div>
+  </div>
 </div>
-<script>
-window._emailTemplates = <%= raw(@email_templates.to_json) %>;
-
-document.addEventListener("turbo:load", () => {
-
-  window.loadEmailTemplate = function() {
-    const templateId = document.getElementById('em-template')?.value;
-    if (!templateId) return;
-
-    const template = (window._emailTemplates || []).find(
-      t => t.id === templateId
-    );
-
-    if (!template) {
-      console.log('Template not found:', templateId);
-      return;
-    }
-
-    const subjectField = document.getElementById('em-subject');
-    const bodyField = document.getElementById('em-body');
-
-    if (subjectField) {
-      subjectField.value = template.subject || '';
-    }
-
-    if (bodyField) {
-      bodyField.innerHTML = template.body || '';
-    }
-
-    prefillEmailCandidate();
-  };
-
-  window.quickLoadTemplate = function(id) {
-    const sel = document.getElementById('em-template');
-
-    if (sel) {
-      sel.value = id;
-      window.loadEmailTemplate();
-    }
-  };
-
-  function prefillEmailCandidate() {
-    const candId = document.getElementById('em-candidate')?.value;
-    if (!candId) return;
-
-    const c = (getVisibleCandidates() || []).find(
-      x => String(x.id) === String(candId)
-    );
-    if (!c) return;
-
-    const toField = document.getElementById('em-to');
-    if (toField) toField.value = c.email || '';
-
-    const job = (DB.get('jobs') || []).find(
-      j => String(j.id) === String(c.jobId)
-    );
-
-    const replacements = {
-      name: c.name || '',
-      role: c.role || '',
-      company: job?.company || 'Spritle Software',
-      ctc: c.ctcExpected || '—',
-      date: '[Date]',
-      time: '[Time]',
-      interviewer: '[Interviewer]',
-      mode: 'Video Call / In-Person',
-      location: '[Location / Meeting Link]',
-      recruiter: currentUser?.name || ''
-    };
-
-    ['em-subject', 'em-body'].forEach(fieldId => {
-      const el = document.getElementById(fieldId);
-      if (!el) return;
-
-      let content = el.value;
-
-      Object.entries(replacements).forEach(([key, value]) => {
-        content = content.replace(
-          new RegExp(`\\{${key}\\}`, 'g'),
-          value || ''
-        );
-      });
-
-      el.value = content;
-    });
-  }
-
-});
-</script>

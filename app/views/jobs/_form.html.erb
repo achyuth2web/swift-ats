@@ -31,6 +31,7 @@
           <th>#</th>
           <th>Closed Date</th>
           <th>Onboarded Date</th>
+          <th></th>
         </tr>
       </thead>
 
@@ -48,6 +49,9 @@
 
             <td>
               <%= of.date_field :onboarded_date, class: "input" %>
+            </td>
+            <td>
+              <button type="button" class="btn btn-ghost btn-sm remove-opening-row">Remove</button>
             </td>
           </tr>
         <% end %>
@@ -129,10 +133,11 @@ document.addEventListener("turbo:load", function() {
       tbody.insertAdjacentHTML("beforeend", `
         <tr>
           <td>
-            ${i}
             <input type="hidden"
+              class="sequence-no"
               name="job[job_openings_attributes][${i-1}][sequence_no]"
               value="${i}">
+            <span class="row-number">${i}</span>
           </td>
 
           <td>
@@ -146,6 +151,9 @@ document.addEventListener("turbo:load", function() {
               class="input"
               name="job[job_openings_attributes][${i-1}][onboarded_date]">
           </td>
+          <td>
+            <button type="button" class="btn btn-ghost btn-sm remove-opening-row">Remove</button>
+          </td>
         </tr>
       `);
     }
@@ -155,6 +163,45 @@ document.addEventListener("turbo:load", function() {
       tbody.lastElementChild.remove();
     }
   }
+
+  function visibleRows() {
+    return Array.from(tbody.querySelectorAll("tr")).filter(row => row.style.display !== "none");
+  }
+
+  function renumberRows() {
+    visibleRows().forEach((row, index) => {
+      const seq = index + 1;
+      const seqField = row.querySelector(".sequence-no");
+      if (seqField) seqField.value = seq;
+      const rowNumber = row.querySelector(".row-number");
+      if (rowNumber) rowNumber.textContent = seq;
+    });
+  }
+
+  tbody.addEventListener("click", function(e) {
+    const btn = e.target.closest(".remove-opening-row");
+    if (!btn) return;
+
+    const row = btn.closest("tr");
+    const idField = row.querySelector('input[name$="[id]"]');
+
+    if (idField) {
+      let destroyField = row.querySelector('input[name$="[_destroy]"]');
+      if (!destroyField) {
+        destroyField = document.createElement("input");
+        destroyField.type = "hidden";
+        destroyField.name = idField.name.replace(/\[id\]$/, "[_destroy]");
+        row.appendChild(destroyField);
+      }
+      destroyField.value = "1";
+      row.style.display = "none";
+    } else {
+      row.remove();
+    }
+
+    renumberRows();
+    openingsInput.value = visibleRows().length;
+  });
 
   openingsInput.addEventListener("change", syncRows);
   syncRows();

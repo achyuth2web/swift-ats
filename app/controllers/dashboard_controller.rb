@@ -3,7 +3,7 @@ class DashboardController < ApplicationController
   # before_action :require_admin!
   def index
     @candidates    = current_user.admin? ? Candidate.kept : current_user.visible_candidates
-    @jobs          = current_user.admin? ? Job.kept : current_user.visible_jobs.includes(:recruiters, :candidates)
+    @jobs          = current_user.admin? ? Job.kept.includes(:job_openings) : current_user.visible_jobs.includes(:recruiters, :candidates, :job_openings)
     @interviews    = Interview.kept
     @recruiters    = User.kept.where(role: "recruiter", active: true)
     @activity_logs = ActivityLog.recent.includes(:user)
@@ -11,8 +11,8 @@ class DashboardController < ApplicationController
     @open_jobs     = @jobs.open.count
     @closed_jobs   = @jobs.closed.count
     @reopened_jobs = @jobs.reopened.count
-    tth = @jobs.select(&:time_to_hire)
-    @avg_tth       = tth.any? ? (tth.sum(&:time_to_hire) / tth.size).round : nil
+    ttc = @jobs.select(&:time_to_close)
+    @avg_tth       = ttc.any? ? (ttc.sum(&:time_to_close) / ttc.size).round : nil
     @recent_candidates = @candidates.order(created_at: :desc).limit(5).includes(:job)
     @recruiter_stats = @recruiters.map do |r|
       rc = @candidates.where(recruiter_id: r.id)

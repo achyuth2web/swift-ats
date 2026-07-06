@@ -65,6 +65,20 @@ class UploadController < ApplicationController
     end
   end
   private
+  def extract_phone(text)
+    candidates = text.scan(/(?:\+?\d{1,3}[-.\s]?)?\(?\d[\d\-.\s()]{7,15}\d/)
+
+    candidates.each do |candidate|
+      digits = candidate.gsub(/\D/, "")
+      next if digits.length < 10
+
+      digits = digits[-10..-1] if digits.length > 10
+      return digits if digits.match?(/\A[6-9]\d{9}\z/)
+    end
+
+    ""
+  end
+
   def extract_text(file)
     ext = File.extname(file.original_filename).downcase
     case ext
@@ -83,7 +97,7 @@ class UploadController < ApplicationController
   def parse_resume(text)
     name  = extract_name(text)
     email = text.scan(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/).first || ""
-    phone = text.scan(/(?:\+91[\-\s]?)?[6-9]\d{9}/).first || ""
+    phone = extract_phone(text)
     exp_m = text.match(/(\d+(?:\.\d+)?)\+?\s*(?:years?|yrs?)\s*(?:of\s+)?(?:experience|exp)/i)
     exp   = exp_m ? exp_m[1].to_f.round : 0
     ctc_m = text.match(/current\s*(?:ctc|salary)[:\s]*(?:rs\.?|inr|₹)?\s*(\d+(?:\.\d+)?)\s*(?:lpa|l)/i) ||
@@ -111,13 +125,15 @@ class UploadController < ApplicationController
       # Backend
       "Ruby on Rails", "Rails", "Django", "Flask", "FastAPI", "Spring",
       "Spring Boot", "Hibernate", "Express", "NestJS", "Node.js",
-      "ASP.NET", "Laravel", "CodeIgniter", "Phoenix", "GraphQL", "REST", "SOAP",
+      "ASP.NET", ".NET", ".NET Core", "Laravel", "CodeIgniter", "Phoenix",
+      "GraphQL", "REST", "REST API", "SOAP",
 
       # Mobile
       "Android", "iOS", "React Native", "Flutter", "Xamarin", "Ionic",
+      "Objective-C", "Unity",
 
       # Databases
-      "PostgreSQL", "MySQL", "MariaDB", "SQLite", "Oracle", "SQL Server",
+      "SQL", "PostgreSQL", "MySQL", "MariaDB", "SQLite", "Oracle", "SQL Server",
       "MongoDB", "Cassandra", "DynamoDB", "Redis", "Elasticsearch",
       "OpenSearch", "Neo4j", "CouchDB", "Firestore", "BigQuery", "Snowflake",
 
@@ -134,7 +150,10 @@ class UploadController < ApplicationController
       "Docker", "Kubernetes", "Terraform", "Ansible", "Chef", "Puppet",
       "Jenkins", "GitHub Actions", "GitLab CI", "CircleCI",
       "ArgoCD", "Helm", "Nginx", "Apache", "HAProxy",
-      "Linux", "Ubuntu", "CentOS",
+      "Linux", "Ubuntu", "CentOS", "Microservices", "CI/CD",
+      "RabbitMQ", "ActiveMQ", "Celery", "Sidekiq",
+      "Grafana", "Prometheus", "Datadog", "New Relic", "Splunk",
+      "Kibana", "Logstash",
 
       # Data Engineering
       "Apache Airflow", "Apache Spark", "Hadoop", "Kafka", "Databricks",
@@ -144,7 +163,8 @@ class UploadController < ApplicationController
       "TensorFlow", "PyTorch", "Keras", "Scikit-learn", "XGBoost",
       "LightGBM", "Pandas", "Polars", "NumPy", "OpenCV", "NLP",
       "LangChain", "LlamaIndex", "Hugging Face", "MLflow",
-      "Deep Learning", "Machine Learning",
+      "Deep Learning", "Machine Learning", "Artificial Intelligence",
+      "Generative AI", "LLM", "OpenAI", "Computer Vision",
 
       # BI & Analytics
       "Tableau", "Power BI", "Looker", "Qlik Sense", "Metabase",
@@ -153,6 +173,7 @@ class UploadController < ApplicationController
       # Testing
       "RSpec", "Minitest", "JUnit", "Mockito", "Selenium",
       "Cypress", "Playwright", "Cucumber", "Jest", "Vitest",
+      "PyTest", "TDD", "BDD", "Unit Testing",
 
       # Version Control
       "Git", "GitHub", "GitLab", "Bitbucket", "SVN",
@@ -173,6 +194,10 @@ class UploadController < ApplicationController
       # Design
       "Figma", "Adobe XD", "Sketch", "Photoshop",
       "Illustrator", "InDesign", "Canva",
+
+      # Office & Productivity
+      "Excel", "Microsoft Excel", "PowerPoint", "Word", "VBA",
+      "Google Sheets", "Google Docs",
 
       # Networking
       "TCP/IP", "DNS", "DHCP", "VPN",
@@ -202,13 +227,13 @@ class UploadController < ApplicationController
       "Time Management", "Mentoring",
       "Stakeholder Management", "Collaboration"
     ]
-    skills = skill_lib
-    .sort_by { |skill| -skill.length }
-    .select do |skill|
+    text_downcase = text.downcase
+    matched_skills = skill_lib.uniq.select do |skill|
       text.match?(/(?<!\w)#{Regexp.escape(skill)}(?!\w)/i)
     end
-    .uniq
-    .first(12)
+    skills = matched_skills
+    .sort_by { |skill| text_downcase.index(skill.downcase) || Float::INFINITY }
+    .first(20)
     dept_kw = {"Tech"=>%w[developer engineer devops scientist software python java react node],
                "HR"=>%w[hr talent recruitment hrbp],"Sales"=>%w[sales business development],
                "Finance"=>%w[finance accounting],"Marketing"=>%w[marketing seo]}

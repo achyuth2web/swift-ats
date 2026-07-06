@@ -3,3 +3,4 @@
 //= link application.js
 //= link controllers/application.js
 //= link controllers/index.js
+//= link controllers/email_hub_controller.js

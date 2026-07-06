@@ -22,7 +22,8 @@
           <div class="detail-item"><div class="detail-label">Experience</div><div class="detail-value"><%= @job.experience_years %>+ years</div></div>
           <div class="detail-item"><div class="detail-label">CTC Budget</div><div class="detail-value"><%= @job.ctc_budget.present? ? "#{@job.ctc_budget} LPA" : "—" %></div></div>
           <div class="detail-item"><div class="detail-label">Open Date</div><div class="detail-value"><%= @job.open_date&.strftime("%d %b %Y")||"—" %></div></div>
-          <% if @job.time_to_hire %><div class="detail-item"><div class="detail-label">Time to Hire</div><div class="detail-value" style="color:var(--green)"><%= @job.time_to_hire %> days</div></div><% end %>
+          <% if @job.time_to_close %><div class="detail-item"><div class="detail-label">Time to Close</div><div class="detail-value" style="color:var(--green)"><%= @job.time_to_close %> days</div></div><% end %>
+          <% if @job.time_to_onboard %><div class="detail-item"><div class="detail-label">Time to Onboard</div><div class="detail-value" style="color:var(--green)"><%= @job.time_to_onboard %> days</div></div><% end %>
         </div>
         <% if @job.description.present? %><div style="margin-top:14px;font-size:13px;color:var(--text2);line-height:1.7"><%= @job.description %></div><% end %>
         <% if @job.skills.any? %><div class="skills-wrap mt-3"><% @job.skills.each do |s| %><span class="skill-tag"><%= s %></span><% end %></div><% end %>

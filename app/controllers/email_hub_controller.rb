@@ -6,29 +6,46 @@ class EmailHubController < ApplicationController
   def index
     @email_templates = email_templates
     @candidates = current_user.visible_candidates
-                              .includes(:job)
+                              .includes(:job, :recruiter)
                               .order(:name)
+    @candidates_json = @candidates.map do |c|
+      {
+        id: c.id,
+        name: c.name,
+        email: c.email,
+        role: c.role,
+        ctc_expected: c.ctc_expected,
+        job_title: c.job&.title,
+        job_company: c.job&.company,
+        recruiter_name: c.recruiter&.name,
+        recruiter_email: c.recruiter&.email
+      }
+    end
     @email_logs = EmailLog.where(user: current_user)
                           .order(created_at: :desc)
                           .limit(100)
   end
 
   def send_email
-    candidate = Candidate.find_by(id: params[:candidate_id])
+    candidate = current_user.visible_candidates.find_by(id: params[:candidate_id]) if params[:candidate_id].present?
 
-    EmailLog.create!(
+    email_log = EmailLog.new(
       user: current_user,
       candidate: candidate,
-      template_name: params[:template_name],
+      template_name: params[:template_name].presence,
       subject: params[:subject],
-      recipient_email: params[:to]
+      recipient_email: params[:to_email],
+      cc_email: params[:cc],
+      body: params[:body],
+      status: "pending"
     )
 
-    # Send later with Sidekiq
-    # EmailHubMailer.custom_email(...).deliver_later
-
-    redirect_to email_hub_path,
-                notice: "Email queued successfully."
+    if email_log.save
+      EmailDeliveryJob.perform_later(email_log.id)
+      redirect_to email_hub_path, notice: "Email queued successfully."
+    else
+      redirect_to email_hub_path, alert: "Could not send email: #{email_log.errors.full_messages.to_sentence}"
+    end
   end
 
   def clear_log

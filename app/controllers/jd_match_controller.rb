@@ -11,18 +11,24 @@ class JdMatchController < ApplicationController
     candidates = current_user.visible_candidates
                             .where(job_id: job.id)
 
-    jd_experience = jd.match(/(\d+)\+?\s*(?:years|yrs)/i)&.captures&.first&.to_i
+    jd_experience   = jd.match(/(\d+)\+?\s*(?:years|yrs)/i)&.captures&.first&.to_i
+    required_skills = job.skills
 
     results = candidates.map do |candidate|
 
-      skills = candidate.skills_list.to_s.split(",").map(&:strip) || []
+      skills = candidate.skills
 
-      matched_skills = skills.select do |skill|
-        jd.include?(skill.downcase)
-      end
+      matched_skills =
+        if required_skills.any?
+          skills.select { |skill| required_skills.any? { |req| req.casecmp?(skill) } }
+        else
+          skills.select { |skill| jd.include?(skill.downcase) }
+        end
 
       skill_score =
-        if skills.any?
+        if required_skills.any?
+          (matched_skills.size.to_f / required_skills.size * 50)
+        elsif skills.any?
           (matched_skills.size.to_f / skills.size * 50)
         else
           0
