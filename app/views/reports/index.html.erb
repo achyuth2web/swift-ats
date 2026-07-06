@@ -1,19 +1,35 @@
 <% content_for :page_title, "Reports & Analytics" %>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
   <div class="card">
-    <div class="card-header"><span class="fw-600">Time-to-Hire Analysis</span><span class="badge badge-purple"><%= @tth_jobs.count %> records</span></div>
+    <div class="card-header"><span class="fw-600">Time-to-Close</span><span class="badge badge-purple"><%= @ttc_jobs.count %> records</span></div>
     <div class="card-body">
-      <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--accent2);margin-bottom:4px"><%= @avg_tth||"—" %><span style="font-size:16px;color:var(--text3);margin-left:4px">days avg</span></div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Date of Hire – Job Open Date</div>
-      <% @tth_jobs.each do |j| %>
-        <% tth=j.time_to_hire; clr=tth<=30?"var(--green)":tth<=60?"var(--amber)":"var(--red)" %>
+      <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--accent2);margin-bottom:4px"><%= @avg_ttc||"—" %><span style="font-size:16px;color:var(--text3);margin-left:4px">days avg</span></div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Closed Date – Job Open Date</div>
+      <% @ttc_jobs.each do |j| %>
+        <% ttc=j.time_to_close; clr=ttc<=30?"var(--green)":ttc<=60?"var(--amber)":"var(--red)" %>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
           <div><div style="font-size:13px;font-weight:500"><%= j.title %></div><div style="font-size:11px;color:var(--text3)"><%= j.department %></div></div>
-          <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:<%= clr %>"><%= tth %>d</div><div style="font-size:10px;color:var(--text3)">Hired <%= j.hire_date&.strftime("%d %b %Y") %></div></div>
+          <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:<%= clr %>"><%= ttc %>d</div><div style="font-size:10px;color:var(--text3)">Closed <%= j.job_openings.filter_map(&:closed_date).max&.strftime("%d %b %Y") %></div></div>
         </div>
       <% end %>
     </div>
   </div>
+  <div class="card">
+    <div class="card-header"><span class="fw-600">Time-to-Onboard</span><span class="badge badge-purple"><%= @tto_jobs.count %> records</span></div>
+    <div class="card-body">
+      <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--accent2);margin-bottom:4px"><%= @avg_tto||"—" %><span style="font-size:16px;color:var(--text3);margin-left:4px">days avg</span></div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Onboarded Date – Job Open Date</div>
+      <% @tto_jobs.each do |j| %>
+        <% tto=j.time_to_onboard; clr=tto<=30?"var(--green)":tto<=60?"var(--amber)":"var(--red)" %>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div><div style="font-size:13px;font-weight:500"><%= j.title %></div><div style="font-size:11px;color:var(--text3)"><%= j.department %></div></div>
+          <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:<%= clr %>"><%= tto %>d</div><div style="font-size:10px;color:var(--text3)">Onboarded <%= j.job_openings.filter_map(&:onboarded_date).max&.strftime("%d %b %Y") %></div></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
   <div class="card">
     <div class="card-header"><span class="fw-600">Job Status Summary</span></div>
     <div class="card-body">
@@ -30,8 +46,6 @@
       </div>
     </div>
   </div>
-</div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
   <div class="card">
     <div class="card-header"><span class="fw-600">Candidate Funnel</span><span class="badge badge-purple"><%= @candidates.count %> total</span></div>
     <div class="card-body">

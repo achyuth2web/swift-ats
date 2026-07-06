@@ -16,9 +16,12 @@ class Job < ApplicationRecord
   def skills
     (skills_list || "").split(",").map(&:strip).reject(&:empty?)
   end
-  def time_to_hire
-    return nil unless hire_date && open_date
-    (hire_date - open_date).to_i
+  def time_to_close
+    average_days_to(:closed_date)
+  end
+
+  def time_to_onboard
+    average_days_to(:onboarded_date)
   end
   def candidate_count = candidates.kept.count
   scope :open,     -> { where(status: "Open") }
@@ -28,6 +31,13 @@ class Job < ApplicationRecord
   before_save :clear_irrelevant_compensation
 
   private
+
+  def average_days_to(date_column)
+    return nil unless open_date
+    days = job_openings.filter_map { |o| (o.public_send(date_column) - open_date).to_i if o.public_send(date_column) }
+    return nil if days.empty?
+    (days.sum / days.size.to_f).round
+  end
 
   def clear_irrelevant_compensation
     if job_type == "Full-Time"
