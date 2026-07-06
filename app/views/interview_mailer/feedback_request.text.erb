@@ -1,0 +1,14 @@
+Hi <%= @interview.interviewer.presence || "there" %>,
+
+You've been scheduled to interview <%= @interview.candidate.name %><% if @interview.candidate.job %> for the <%= @interview.candidate.job.title %> position<% end %>.
+
+Candidate: <%= @interview.candidate.name %>
+<% if @interview.candidate.job -%>
+Job / Position: <%= @interview.candidate.job.title %>
+<% end -%>
+Date & Time: <%= @interview.scheduled_display %>
+Interview Type: <%= @interview.round_name %> (Round <%= @interview.round_number %>)
+
+Once the interview is complete, please share your feedback using the link below. No login is required.
+
+Submit Interview Feedback: <%= @feedback_url %>

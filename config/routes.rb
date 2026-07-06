@@ -18,6 +18,8 @@ Rails.application.routes.draw do
     end
   end
   resources :interviews
+  get   "feedback/:token", to: "interview_feedbacks#show",   as: :interview_feedback
+  patch "feedback/:token", to: "interview_feedbacks#update", as: :update_interview_feedback
   get  "/pipeline",               to: "pipeline#index",           as: :pipeline
   get  "/reports",                to: "reports#index",            as: :reports
   get  "/upload",                 to: "upload#index",             as: :upload

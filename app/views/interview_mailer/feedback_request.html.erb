@@ -1,0 +1,20 @@
+<p>Hi <%= @interview.interviewer.presence || "there" %>,</p>
+
+<p>You've been scheduled to interview <strong><%= @interview.candidate.name %></strong><% if @interview.candidate.job %> for the <strong><%= @interview.candidate.job.title %></strong> position<% end %>. Details below:</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0;">
+  <tr><td style="padding:4px 12px 4px 0;color:#666;">Candidate</td><td><strong><%= @interview.candidate.name %></strong></td></tr>
+  <% if @interview.candidate.job %>
+    <tr><td style="padding:4px 12px 4px 0;color:#666;">Job / Position</td><td><%= @interview.candidate.job.title %></td></tr>
+  <% end %>
+  <tr><td style="padding:4px 12px 4px 0;color:#666;">Date &amp; Time</td><td><%= @interview.scheduled_display %></td></tr>
+  <tr><td style="padding:4px 12px 4px 0;color:#666;">Interview Type</td><td><%= @interview.round_name %> (Round <%= @interview.round_number %>)</td></tr>
+</table>
+
+<p>Once the interview is complete, please share your feedback using the button below. No login is required.</p>
+
+<p style="margin:24px 0;">
+  <a href="<%= @feedback_url %>" style="background:#0E8FB0;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:500;display:inline-block;">Submit Interview Feedback</a>
+</p>
+
+<p style="color:#999;font-size:12px;">If the button doesn't work, copy and paste this link into your browser: <%= @feedback_url %></p>
