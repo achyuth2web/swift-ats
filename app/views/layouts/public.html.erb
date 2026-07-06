@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Feedback — Spritle ATS</title>
+  <%= favicon_link_tag "favicon.png", type: "image/png" %>
+  <%= csrf_meta_tags %>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  <%= stylesheet_link_tag "application", media: "all" %>
+  <style>
+    body{background:var(--bg);min-height:100vh;padding:48px 20px;}
+    .public-wrap{max-width:640px;margin:0 auto;}
+    .public-header{margin-bottom:20px;}
+    .public-header .logo-text{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);}
+  </style>
+</head>
+<body>
+<div class="public-wrap">
+  <div class="public-header"><span class="logo-text">Spritle<span style="color:var(--accent)">ATS</span></span></div>
+  <% if notice.present? %><div class="flash-notice" id="flash-notice"><%= notice %></div><% end %>
+  <% if alert.present?  %><div class="flash-alert"  id="flash-alert"><%= alert %></div><% end %>
+  <%= yield %>
+</div>
+</body>
+</html>

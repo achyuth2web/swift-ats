@@ -33,6 +33,7 @@ class InterviewsController < ApplicationController
     @interview = Interview.new(interview_params)
     if @interview.save
       log_activity("Interview scheduled: #{@interview.round_name} for #{@interview.candidate.name}")
+      InterviewMailer.feedback_request(@interview).deliver_later
       redirect_to interviews_path, notice: "Interview scheduled."
     else
       @candidates = current_user.visible_candidates.order(:name)
@@ -63,7 +64,7 @@ class InterviewsController < ApplicationController
     redirect_to interviews_path, alert: "Not found."
   end
   def interview_params
-    params.require(:interview).permit(:candidate_id,:round_name,:round_number,:interviewer,
+    params.require(:interview).permit(:candidate_id,:round_name,:round_number,:interviewer,:interviewer_email,
       :scheduled_at,:status,:outcome,:feedback,:rating)
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_03_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_07_06_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -93,8 +93,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_03_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "discarded_at"
+    t.string "interviewer_email"
+    t.string "feedback_token"
+    t.datetime "feedback_submitted_at"
     t.index ["candidate_id"], name: "index_interviews_on_candidate_id"
     t.index ["discarded_at"], name: "index_interviews_on_discarded_at"
+    t.index ["feedback_token"], name: "index_interviews_on_feedback_token", unique: true
   end
 
   create_table "job_openings", force: :cascade do |t|
