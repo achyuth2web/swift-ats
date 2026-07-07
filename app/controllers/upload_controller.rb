@@ -117,115 +117,139 @@ class UploadController < ApplicationController
       "Dart", "Groovy", "Elixir", "Haskell", "Bash", "PowerShell",
 
       # Frontend
-      "React", "Angular", "Vue", "Next.js", "Nuxt.js", "Svelte", "Redux",
-      "Zustand", "jQuery", "HTML", "CSS", "SCSS", "Sass", "Bootstrap",
-      "Tailwind CSS", "Material UI", "Chakra UI", "Ant Design",
-      "Webpack", "Vite",
+      "React", "Angular", "Vue", "Next.js", "Nuxt.js", "Svelte", "Ember.js",
+      "Redux", "Zustand", "jQuery", "HTML", "CSS", "SCSS", "Sass", "Bootstrap",
+      "Tailwind CSS", "Material UI", "Chakra UI", "Ant Design", "Storybook",
+      "PWA", "Responsive Web Design", "Webpack", "Vite",
 
       # Backend
       "Ruby on Rails", "Rails", "Django", "Flask", "FastAPI", "Spring",
-      "Spring Boot", "Hibernate", "Express", "NestJS", "Node.js",
-      "ASP.NET", ".NET", ".NET Core", "Laravel", "CodeIgniter", "Phoenix",
-      "GraphQL", "REST", "REST API", "SOAP",
+      "Spring Boot", "Hibernate", "Micronaut", "Symfony", "Express", "NestJS",
+      "Node.js", "ASP.NET", ".NET", ".NET Core", "Laravel", "CodeIgniter",
+      "Phoenix", "GraphQL", "REST", "REST API", "SOAP", "gRPC", "WebSocket",
 
       # Mobile
       "Android", "iOS", "React Native", "Flutter", "Xamarin", "Ionic",
-      "Objective-C", "Unity",
+      "Objective-C", "SwiftUI", "Jetpack Compose", "Cordova", "Unity",
 
       # Databases
       "SQL", "PostgreSQL", "MySQL", "MariaDB", "SQLite", "Oracle", "SQL Server",
       "MongoDB", "Cassandra", "DynamoDB", "Redis", "Elasticsearch",
-      "OpenSearch", "Neo4j", "CouchDB", "Firestore", "BigQuery", "Snowflake",
+      "OpenSearch", "Neo4j", "CouchDB", "Couchbase", "Firestore", "BigQuery",
+      "Snowflake", "Redshift", "IBM Db2", "Teradata", "InfluxDB",
 
       # Cloud Platforms
-      "AWS", "Azure", "GCP", "DigitalOcean", "Heroku", "Render",
-      "Vercel", "Netlify", "Firebase", "Cloudflare",
+      "AWS", "Azure", "GCP", "IBM Cloud", "Oracle Cloud", "DigitalOcean",
+      "Heroku", "Render", "Vercel", "Netlify", "Firebase", "Cloudflare",
 
       # AWS Services
-      "EC2", "S3", "RDS", "Lambda", "ECS", "EKS", "Fargate",
-      "CloudFormation", "CloudWatch", "IAM", "SNS", "SQS", "SES",
+      "EC2", "S3", "RDS", "Lambda", "ECS", "EKS", "Fargate", "VPC",
+      "CloudFront", "Elastic Beanstalk", "Step Functions", "Athena", "Glue",
+      "Kinesis", "CloudFormation", "CloudWatch", "IAM", "SNS", "SQS", "SES",
       "Route 53", "API Gateway", "Secrets Manager",
 
       # DevOps
       "Docker", "Kubernetes", "Terraform", "Ansible", "Chef", "Puppet",
-      "Jenkins", "GitHub Actions", "GitLab CI", "CircleCI",
-      "ArgoCD", "Helm", "Nginx", "Apache", "HAProxy",
-      "Linux", "Ubuntu", "CentOS", "Microservices", "CI/CD",
-      "RabbitMQ", "ActiveMQ", "Celery", "Sidekiq",
+      "Vagrant", "Jenkins", "Bamboo", "TeamCity", "GitHub Actions",
+      "GitLab CI", "CircleCI", "ArgoCD", "Helm", "Istio", "Nginx", "Apache",
+      "HAProxy", "Linux", "Ubuntu", "CentOS", "Microservices", "CI/CD",
+      "HashiCorp Vault", "RabbitMQ", "ActiveMQ", "Celery", "Sidekiq",
       "Grafana", "Prometheus", "Datadog", "New Relic", "Splunk",
       "Kibana", "Logstash",
 
       # Data Engineering
-      "Apache Airflow", "Apache Spark", "Hadoop", "Kafka", "Databricks",
-      "dbt", "ETL", "ELT", "Hive", "Pig", "Presto", "Trino",
+      "Apache Airflow", "Apache Spark", "Apache Beam", "Apache NiFi",
+      "Hadoop", "Kafka", "Databricks", "dbt", "ETL", "ELT", "Hive", "Pig",
+      "Presto", "Trino", "Talend", "Informatica", "SSIS",
 
       # AI / ML
       "TensorFlow", "PyTorch", "Keras", "Scikit-learn", "XGBoost",
       "LightGBM", "Pandas", "Polars", "NumPy", "OpenCV", "NLP",
       "LangChain", "LlamaIndex", "Hugging Face", "MLflow",
       "Deep Learning", "Machine Learning", "Artificial Intelligence",
+      "Reinforcement Learning", "Transformers", "BERT", "GPT",
+      "Prompt Engineering", "RAG", "Vector Database", "Pinecone",
       "Generative AI", "LLM", "OpenAI", "Computer Vision",
 
       # BI & Analytics
-      "Tableau", "Power BI", "Looker", "Qlik Sense", "Metabase",
-      "Google Analytics", "Mixpanel", "Amplitude",
+      "Tableau", "Power BI", "Looker", "Qlik Sense", "Metabase", "SSRS",
+      "SSAS", "Domo", "Sisense", "Google Analytics", "Mixpanel", "Amplitude",
 
       # Testing
-      "RSpec", "Minitest", "JUnit", "Mockito", "Selenium",
-      "Cypress", "Playwright", "Cucumber", "Jest", "Vitest",
-      "PyTest", "TDD", "BDD", "Unit Testing",
+      "RSpec", "Minitest", "JUnit", "TestNG", "Mockito", "Selenium",
+      "Appium", "Cypress", "Playwright", "Cucumber", "Jest", "Vitest",
+      "PyTest", "TDD", "BDD", "Unit Testing", "Manual Testing",
+      "Automation Testing", "Functional Testing", "Regression Testing",
+      "Sanity Testing", "Smoke Testing", "Integration Testing",
+      "System Testing", "UAT", "User Acceptance Testing",
+      "Black Box Testing", "White Box Testing", "API Testing",
+      "Load Testing", "Performance Testing", "Test Case Design",
+      "Test Planning", "Defect Tracking", "SDLC", "STLC",
+      "TestRail", "Bugzilla", "Mantis", "Zoho BugTracker", "qTest",
+      "LoadRunner", "JMeter", "Postman", "SoapUI",
 
       # Version Control
       "Git", "GitHub", "GitLab", "Bitbucket", "SVN",
 
       # Security
       "OAuth", "OAuth 2.0", "JWT", "SAML", "OpenID Connect",
-      "PCI DSS", "GDPR", "OWASP", "Cybersecurity",
+      "PCI DSS", "GDPR", "OWASP", "Cybersecurity", "SSO", "MFA",
+      "Zero Trust", "SOC 2", "ISO 27001", "SIEM", "Vulnerability Assessment",
       "Penetration Testing",
 
       # Project Management
-      "Agile", "Scrum", "Kanban", "Jira", "Confluence",
+      "Agile", "Scrum", "Kanban", "Waterfall", "V-Model", "PRINCE2", "PMP",
+      "SAFe", "Lean", "Six Sigma", "Jira", "Confluence",
       "Trello", "Asana", "ClickUp", "Notion",
 
       # CRM / ERP
-      "Salesforce", "HubSpot", "Zoho CRM", "SAP",
+      "Salesforce", "HubSpot", "Zoho CRM", "Zoho Books", "Zoho Desk",
+      "NetSuite", "Freshdesk", "Zendesk", "ServiceNow", "SAP",
       "Oracle ERP", "Microsoft Dynamics",
 
       # Design
-      "Figma", "Adobe XD", "Sketch", "Photoshop",
+      "Figma", "Adobe XD", "Sketch", "Photoshop", "InVision", "Zeplin",
+      "Wireframing", "Prototyping", "UI/UX", "User Research",
       "Illustrator", "InDesign", "Canva",
 
       # Office & Productivity
-      "Excel", "Microsoft Excel", "PowerPoint", "Word", "VBA",
-      "Google Sheets", "Google Docs",
+      "Excel", "Microsoft Excel", "PowerPoint", "Word", "Outlook", "OneNote",
+      "VBA", "Google Sheets", "Google Docs", "Google Slides",
 
       # Networking
-      "TCP/IP", "DNS", "DHCP", "VPN",
+      "TCP/IP", "DNS", "DHCP", "VPN", "Firewall", "LAN", "WAN",
+      "Subnetting", "Routing", "Switching", "CCNA",
       "Load Balancing", "Reverse Proxy",
 
       # Healthcare
-      "HL7", "FHIR", "HIPAA", "EHR", "EMR",
-      "Azalea Health", "Epic", "Cerner",
+      "HL7", "FHIR", "HIPAA", "EHR", "EMR", "ICD-10", "CPT",
+      "Azalea Health", "Epic", "Cerner", "Meditech", "Athenahealth",
+      "Allscripts",
 
       # HR
-      "HRBP", "Talent Acquisition", "Recruiting",
-      "Onboarding", "Payroll", "Performance Management",
-      "Employee Relations", "ATS", "Workday",
+      "HRBP", "HRSS", "HR Shared Services", "Talent Acquisition", "Recruiting",
+      "Onboarding", "Exit Management", "Offboarding", "Attendance Management",
+      "Payroll", "Performance Management", "HR Operations",
+      "Query Handling", "HR Helpdesk", "Employee Relations", "ATS", "Workday",
       "BambooHR", "Greenhouse", "Lever",
 
       # Finance
       "QuickBooks", "Tally", "SAP Finance",
-      "Oracle Finance", "Financial Analysis", "Accounting",
+      "Oracle Finance", "Financial Analysis", "Accounting", "Bookkeeping",
+      "GAAP", "IFRS", "Budgeting", "Forecasting", "Auditing", "Taxation",
 
       # Marketing
       "SEO", "SEM", "Google Ads", "Facebook Ads",
-      "Content Marketing", "Email Marketing",
+      "Content Marketing", "Email Marketing", "Social Media Marketing",
+      "Affiliate Marketing", "Influencer Marketing", "Brand Management",
+      "Copywriting", "A/B Testing", "Mailchimp",
 
       # Soft Skills
       "Leadership", "Communication", "Teamwork",
       "Problem Solving", "Critical Thinking",
-      "Time Management", "Mentoring",
-      "Stakeholder Management", "Collaboration"
+      "Time Management", "Mentoring", "Adaptability",
+      "Decision Making", "Conflict Resolution", "Attention to Detail",
+      "Multitasking", "Stakeholder Management", "Collaboration"
     ]
     text_downcase = text.downcase
     matched_skills = skill_lib.uniq.select do |skill|
@@ -237,7 +261,7 @@ class UploadController < ApplicationController
     dept_kw = {"Tech"=>%w[developer engineer devops scientist software python java react node],
                "HR"=>%w[hr talent recruitment hrbp],"Sales"=>%w[sales business development],
                "Finance"=>%w[finance accounting],"Marketing"=>%w[marketing seo]}
-    dept = "Tech"
+    dept = ""
     dept_kw.each { |d,kws| dept = d and break if kws.any? { |k| text.downcase.include?(k) } }
     { name: name, email: email, phone: phone, experience: exp,
       ctcCurrent: ctc_c, ctcExpected: ctc_e, noticePeriod: notice,
