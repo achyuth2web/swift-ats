@@ -207,6 +207,14 @@ class UploadController < ApplicationController
       "NetSuite", "Freshdesk", "Zendesk", "ServiceNow", "SAP",
       "Oracle ERP", "Microsoft Dynamics",
 
+      # Sales
+      "Lead Generation", "Cold Calling", "Business Development",
+      "Account Management", "Client Relationship Management",
+      "Sales Pipeline Management", "Negotiation", "Upselling",
+      "Cross-selling", "Quota Attainment", "B2B Sales", "B2C Sales",
+      "Inside Sales", "Field Sales", "Sales Forecasting",
+      "CRM Management", "Contract Negotiation",
+
       # Design
       "Figma", "Adobe XD", "Sketch", "Photoshop", "InVision", "Zeplin",
       "Wireframing", "Prototyping", "UI/UX", "User Research",
@@ -231,12 +239,18 @@ class UploadController < ApplicationController
       "Onboarding", "Exit Management", "Offboarding", "Attendance Management",
       "Payroll", "Performance Management", "HR Operations",
       "Query Handling", "HR Helpdesk", "Employee Relations", "ATS", "Workday",
-      "BambooHR", "Greenhouse", "Lever",
+      "BambooHR", "Greenhouse", "Lever", "Compensation and Benefits",
+      "HRIS", "Statutory Compliance", "Induction", "Grievance Handling",
 
       # Finance
       "QuickBooks", "Tally", "SAP Finance",
-      "Oracle Finance", "Financial Analysis", "Accounting", "Bookkeeping",
-      "GAAP", "IFRS", "Budgeting", "Forecasting", "Auditing", "Taxation",
+      "Oracle Finance", "Financial Analysis", "Financial Reporting",
+      "Accounting", "Bookkeeping", "GAAP", "IFRS", "GAAP/IFRS",
+      "Budgeting", "Forecasting", "Auditing", "Taxation",
+      "Account Reconciliation", "Month-End Close", "Accounts Payable",
+      "Accounts Receivable", "Accounts Payable/Receivable",
+      "Variance Analysis", "Internal Controls", "Advanced Excel",
+      "VLOOKUP", "Pivot Tables",
 
       # Marketing
       "SEO", "SEM", "Google Ads", "Facebook Ads",
@@ -259,10 +273,11 @@ class UploadController < ApplicationController
     .sort_by { |skill| text_downcase.index(skill.downcase) || Float::INFINITY }
     .first(20)
     dept_kw = {"Tech"=>%w[developer engineer devops scientist software python java react node],
-               "HR"=>%w[hr talent recruitment hrbp],"Sales"=>%w[sales business development],
+               "HR"=>%w[hr talent recruitment hrbp],
+               "Sales"=>["sales", "business development", "account executive", "lead generation"],
                "Finance"=>%w[finance accounting],"Marketing"=>%w[marketing seo]}
-    dept = ""
-    dept_kw.each { |d,kws| dept = d and break if kws.any? { |k| text.downcase.include?(k) } }
+    dept_scores = dept_kw.transform_values { |kws| kws.count { |k| text_downcase.include?(k) } }
+    dept = dept_scores.values.max.to_i.zero? ? "" : dept_scores.max_by { |_, score| score }.first
     { name: name, email: email, phone: phone, experience: exp,
       ctcCurrent: ctc_c, ctcExpected: ctc_e, noticePeriod: notice,
       skills: skills, department: dept }
