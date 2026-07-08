@@ -79,6 +79,52 @@ class UploadController < ApplicationController
     ""
   end
 
+  # Matches any short header line ending in "skills"/"competency(-ies)"/"expertise", optionally
+  # preceded by qualifiers ("Core Skills", "Key Skills", "Areas of Expertise", "Core Competencies"...)
+  # instead of enumerating every phrasing a resume author might use.
+  SKILL_HEADER_CORE = "skills?|competenc(?:y|ies)|expertise|skill\\s*set"
+  SKILL_SECTION_HEADER = /\A[a-z&\/\s]{0,30}\b(?:#{SKILL_HEADER_CORE})\b\s*:?\z/i
+  SKILL_SECTION_HEADER_INLINE = /\A[a-z&\/\s]{0,30}\b(?:#{SKILL_HEADER_CORE})\b\s*[:\-]\s*(.+)\z/i
+  SKILL_SECTION_STOP = /\A(experience|work\s+experience|employment\s+history|professional\s+experience|education|projects?|certifications?|summary|objective|profile|achievements|awards|publications|references|languages|interests|hobbies|training)\s*:?\z/i
+
+  # Resume authors phrase skills in endless ways ("Full-Cycle Recruiting", "Boolean Search", etc.)
+  # that a fixed skill_lib can never fully enumerate, so pull the candidate's own Skills
+  # section verbatim as a fallback alongside the curated library matches. The header and its
+  # content may be on the same line ("Skills: A, B, C") or the content may follow on subsequent
+  # lines, so both shapes are handled.
+  def extract_skill_section(text)
+    lines = text.split("\n")
+    start_idx = lines.find_index do |l|
+      stripped = l.strip
+      stripped.match?(SKILL_SECTION_HEADER) || stripped.match?(SKILL_SECTION_HEADER_INLINE)
+    end
+    return "" unless start_idx
+
+    collected = []
+    inline_match = lines[start_idx].strip.match(SKILL_SECTION_HEADER_INLINE)
+    collected << inline_match[1] if inline_match
+
+    (start_idx + 1...lines.length).each do |i|
+      stripped = lines[i].strip
+      break if stripped.match?(SKILL_SECTION_STOP)
+      break if stripped.empty? && collected.any?
+      break if collected.length >= 20
+
+      collected << lines[i] unless stripped.empty?
+    end
+    collected.join("\n")
+  end
+
+  def split_skill_terms(section_text)
+    return [] if section_text.empty?
+
+    section_text
+      .split(/[•·▪●|,;()\n]/)
+      .map { |s| s.strip.gsub(/\A[-:]+\s*|\s*[-:]+\z/, "") }
+      .reject { |s| s.empty? || s.length > 40 || s.split.length > 6 }
+      .uniq(&:downcase)
+  end
+
   def extract_text(file)
     ext = File.extname(file.original_filename).downcase
     case ext
@@ -236,6 +282,9 @@ class UploadController < ApplicationController
 
       # HR
       "HRBP", "HRSS", "HR Shared Services", "Talent Acquisition", "Recruiting",
+      "Full-Cycle Recruiting", "Full Cycle Recruiting", "Sourcing Strategy",
+      "Sourcing", "Boolean Search", "Employer Branding", "Interview Design",
+      "Offer Negotiation", "Recruiting Analytics", "Candidate Experience",
       "Onboarding", "Exit Management", "Offboarding", "Attendance Management",
       "Payroll", "Performance Management", "HR Operations",
       "Query Handling", "HR Helpdesk", "Employee Relations", "ATS", "Workday",
@@ -269,9 +318,16 @@ class UploadController < ApplicationController
     matched_skills = skill_lib.uniq.select do |skill|
       text.match?(/(?<!\w)#{Regexp.escape(skill)}(?!\w)/i)
     end
-    skills = matched_skills
+    raw_skills = split_skill_terms(extract_skill_section(text))
+    all_skills = matched_skills.dup
+    seen = all_skills.map(&:downcase).to_set
+    raw_skills.each do |term|
+      next if seen.include?(term.downcase)
+      all_skills << term
+      seen << term.downcase
+    end
+    skills = all_skills
     .sort_by { |skill| text_downcase.index(skill.downcase) || Float::INFINITY }
-    .first(20)
     dept_kw = {"Tech"=>%w[developer engineer devops scientist software python java react node],
                "HR"=>%w[hr talent recruitment hrbp],
                "Sales"=>["sales", "business development", "account executive", "lead generation"],
