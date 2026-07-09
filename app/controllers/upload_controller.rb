@@ -87,6 +87,20 @@ class UploadController < ApplicationController
   SKILL_SECTION_HEADER_INLINE = /\A[a-z&\/\s]{0,30}\b(?:#{SKILL_HEADER_CORE})\b\s*[:\-]\s*(.+)\z/i
   SKILL_SECTION_STOP = /\A(experience|work\s+experience|employment\s+history|professional\s+experience|education|projects?|certifications?|summary|objective|profile|achievements|awards|publications|references|languages|interests|hobbies|training)\s*:?\z/i
 
+  # Fallback for resumes that never spell out "X years of experience": read the start/end
+  # dates off each job/project entry (e.g. "Jan 2019 - Present", "06/2020 - 12/2022",
+  # "2019 - 2021") and derive tenure from the timeline instead.
+  MONTH_NAMES = {
+    "jan" => 1, "january" => 1, "feb" => 2, "february" => 2, "mar" => 3, "march" => 3,
+    "apr" => 4, "april" => 4, "may" => 5, "jun" => 6, "june" => 6, "jul" => 7, "july" => 7,
+    "aug" => 8, "august" => 8, "sep" => 9, "sept" => 9, "september" => 9, "oct" => 10,
+    "october" => 10, "nov" => 11, "november" => 11, "dec" => 12, "december" => 12
+  }.freeze
+  MONTH_RX_PART = "jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|" \
+                  "aug(?:ust)?|sept?(?:ember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?"
+  DATE_TOKEN_RX = /(?:(?:#{MONTH_RX_PART})\.?\s+\d{4}|\d{1,2}[\/\-]\d{4}|\d{4})/i
+  TIMELINE_RANGE_RX = /(#{DATE_TOKEN_RX})\s*(?:-|–|—|to)\s*(#{DATE_TOKEN_RX}|present|current|till\s*date|ongoing|now)/i
+
   # Resume authors phrase skills in endless ways ("Full-Cycle Recruiting", "Boolean Search", etc.)
   # that a fixed skill_lib can never fully enumerate, so pull the candidate's own Skills
   # section verbatim as a fallback alongside the curated library matches. The header and its
@@ -125,6 +139,53 @@ class UploadController < ApplicationController
       .uniq(&:downcase)
   end
 
+  def current_month_index
+    Date.today.year * 12 + Date.today.month
+  end
+
+  def parse_flex_month_index(str, end_of_period:)
+    str = str.strip
+    return nil if str.empty?
+    return current_month_index if str.match?(/present|current|till\s*date|ongoing|now/i)
+
+    if (m = str.match(/\A([a-z]+)\.?\s+(\d{4})\z/i))
+      month = MONTH_NAMES[m[1].downcase]
+      return nil unless month
+      year = m[2].to_i
+    elsif (m = str.match(/\A(\d{1,2})[\/\-](\d{4})\z/))
+      month = m[1].to_i
+      year = m[2].to_i
+      return nil unless (1..12).cover?(month)
+    elsif (m = str.match(/\A(\d{4})\z/))
+      year = m[1].to_i
+      month = end_of_period ? 12 : 1
+    else
+      return nil
+    end
+    return nil if year < 1950 || year > Date.today.year + 1
+
+    year * 12 + month
+  end
+
+  # Sums the distinct calendar months covered by any job/project date range found in the
+  # resume (de-duplicating overlaps between concurrent entries) and converts to years.
+  def extract_experience_from_timeline(text)
+    months = Set.new
+    text.scan(TIMELINE_RANGE_RX) do |start_str, end_str|
+      start_idx = parse_flex_month_index(start_str, end_of_period: false)
+      end_idx   = parse_flex_month_index(end_str, end_of_period: true)
+      next unless start_idx && end_idx
+      next if end_idx < start_idx
+      next if (end_idx - start_idx) > 600 # guard against nonsensical ranges
+
+      (start_idx..end_idx).each { |m| months << m }
+    end
+
+    return 0 if months.empty?
+
+    (months.size / 12.0).round
+  end
+
   def extract_text(file)
     ext = File.extname(file.original_filename).downcase
     case ext
@@ -145,7 +206,7 @@ class UploadController < ApplicationController
     email = text.scan(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/).first || ""
     phone = extract_phone(text)
     exp_m = text.match(/(\d+(?:\.\d+)?)\+?\s*(?:years?|yrs?)\s*(?:of\s+)?(?:experience|exp)/i)
-    exp   = exp_m ? exp_m[1].to_f.round : 0
+    exp   = exp_m ? exp_m[1].to_f.round : extract_experience_from_timeline(text)
     ctc_m = text.match(/current\s*(?:ctc|salary)[:\s]*(?:rs\.?|inr|₹)?\s*(\d+(?:\.\d+)?)\s*(?:lpa|l)/i) ||
              text.match(/(\d+(?:\.\d+)?)\s*(?:lpa|l\.p\.a)/i)
     ctc_c = ctc_m ? ctc_m[1] : ""
@@ -315,10 +376,15 @@ class UploadController < ApplicationController
       "Multitasking", "Stakeholder Management", "Collaboration"
     ]
     text_downcase = text.downcase
+    skill_section = extract_skill_section(text)
+    # Scope skill_lib matching to the resume's own Skills section when it has one, so a
+    # tool named in a Projects/Experience bullet isn't counted as a skill. Only fall back
+    # to scanning the whole resume when no Skills heading is present at all.
+    skill_scan_text = skill_section.empty? ? text : skill_section
     matched_skills = skill_lib.uniq.select do |skill|
-      text.match?(/(?<!\w)#{Regexp.escape(skill)}(?!\w)/i)
+      skill_scan_text.match?(/(?<!\w)#{Regexp.escape(skill)}(?!\w)/i)
     end
-    raw_skills = split_skill_terms(extract_skill_section(text))
+    raw_skills = split_skill_terms(skill_section)
     all_skills = matched_skills.dup
     seen = all_skills.map(&:downcase).to_set
     raw_skills.each do |term|
