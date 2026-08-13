@@ -29,7 +29,7 @@
         <div class="detail-grid">
           <div class="detail-item"><div class="detail-label">Email</div><div class="detail-value"><%= mail_to @candidate.email, @candidate.email, style: "color:var(--accent2)" %></div></div>
           <div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value"><%= @candidate.phone||"—" %></div></div>
-          <div class="detail-item"><div class="detail-label">Experience</div><div class="detail-value"><%= @candidate.experience_years %> years</div></div>
+          <div class="detail-item"><div class="detail-label">Experience</div><div class="detail-value"><%= @candidate.experience_years %></div></div>
           <div class="detail-item"><div class="detail-label">Designation</div><div class="detail-value"><%= @candidate.designation||"—" %></div></div>
           <div class="detail-item"><div class="detail-label">Current CTC</div><div class="detail-value"><%= @candidate.ctc_current.present? ? "#{@candidate.ctc_current} #{@candidate.ctc_unit}" : "—" %></div></div>
           <div class="detail-item"><div class="detail-label">Expected CTC</div><div class="detail-value"><%= @candidate.ctc_expected.present? ? "#{@candidate.ctc_expected} #{@candidate.ctc_unit}" : "—" %></div></div>

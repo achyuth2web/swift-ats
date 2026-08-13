@@ -19,7 +19,7 @@
           <div class="detail-item"><div class="detail-label">Hiring Manager</div><div class="detail-value"><%= @job.hiring_manager||"—" %></div></div>
           <div class="detail-item"><div class="detail-label">Position Type</div><div class="detail-value"><%= @job.position_type %></div></div>
           <div class="detail-item"><div class="detail-label">Openings</div><div class="detail-value"><%= @job.openings %></div></div>
-          <div class="detail-item"><div class="detail-label">Experience</div><div class="detail-value"><%= @job.experience_years %>+ years</div></div>
+          <div class="detail-item"><div class="detail-label">Experience</div><div class="detail-value"><%= @job.experience_years %></div></div>
           <div class="detail-item"><div class="detail-label">CTC Budget</div><div class="detail-value"><%= @job.ctc_budget.present? ? "#{@job.ctc_budget} LPA" : "—" %></div></div>
           <div class="detail-item"><div class="detail-label">Open Date</div><div class="detail-value"><%= @job.open_date&.strftime("%d %b %Y")||"—" %></div></div>
           <% if @job.time_to_close %><div class="detail-item"><div class="detail-label">Time to Close</div><div class="detail-value" style="color:var(--green)"><%= @job.time_to_close %> days</div></div><% end %>

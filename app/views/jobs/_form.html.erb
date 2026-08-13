@@ -18,9 +18,11 @@
     <div class="form-group"><label class="label">Status</label><%= f.select :status, Job::STATUSES, {}, class: "select" %></div>
     <div class="form-group"><label class="label">Open Date</label><%= f.date_field :open_date, class: "input" %></div>
   </div>
+  <div class="form-group" id="closing-notes-grp" style="<%= job.status=='Closed' ? '' : 'display:none' %>"><label class="label">Closing Notes</label><%= f.text_area :closing_notes, class: "textarea" %></div>
+  <div class="form-group" id="onhold-notes-grp" style="<%= job.status=='On-Hold' ? '' : 'display:none' %>"><label class="label">On Hold Notes</label><%= f.text_area :onhold_notes, class: "textarea" %></div>
   <div class="input-row">
     <div class="form-group"><label class="label">Openings</label><%= f.number_field :openings, class: "input", min: 1, value: job.openings||1 %></div>
-    <div class="form-group"><label class="label">Experience (years)</label><%= f.number_field :experience_years, class: "input", min: 0 %></div>
+    <div class="form-group"><label class="label">Experience (years)</label><%= f.text_field :experience_years, class: "input" %></div>
   </div>
   <div id="opening-details-wrapper">
     <h4>Opening Details</h4>
@@ -68,6 +70,7 @@
   </div>
   <div class="input-row">
     <div class="form-group"><label class="label">Naukri URL</label><%= f.text_field :naukri_url, class: "input", placeholder: "https://naukri.com/..." %></div>
+    <div class="form-group"><label class="label">Interview Type</label><%= f.text_field :interview_type, class: "input" %></div>
   </div>
   <div class="form-group"><label class="label">Description</label><%= f.text_area :description, class: "textarea" %></div>
   <% if defined?(recruiters) && recruiters&.any? %>
@@ -90,10 +93,24 @@
 document.addEventListener("turbo:load", function() {
   const positionType = document.querySelector('select[name="job[position_type]"]');
   const jobType = document.querySelector('select[name="job[job_type]"]');
+  const jobStatus = document.querySelector('select[name="job[status]"]');
 
   positionType?.addEventListener("change", function() {
     document.getElementById("replace-grp").style.display =
       this.value === "Replacement" ? "" : "none";
+  });
+
+  jobStatus?.addEventListener("change", function() {
+    document.getElementById("closing-notes-grp").style.display =
+      this.value === "Closed" ? "" : "none";
+    document.getElementById("onhold-notes-grp").style.display =
+      this.value === "On-Hold" ? "" : "none";
+
+    if (this.value == "Closed") {
+      document.getElementById("job_onhold_notes").value = "";
+    } else if (this.value == "On-Hold") {
+      document.getElementById("job_closing_notes").value = "";
+    }
   });
 
   jobType?.addEventListener("change", function() {

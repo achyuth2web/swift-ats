@@ -10,6 +10,9 @@ class ReportsController < ApplicationController
     tto = @jobs.select(&:time_to_onboard)
     @avg_tto  = tto.any? ? (tto.sum(&:time_to_onboard) / tto.size).round : nil
     @tto_jobs = tto.sort_by(&:time_to_onboard)
+    ctot = @jobs.select(&:close_to_onboard_time)
+    @avg_ctot  = ctot.any? ? (ctot.sum(&:close_to_onboard_time) / ctot.size).round : nil
+    @ctot_jobs = ctot.sort_by(&:close_to_onboard_time)
     @source_counts  = Candidate::SOURCES.map { |s| [s, @candidates.where(source: s).count] }.to_h
     @dept_counts    = Candidate::DEPARTMENTS.map { |d| [d, @candidates.where(department: d).count] }.to_h
     @status_counts  = Candidate::STATUSES.index_with { |s| @candidates.where(status: s).count }

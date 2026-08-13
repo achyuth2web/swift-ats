@@ -6,7 +6,8 @@ class Candidate < ApplicationRecord
   has_many :status_histories, class_name: "CandidateStatusHistory", dependent: :destroy
   has_many :email_logs, dependent: :destroy
   STATUSES    = %w[New Screening Interview Offer Rejected Hired].freeze
-  SOURCES     = ["LinkedIn","Naukri","Referral","Job Board","Other"].freeze
+  SOURCES     = ["LinkedIn","Naukri","Referral","Job Board","Walk-in","Other"].freeze
+  REFERRAL_TYPES = ["Employee","Others"].freeze
   DEPARTMENTS = %w[Tech HR Sales Finance Operations Marketing].freeze
   validates :name,   presence: true, length: { minimum: 5, maximum: 50 }
   validates :email,  presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }

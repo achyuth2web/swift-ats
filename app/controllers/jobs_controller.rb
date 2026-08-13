@@ -43,10 +43,14 @@ class JobsController < ApplicationController
       update_recruiters
       if @job.status != old_status
         @job.status_histories.create!(status: @job.status, user: current_user)
-        @job.update_columns(
-          close_date:  @job.status == "Closed"   ? Date.today : @job.close_date,
-          reopen_date: @job.status == "Reopened" ? Date.today : @job.reopen_date
-        )
+        updates = {}
+
+        updates[:close_date] = @job.job_openings.first&.closed_date || Date.current if @job.status == "Closed"
+        updates[:reopen_date] = Date.current if @job.status == "Reopened"
+        updates[:onhold_notes] = "" if @job.status == "Closed"
+        updates[:closing_notes] = "" if @job.status == "On-Hold"
+
+        @job.update_columns(updates)
       end
       log_activity("#{current_user.name} updated job: #{@job.title}")
       redirect_to jobs_path, notice: "Job updated."
@@ -58,9 +62,15 @@ class JobsController < ApplicationController
   def update_status
     new_status = params[:status]
     return redirect_to jobs_path unless Job::STATUSES.include?(new_status)
-    @job.update!(status: new_status,
-      close_date:  new_status == "Closed"   ? Date.today : @job.close_date,
-      reopen_date: new_status == "Reopened" ? Date.today : @job.reopen_date)
+    updates = {}
+
+    updates[:status] = new_status
+    updates[:close_date] = Date.current if new_status == "Closed"
+    updates[:reopen_date] = Date.current if new_status == "Reopened"
+    updates[:onhold_notes] = "" if new_status == "Closed"
+    updates[:closing_notes] = "" if new_status == "On-Hold"
+
+    @job.update!(updates)
     @job.status_histories.create!(status: new_status, user: current_user)
     log_activity("#{current_user.name} changed #{@job.title} to #{new_status}")
     redirect_to jobs_path, notice: "Status updated to #{new_status}."
@@ -80,7 +90,8 @@ class JobsController < ApplicationController
   def job_params
     params.require(:job).permit(:title,:company,:department,:hiring_manager,:position_type,
       :replacing_employee,:openings,:status,:open_date,:description,:skills_list,
-      :experience_years,:ctc_budget,:naukri_url, :job_type, :stipend, job_openings_attributes: [
+      :experience_years,:ctc_budget,:naukri_url, :job_type, :stipend, :closing_notes,
+      :onhold_notes, :interview_type, job_openings_attributes: [
       :id,
       :sequence_no,
       :closed_date,

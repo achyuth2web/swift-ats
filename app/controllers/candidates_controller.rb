@@ -232,6 +232,7 @@ class CandidatesController < ApplicationController
   def candidate_params
     params.require(:candidate).permit(:name,:email,:phone,:role,:department,:designation,
       :skills_list,:experience_years,:status,:score,:source,:ctc_current,:ctc_expected,
-      :ctc_unit,:notice_period,:notes,:job_id,:recruiter_id,:resume)
+      :ctc_unit,:notice_period,:notes,:referral_type,:other_referrals,:employee_name,:employee_code,
+      :employee_company,:job_id,:recruiter_id,:resume)
   end
 end

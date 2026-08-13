@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_06_130000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_12_102643) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -41,7 +41,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_06_130000) do
     t.string "department"
     t.string "designation"
     t.string "skills_list"
-    t.integer "experience_years", default: 0
+    t.string "experience_years", default: "0"
     t.string "status", default: "New"
     t.integer "score", default: 0
     t.string "source"
@@ -59,6 +59,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_06_130000) do
     t.datetime "updated_at", null: false
     t.datetime "discarded_at"
     t.string "resume_file_key"
+    t.string "referral_type"
+    t.string "employee_name"
+    t.string "employee_code"
+    t.string "employee_company"
+    t.string "other_referrals"
     t.index ["discarded_at"], name: "index_candidates_on_discarded_at"
     t.index ["job_id"], name: "index_candidates_on_job_id"
     t.index ["recruiter_id"], name: "index_candidates_on_recruiter_id"
@@ -146,7 +151,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_06_130000) do
     t.date "hire_date"
     t.text "description"
     t.string "skills_list"
-    t.integer "experience_years", default: 0
+    t.string "experience_years", default: "0"
     t.string "ctc_budget"
     t.string "naukri_url"
     t.datetime "created_at", null: false
@@ -154,6 +159,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_06_130000) do
     t.datetime "discarded_at"
     t.string "job_type", default: "Full-Time"
     t.string "stipend"
+    t.text "closing_notes"
+    t.text "onhold_notes"
+    t.string "interview_type"
     t.index ["discarded_at"], name: "index_jobs_on_discarded_at"
   end
 

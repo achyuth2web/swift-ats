@@ -43,7 +43,7 @@
       <div class="job-meta">
         <span class="badge badge-gray"><%= j.position_type %></span>
         <span class="badge badge-gray"><%= j.openings %> opening<%= j.openings!=1?'s':'' %></span>
-        <span class="badge badge-gray"><%= j.experience_years %>+ yrs</span>
+        <span class="badge badge-gray"><%= j.experience_years %></span>
         <span class="badge badge-gray"><%= j.job_type %></span>
         <% if (j.job_type == "Full-Time") && j.ctc_budget.present? %><span class="badge badge-purple">₹<%= j.ctc_budget %> LPA</span><% end %>
         <% if (j.job_type != "Full-Time") && j.stipend.present? %><span class="badge badge-purple">₹<%= j.stipend %></span><% end %>
