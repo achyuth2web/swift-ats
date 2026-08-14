@@ -7,6 +7,7 @@ class User < ApplicationRecord
   has_many :owned_candidates, class_name: "Candidate", foreign_key: :recruiter_id, dependent: :nullify
   has_many :activity_logs, dependent: :nullify
   has_many :email_logs, dependent: :destroy
+  has_many :calendar_integrations, dependent: :destroy
   validates :name, presence: true
   validates :role, inclusion: { in: ROLES }
 
@@ -44,5 +45,8 @@ class User < ApplicationRecord
     else
       Interview.kept.where(candidate_id: visible_candidates.select(:id))
     end
+  end
+  def google_calendar_connected?
+    calendar_integrations.google.exists?
   end
 end

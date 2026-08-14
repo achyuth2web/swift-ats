@@ -24,6 +24,11 @@ gem 'roo'
 # AWS Gem
 gem 'aws-sdk-s3'
 
+# Google Oauth
+gem "omniauth"
+gem "omniauth-google-oauth2"
+gem "omniauth-rails_csrf_protection"
+
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
 end
