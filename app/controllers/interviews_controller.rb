@@ -64,7 +64,7 @@ class InterviewsController < ApplicationController
     redirect_to interviews_path, alert: "Not found."
   end
   def interview_params
-    params.require(:interview).permit(:candidate_id,:round_name,:round_number,:interviewer,:interviewer_email,
+    params.require(:interview).permit(:candidate_id,:round_name,:interviewer,:interviewer_email,
       :scheduled_at,:status,:outcome,:feedback,:rating,:mode_of_interview)
   end
 end

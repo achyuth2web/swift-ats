@@ -4,10 +4,7 @@
     <%= f.select :candidate_id, @candidates.map{|c|[c.name+" — "+c.role.to_s,c.id]},{include_blank:"Select candidate"},class:"select" %>
   </div>
   <div class="input-row">
-    <div class="form-group"><label class="label">Round Name *</label>
-      <%= f.select :round_name, ["Screening","Technical 1","Technical 2","HR Round","Final Round","Managerial"],{include_blank:"Select round"},class:"select" %>
-    </div>
-    <div class="form-group"><label class="label">Round Number</label><%= f.text_field :round_number, class:"input" %></div>
+    <div class="form-group"><label class="label">Round Name *</label><%= f.text_field :round_name, class:"input" %></div>
   </div>
   <div class="input-row">
     <div class="form-group"><label class="label">Interviewer</label><%= f.text_field :interviewer, class:"input" %></div>
