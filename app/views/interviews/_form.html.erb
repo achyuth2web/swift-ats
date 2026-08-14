@@ -7,7 +7,7 @@
     <div class="form-group"><label class="label">Round Name *</label>
       <%= f.select :round_name, ["Screening","Technical 1","Technical 2","HR Round","Final Round","Managerial"],{include_blank:"Select round"},class:"select" %>
     </div>
-    <div class="form-group"><label class="label">Round Number</label><%= f.number_field :round_number, class:"input", min:1, value: interview.round_number||1 %></div>
+    <div class="form-group"><label class="label">Round Number</label><%= f.text_field :round_number, class:"input" %></div>
   </div>
   <div class="input-row">
     <div class="form-group"><label class="label">Interviewer</label><%= f.text_field :interviewer, class:"input" %></div>
@@ -15,6 +15,7 @@
   </div>
   <div class="input-row">
     <div class="form-group"><label class="label">Scheduled At</label><%= f.datetime_local_field :scheduled_at, class:"input" %></div>
+    <div class="form-group"><label class="label">Mode of Interview</label><%= f.text_field :mode_of_interview, class:"input" %></div>
   </div>
   <div class="input-row">
     <div class="form-group"><label class="label">Status</label><%= f.select :status, Interview::STATUSES, {}, class:"select" %></div>

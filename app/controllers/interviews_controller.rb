@@ -26,7 +26,7 @@ class InterviewsController < ApplicationController
                     .order("scheduled_at ASC NULLS LAST")
   end
   def new
-    @interview  = Interview.new(round_number: 1, candidate_id: params[:candidate_id])
+    @interview  = Interview.new(candidate_id: params[:candidate_id])
     @candidates = current_user.visible_candidates.order(:name)
   end
   def create
@@ -65,6 +65,6 @@ class InterviewsController < ApplicationController
   end
   def interview_params
     params.require(:interview).permit(:candidate_id,:round_name,:round_number,:interviewer,:interviewer_email,
-      :scheduled_at,:status,:outcome,:feedback,:rating)
+      :scheduled_at,:status,:outcome,:feedback,:rating,:mode_of_interview)
   end
 end

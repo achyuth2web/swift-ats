@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_12_102643) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_14_113155) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -88,7 +88,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_12_102643) do
   create_table "interviews", force: :cascade do |t|
     t.bigint "candidate_id", null: false
     t.string "round_name", null: false
-    t.integer "round_number", default: 1
+    t.string "round_number"
     t.string "interviewer"
     t.datetime "scheduled_at"
     t.string "status", default: "Scheduled"
@@ -101,6 +101,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_12_102643) do
     t.string "interviewer_email"
     t.string "feedback_token"
     t.datetime "feedback_submitted_at"
+    t.string "mode_of_interview"
     t.index ["candidate_id"], name: "index_interviews_on_candidate_id"
     t.index ["discarded_at"], name: "index_interviews_on_discarded_at"
     t.index ["feedback_token"], name: "index_interviews_on_feedback_token", unique: true
