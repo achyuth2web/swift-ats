@@ -10,7 +10,7 @@ class CandidatesController < ApplicationController
     @jobs       = current_user.visible_jobs.order(:title)
   end
   def show
-    @interviews     = @candidate.interviews.kept.order(:round_number, :scheduled_at)
+    @interviews     = @candidate.interviews.kept.order(:id, :scheduled_at)
     @job            = @candidate.job
     @status_history = @candidate.status_histories.order(created_at: :desc).includes(:user)
   end

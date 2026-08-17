@@ -6,7 +6,7 @@
       <% if @interview.candidate.job %>
         <div class="detail-item"><div class="detail-label">Job / Position</div><div class="detail-value"><%= @interview.candidate.job.title %></div></div>
       <% end %>
-      <div class="detail-item"><div class="detail-label">Interview Type</div><div class="detail-value"><%= @interview.round_name %> (Round <%= @interview.round_number %>)</div></div>
+      <div class="detail-item"><div class="detail-label">Interview Type</div><div class="detail-value"><%= @interview.round_name %></div></div>
       <div class="detail-item"><div class="detail-label">Date &amp; Time</div><div class="detail-value"><%= @interview.scheduled_display %></div></div>
       <div class="detail-item"><div class="detail-label">Interviewer</div><div class="detail-value"><%= @interview.interviewer.presence || "—" %></div></div>
     </div>

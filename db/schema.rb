@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_13_094759) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_14_113155) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -105,7 +105,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_13_094759) do
   create_table "interviews", force: :cascade do |t|
     t.bigint "candidate_id", null: false
     t.string "round_name", null: false
-    t.integer "round_number", default: 1
+    t.string "round_number"
     t.string "interviewer"
     t.datetime "scheduled_at"
     t.string "status", default: "Scheduled"
@@ -126,6 +126,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_13_094759) do
     t.string "calendar_sync_status"
     t.index ["calendar_integration_id"], name: "index_interviews_on_calendar_integration_id"
     t.index ["calendar_provider", "external_event_id"], name: "index_interviews_on_calendar_provider_and_external_event_id", unique: true
+    t.string "mode_of_interview"
     t.index ["candidate_id"], name: "index_interviews_on_candidate_id"
     t.index ["discarded_at"], name: "index_interviews_on_discarded_at"
     t.index ["feedback_token"], name: "index_interviews_on_feedback_token", unique: true
