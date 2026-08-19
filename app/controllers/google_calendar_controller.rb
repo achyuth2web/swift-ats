@@ -22,7 +22,7 @@ class GoogleCalendarController < ApplicationController
       email: auth.info.email,
       calendar_id: "primary",
       access_token: credentials.token,
-      token_expires_at: credentials.expires_at
+      token_expires_at: Time.at(credentials.expires_at)
     )
 
     # Google may not return a refresh token on every login.

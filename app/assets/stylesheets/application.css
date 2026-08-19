@@ -1276,3 +1276,407 @@ tbody td {
 .pagination .disabled {
     opacity: 0.5;
 }
+
+/* =========================================================
+   FullCalendar - ATS overrides
+   ========================================================= */
+
+#interview-calendar {
+    --fc-border-color: #d9dee7;
+    --fc-page-bg-color: #ffffff;
+    --fc-neutral-bg-color: #f8fafc;
+    --fc-today-bg-color: #f1f5f9;
+    --fc-list-event-hover-bg-color: #f8fafc;
+}
+
+/* Calendar background */
+#interview-calendar .fc {
+    background: #ffffff;
+    color: #334155;
+}
+
+/* ---------------------------------------------------------
+   Toolbar
+   --------------------------------------------------------- */
+
+#interview-calendar .fc-toolbar {
+    margin-bottom: 20px;
+}
+
+#interview-calendar .fc-toolbar-title {
+    color: #1e293b !important;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+/* Previous / Next / Today buttons */
+#interview-calendar .fc-button {
+    background: #334155 !important;
+    border-color: #334155 !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+#interview-calendar .fc-button:hover {
+    background: #1e293b !important;
+    border-color: #1e293b !important;
+}
+
+#interview-calendar .fc-button:focus {
+    box-shadow: none !important;
+}
+
+/* Active Month / Week / Day button */
+#interview-calendar .fc-button-active {
+    background: #0f172a !important;
+    border-color: #0f172a !important;
+}
+
+/* ---------------------------------------------------------
+   Day / Week headers
+   --------------------------------------------------------- */
+
+#interview-calendar .fc-col-header-cell {
+    background: #1e293b !important;
+}
+
+#interview-calendar .fc-col-header-cell-cushion {
+    color: #ffffff !important;
+    font-weight: 600;
+    text-decoration: none !important;
+    padding: 8px 4px;
+}
+
+/* ---------------------------------------------------------
+   Calendar cells
+   --------------------------------------------------------- */
+
+#interview-calendar .fc-daygrid-day,
+#interview-calendar .fc-timegrid-col {
+    background: #ffffff !important;
+}
+
+/* Date numbers */
+#interview-calendar .fc-daygrid-day-number {
+    color: #334155 !important;
+    font-weight: 500;
+    text-decoration: none !important;
+}
+
+/* Previous/next month dates */
+#interview-calendar .fc-day-other .fc-daygrid-day-number {
+    color: #94a3b8 !important;
+}
+
+/* Today */
+#interview-calendar .fc-day-today {
+    background: #f1f5f9 !important;
+}
+
+/* ---------------------------------------------------------
+   IMPORTANT: override global ATS table hover styles
+   --------------------------------------------------------- */
+
+#interview-calendar tbody tr:hover {
+    background: transparent !important;
+    color: inherit !important;
+}
+
+#interview-calendar tbody tr:hover td {
+    background: inherit !important;
+    color: inherit !important;
+}
+
+/* Don't change event appearance when calendar row is hovered */
+#interview-calendar tbody tr:hover .fc-event {
+    color: #ffffff !important;
+}
+
+/* ---------------------------------------------------------
+   Interview events
+   --------------------------------------------------------- */
+
+#interview-calendar .fc-event {
+    background: #2563eb !important;
+    border: 1px solid #2563eb !important;
+    color: #ffffff !important;
+    border-radius: 5px;
+    padding: 2px 4px;
+    cursor: pointer;
+}
+
+#interview-calendar .fc-event:hover {
+    background: #1d4ed8 !important;
+    border-color: #1d4ed8 !important;
+    color: #ffffff !important;
+}
+
+/* Event title */
+#interview-calendar .fc-event-title,
+#interview-calendar .fc-event-time {
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+/* ---------------------------------------------------------
+   Grid borders
+   --------------------------------------------------------- */
+
+#interview-calendar .fc-scrollgrid {
+    border-color: #d9dee7 !important;
+}
+
+#interview-calendar .fc-scrollgrid td,
+#interview-calendar .fc-scrollgrid th {
+    border-color: #d9dee7 !important;
+}
+
+/* ---------------------------------------------------------
+   Time grid
+   --------------------------------------------------------- */
+
+#interview-calendar .fc-timegrid-slot-label {
+    color: #64748b !important;
+}
+
+#interview-calendar .fc-timegrid-axis-cushion {
+    color: #64748b !important;
+}
+
+/* Current time indicator */
+#interview-calendar .fc-timegrid-now-indicator-line {
+    border-color: #ef4444 !important;
+}
+
+/* =========================================================
+   FullCalendar Week / Day view
+   ========================================================= */
+
+/* Day headers */
+#interview-calendar .fc-col-header-cell {
+    background: #1e293b !important;
+}
+
+#interview-calendar .fc-col-header-cell .fc-col-header-cell-cushion {
+    color: #ffffff !important;
+}
+
+/* Today's header should also stay dark */
+#interview-calendar .fc-col-header-cell.fc-day-today {
+    background: #1e293b !important;
+}
+
+#interview-calendar .fc-col-header-cell.fc-day-today .fc-col-header-cell-cushion {
+    color: #ffffff !important;
+}
+
+/* Today's column */
+#interview-calendar .fc-timegrid-col.fc-day-today {
+    background: #f8fafc !important;
+}
+
+/* Time labels */
+#interview-calendar .fc-timegrid-slot-label,
+#interview-calendar .fc-timegrid-slot-label-cushion,
+#interview-calendar .fc-timegrid-axis-cushion {
+    color: #64748b !important;
+}
+
+/* Time grid cells */
+#interview-calendar .fc-timegrid-slot {
+    background: #ffffff !important;
+}
+
+/* Grid borders */
+#interview-calendar .fc-timegrid-slot,
+#interview-calendar .fc-timegrid-axis,
+#interview-calendar .fc-timegrid-col {
+    border-color: #d9dee7 !important;
+}
+
+/* Current time line */
+#interview-calendar .fc-timegrid-now-indicator-line {
+    border-color: #ef4444 !important;
+}
+
+#interview-calendar .fc-timegrid-now-indicator-arrow {
+    border-top-color: #ef4444 !important;
+}
+
+/* Events */
+#interview-calendar .fc-timegrid-event {
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+}
+
+#interview-calendar .fc-timegrid-event .fc-event-main {
+    color: #ffffff !important;
+}
+
+#interview-calendar .fc-timegrid-event .fc-event-time,
+#interview-calendar .fc-timegrid-event .fc-event-title {
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   Interview Form - Calendar & Invitation
+   ========================================================= */
+
+.form-section {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.section-title {
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* Radio buttons */
+
+.radio-group {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.radio-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.radio-option input[type="radio"] {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #2563eb;
+}
+
+/* Checkboxes */
+
+.checkbox-group {
+    margin-bottom: 12px;
+}
+
+.checkbox-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.checkbox-option input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #2563eb;
+}
+
+/* Select and text fields */
+
+.calendar-invitation-section .form-control,
+.attendees-section .form-control {
+    width: 100%;
+    max-width: 500px;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+.calendar-invitation-section .form-control:focus,
+.attendees-section .form-control:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+/* =========================================================
+   Attendees
+   ========================================================= */
+
+.attendees-section {
+    margin-top: 20px;
+}
+
+.attendee-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.attendee-row:last-child {
+    border-bottom: none;
+}
+
+.attendee-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 130px;
+    cursor: pointer;
+}
+
+.attendee-checkbox input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #2563eb;
+}
+
+.attendee-role {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.attendee-email {
+    font-size: 12px;
+}
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 768px) {
+    .form-section {
+        padding: 16px;
+    }
+
+    .radio-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .attendee-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .attendee-checkbox {
+        min-width: auto;
+    }
+
+    .calendar-invitation-section .form-control {
+        max-width: 100%;
+    }
+}

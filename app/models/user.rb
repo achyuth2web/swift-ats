@@ -49,4 +49,13 @@ class User < ApplicationRecord
   def google_calendar_connected?
     calendar_integrations.google.exists?
   end
+  def outlook_calendar_connected?
+    calendar_integrations.outlook.exists?
+  end
+  def google_calendar_integration
+    calendar_integrations.google.first
+  end
+  def outlook_calendar_integration
+    calendar_integrations.outlook.first
+  end
 end

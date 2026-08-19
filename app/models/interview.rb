@@ -12,4 +12,11 @@ class Interview < ApplicationRecord
   def feedback_submitted?
     feedback_submitted_at.present?
   end
+  def attendees
+    attendees = []
+    attendees << candidate.email if candidate&.email.present?
+    attendees << candidate.recruiter.email if candidate&.recruiter&.email.present?
+    attendees << interviewer_email if interviewer_email.present?
+    attendees.uniq
+  end
 end

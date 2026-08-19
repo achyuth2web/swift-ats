@@ -22,8 +22,117 @@
     <%= f.select :rating, [[1,"★"],[2,"★★"],[3,"★★★"],[4,"★★★★"],[5,"★★★★★"]].map{|v,l|[l,v]},{include_blank:"No rating"},class:"select",style:"max-width:200px" %>
   </div>
   <div class="form-group"><label class="label">Feedback</label><%= f.text_area :feedback, class:"textarea" %></div>
+  
+  <div class="form-section calendar-invitation-section">
+    <div class="section-title">
+      <span class="fw-600">Calendar & Invitation</span>
+    </div>
+
+    <!-- Calendar -->
+    <div class="form-group">
+      <label class="label">Calendar Type</label>
+
+      <div class="radio-group">
+        <label class="label radio-option">
+          <%= f.radio_button :calendar_provider,
+                "google",
+                class: "calendar-provider-radio" %>
+          <span>Google Calendar</span>
+        </label>
+
+        <label class="label radio-option">
+          <%= f.radio_button :calendar_provider,
+                "outlook",
+                class: "calendar-provider-radio" %>
+          <span>Outlook Calendar</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Calendar Event -->
+    <div class="form-group checkbox-group">
+      <label class="label checkbox-option">
+        <%= f.check_box :create_calendar_event,
+              {},
+              "1",
+              "0" %>
+        <span>Create calendar event</span>
+      </label>
+    </div>
+
+    <!-- Send Invitation -->
+    <div class="form-group checkbox-group">
+      <label class="label checkbox-option">
+        <%= f.check_box :send_calendar_invitation,
+              {},
+              "1",
+              "0" %>
+        <span>Send invitation to attendees</span>
+      </label>
+    </div>
+
+    <div class="input-row">
+      <div class="form-group">
+        <label class="label">Meeting Type</label>
+        <div class="radio-group" style="margin-top: 10px;">
+          <label class="label radio-option">
+            <%= f.radio_button :meeting_type,
+                  "online",
+                  class: "meeting-type-radio" %>
+            <span>Online</span>
+          </label>
+
+          <label class="label radio-option">
+            <%= f.radio_button :meeting_type,
+                  "in_person",
+                  class: "meeting-type-radio" %>
+            <span>In-person</span>
+          </label>
+        </div>
+      </div>
+
+      <div
+        id="location-group"
+        class="form-group"
+        style="display: none;"
+      >
+        <%= f.label :location,
+              "Location",
+              class: "label" %>
+        <%= f.text_field :location,
+              class: "input",
+              placeholder: "Enter interview location" %>
+      </div>
+    </div>
+  </div>
+
   <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px">
     <%= link_to "Cancel", interviews_path, class:"btn btn-ghost" %>
     <%= f.submit interview.persisted? ? "Update Interview" : "Schedule Interview", class:"btn btn-primary" %>
   </div>
 <% end %>
+<script>
+document.addEventListener("turbo:load", function () {
+  const meetingTypes = document.querySelectorAll(
+    'input[name="interview[meeting_type]"]'
+  );
+
+  const locationGroup = document.getElementById("location-group");
+
+  if (!meetingTypes.length || !locationGroup) return;
+
+  function toggleMeetingFields() {
+    const selected = document.querySelector(
+      'input[name="interview[meeting_type]"]:checked'
+    )?.value;
+
+    locationGroup.style.display = selected === "in_person" ? "" : "none";
+  }
+
+  meetingTypes.forEach((radio) => {
+    radio.addEventListener("change", toggleMeetingFields);
+  });
+
+  toggleMeetingFields();
+});
+</script>

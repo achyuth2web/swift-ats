@@ -33,7 +33,8 @@ Rails.application.routes.draw do
     member { patch :toggle_active }
   end
   get  "/settings",               to: "settings#index",           as: :settings
-  get  "/calendar_integrations",  to: "calendar_integrations#index",          as: :calendar_integrations
+  get  "/calendar_integrations",  to: "calendar_integrations#index",  as: :calendar_integrations
+  get  "/calendar",  to: "calendars#index",  as: :calendar
 
   resources :naukri_configurations, only: [:index, :create]
 
