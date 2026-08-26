@@ -62,7 +62,8 @@ class GoogleCalendarService
     @service.update_event(
       interview.calendar_id,
       interview.external_event_id,
-      event
+      event,
+      send_updates: interview.send_calendar_invitation? ? "all" : "none"
     )
   end
 
@@ -71,7 +72,8 @@ class GoogleCalendarService
 
     @service.delete_event(
       interview.calendar_id,
-      interview.external_event_id
+      interview.external_event_id,
+      send_updates: interview.send_calendar_invitation? ? "all" : "none"
     )
   rescue Google::Apis::ClientError => e
     # Event may already have been deleted manually from Google Calendar.
