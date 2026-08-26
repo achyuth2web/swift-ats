@@ -278,6 +278,8 @@ GEM
       oauth2 (~> 2.0)
       omniauth (~> 2.0)
       omniauth-oauth2 (~> 1.8)
+    omniauth-microsoft_graph (0.2.1)
+      omniauth-oauth2
     omniauth-oauth2 (1.9.0)
       oauth2 (>= 2.0.2, < 3)
       omniauth (~> 2.0)
@@ -452,6 +454,7 @@ DEPENDENCIES
   kaminari
   omniauth
   omniauth-google-oauth2
+  omniauth-microsoft_graph
   omniauth-rails_csrf_protection
   pdf-reader
   pg (~> 1.1)

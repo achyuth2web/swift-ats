@@ -16,7 +16,20 @@
             class: "btn btn-primary",
             data: { turbo: false } %>
       <% end %>
-      <%= link_to "Connect Outlook Calendar", "", class: "btn btn-primary" %>
+
+      <% if current_user.outlook_calendar_connected? %>
+        <%= button_to "Disconnect Outlook Calendar",
+                      disconnect_outlook_calendar_path,
+                      method: :delete,
+                      class: "btn btn-danger",
+                      data: { turbo: false } %>
+      <% else %>
+        <%= button_to "Connect Outlook Calendar",
+                      "/auth/microsoft_graph",
+                      method: :post,
+                      class: "btn btn-primary",
+                      data: { turbo: false } %>
+      <% end %>
     </div>
   </div>
 

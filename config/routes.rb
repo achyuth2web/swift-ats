@@ -52,6 +52,10 @@ Rails.application.routes.draw do
   get "/auth/failure", to: "google_calendar#failure"
   delete "/google_calendar/disconnect", to: "google_calendar#disconnect", as: :disconnect_google_calendar
 
+  get "/auth/microsoft_graph/callback", to: "outlook_calendar#callback"
+  get "/auth/failure", to: "outlook_calendar#failure"
+  delete "/outlook_calendar/disconnect", to: "outlook_calendar#disconnect", as: :disconnect_outlook_calendar
+
   get "/not_found", to: "errors#not_found"
   get "templates/candidate_import_template", to: "templates#candidate_import_template", as: :candidate_import_template
 

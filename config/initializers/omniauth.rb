@@ -7,4 +7,9 @@ Rails.application.config.middleware.use OmniAuth::Builder do
     scope: "email,profile,https://www.googleapis.com/auth/calendar",
     access_type: "offline",
     prompt: "consent"
+
+  provider :microsoft_graph,
+    ENV["MICROSOFT_CLIENT_ID"],
+    ENV["MICROSOFT_CLIENT_SECRET"],
+    scope: "openid profile email offline_access User.Read Calendars.ReadWrite"
 end
