@@ -9,7 +9,12 @@
   <%= csp_meta_tag %>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
   <%= stylesheet_link_tag "application", media: "all" %>
+  <link
+    href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.css"
+    rel="stylesheet"
+  />
   <%= javascript_importmap_tags %>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
 </head>
 <body>
 <div class="app-layout">
@@ -60,6 +65,20 @@
       <%= link_to interview_gen_path, class: "nav-item #{controller_name=='interview_gen'?'active':''}" do %>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Q&amp;A Generator
       <% end %>
+      <%= link_to calendar_path, class: "nav-item #{controller_name=='calendars'?'active':''}" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+          <path d="M8 14h2"/>
+          <path d="M14 14h2"/>
+          <path d="M8 18h2"/>
+          <path d="M14 18h2"/>
+        </svg>Calendar
+      <% end %>
       <% if current_user.admin? || current_user.recruiter? %>
         <div class="nav-label">Integrations</div>
         <%= link_to naukri_configurations_path, class: "nav-item #{controller_name=='naukri_configurations'?'active':''}" do %>
@@ -67,6 +86,20 @@
         <% end %>
         <%= link_to email_hub_path, class: "nav-item #{controller_name=='email_hub'?'active':''}" do %>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Email Hub
+        <% end %>
+        <%= link_to calendar_integrations_path, class: "nav-item #{controller_name=='calendar_integrations'?'active':''}" do %>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+            <path d="M8 14h2"/>
+            <path d="M14 14h2"/>
+            <path d="M8 18h2"/>
+            <path d="M14 18h2"/>
+          </svg>Calendar Integrations
         <% end %>
       <% end %>
       <% if current_user.admin? %>

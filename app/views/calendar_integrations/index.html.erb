@@ -1,0 +1,37 @@
+<% content_for :page_title, "Calendar Integrations" %>
+<div style="display: grid;grid-template-columns: 1fr 2fr;" class="flex flex-col gap-4">
+  <div class="card">
+    <div class="card-header"><span class="fw-600">Calendar Integrations</span></div>
+    <div class="card-body" style="display: grid; gap: 20px; justify-content: center;">
+      <% if current_user.google_calendar_connected? %>
+        <%= button_to "Disconnect Google Calendar",
+                      disconnect_google_calendar_path,
+                      method: :delete,
+                      class: "btn btn-danger",
+                      data: { turbo: false } %>
+      <% else %>
+        <%= button_to "Connect Google Calendar",
+            "/auth/google_oauth2",
+            method: :post,
+            class: "btn btn-primary",
+            data: { turbo: false } %>
+      <% end %>
+
+      <% if current_user.outlook_calendar_connected? %>
+        <%= button_to "Disconnect Outlook Calendar",
+                      disconnect_outlook_calendar_path,
+                      method: :delete,
+                      class: "btn btn-danger",
+                      data: { turbo: false } %>
+      <% else %>
+        <%= button_to "Connect Outlook Calendar",
+                      "/auth/microsoft_graph",
+                      method: :post,
+                      class: "btn btn-primary",
+                      data: { turbo: false },
+                      disabled: true %>
+      <% end %>
+    </div>
+  </div>
+
+</div>

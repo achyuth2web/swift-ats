@@ -24,6 +24,15 @@ gem 'roo'
 # AWS Gem
 gem 'aws-sdk-s3'
 
+# Google Oauth
+gem "omniauth"
+gem "omniauth-google-oauth2"
+gem "omniauth-microsoft_graph"
+gem "omniauth-rails_csrf_protection"
+
+gem "google-apis-calendar_v3"
+gem "signet"
+
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]
 end

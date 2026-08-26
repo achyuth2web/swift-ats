@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_14_113155) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_18_075410) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -20,6 +20,23 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_14_113155) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_activity_logs_on_user_id"
+  end
+
+  create_table "calendar_integrations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "provider", null: false
+    t.string "email"
+    t.string "calendar_id"
+    t.text "access_token"
+    t.text "refresh_token"
+    t.datetime "token_expires_at"
+    t.string "sync_token"
+    t.string "subscription_id"
+    t.datetime "subscription_expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "provider"], name: "index_calendar_integrations_on_user_id_and_provider", unique: true
+    t.index ["user_id"], name: "index_calendar_integrations_on_user_id"
   end
 
   create_table "candidate_status_histories", force: :cascade do |t|
@@ -101,7 +118,19 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_14_113155) do
     t.string "interviewer_email"
     t.string "feedback_token"
     t.datetime "feedback_submitted_at"
+    t.bigint "calendar_integration_id"
+    t.string "calendar_provider"
+    t.string "external_event_id"
+    t.string "calendar_id"
+    t.string "meeting_url"
+    t.string "calendar_sync_status"
     t.string "mode_of_interview"
+    t.boolean "create_calendar_event", default: false
+    t.boolean "send_calendar_invitation", default: false
+    t.string "meeting_type"
+    t.string "location"
+    t.index ["calendar_integration_id"], name: "index_interviews_on_calendar_integration_id"
+    t.index ["calendar_provider", "external_event_id"], name: "index_interviews_on_calendar_provider_and_external_event_id", unique: true
     t.index ["candidate_id"], name: "index_interviews_on_candidate_id"
     t.index ["discarded_at"], name: "index_interviews_on_discarded_at"
     t.index ["feedback_token"], name: "index_interviews_on_feedback_token", unique: true
@@ -210,10 +239,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_14_113155) do
   end
 
   add_foreign_key "activity_logs", "users"
+  add_foreign_key "calendar_integrations", "users"
   add_foreign_key "candidate_status_histories", "candidates"
   add_foreign_key "candidate_status_histories", "users"
   add_foreign_key "candidates", "jobs"
   add_foreign_key "candidates", "users", column: "recruiter_id"
+  add_foreign_key "interviews", "calendar_integrations"
   add_foreign_key "interviews", "candidates"
   add_foreign_key "job_openings", "jobs"
   add_foreign_key "job_recruiters", "jobs"

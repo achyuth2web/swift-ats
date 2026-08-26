@@ -33,6 +33,8 @@ Rails.application.routes.draw do
     member { patch :toggle_active }
   end
   get  "/settings",               to: "settings#index",           as: :settings
+  get  "/calendar_integrations",  to: "calendar_integrations#index",  as: :calendar_integrations
+  get  "/calendar",  to: "calendars#index",  as: :calendar
 
   resources :naukri_configurations, only: [:index, :create]
 
@@ -45,6 +47,14 @@ Rails.application.routes.draw do
   get "email_hub", to: "email_hub#index"
   post "email_hub/send_email", to: "email_hub#send_email", as: :send_email_hubs
   delete "email_hub/clear_log", to: "email_hub#clear_log"
+
+  get "/auth/google_oauth2/callback", to: "google_calendar#callback"
+  get "/auth/failure", to: "google_calendar#failure"
+  delete "/google_calendar/disconnect", to: "google_calendar#disconnect", as: :disconnect_google_calendar
+
+  get "/auth/microsoft_graph/callback", to: "outlook_calendar#callback"
+  get "/auth/failure", to: "outlook_calendar#failure"
+  delete "/outlook_calendar/disconnect", to: "outlook_calendar#disconnect", as: :disconnect_outlook_calendar
 
   get "/not_found", to: "errors#not_found"
   get "templates/candidate_import_template", to: "templates#candidate_import_template", as: :candidate_import_template

@@ -1,0 +1,266 @@
+<% content_for :page_title, "Calendar" %>
+<div class="calendar-page">
+
+  <div class="calendar-header">
+    <div>
+      <h2>Interview Calendar</h2>
+      <p class="calendar-subtitle">
+        Schedule and manage interviews
+      </p>
+    </div>
+
+    <div class="calendar-actions">
+      <%= link_to "Schedule Interview",
+                  new_interview_path,
+                  class: "btn btn-primary" %>
+    </div>
+  </div>
+
+  <div class="calendar-card">
+
+    <div class="calendar-toolbar">
+      <div class="calendar-filters">
+
+        <label>
+          <input
+            type="checkbox"
+            id="show-ats-interviews"
+            checked
+          >
+          ATS Interviews
+        </label>
+
+        <label>
+          <input
+            type="checkbox"
+            id="show-google-calendar"
+            checked
+          >
+          Google Calendar
+        </label>
+
+        <label>
+          <input
+            type="checkbox"
+            id="show-outlook-calendar"
+            checked
+          >
+          Outlook Calendar
+        </label>
+
+      </div>
+    </div>
+
+    <div id="interview-calendar"></div>
+
+  </div>
+
+</div>
+
+<style>
+  .calendar-page {
+    padding: 24px;
+  }
+
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .calendar-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .calendar-subtitle {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  .calendar-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background: #2563eb;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #1d4ed8;
+  }
+
+  .calendar-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .calendar-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+  }
+
+  .calendar-filters {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    font-size: 13px;
+    color: #374151;
+  }
+
+  .calendar-filters label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+
+  #interview-calendar {
+    min-height: 700px;
+  }
+
+  .fc-event {
+    cursor: pointer;
+  }
+
+  .fc-event-title {
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .calendar-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .calendar-toolbar {
+      justify-content: flex-start;
+    }
+
+    .calendar-filters {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener("turbo:load", function () {
+    const calendarEl = document.getElementById("interview-calendar");
+
+    if (!calendarEl) return;
+
+    // Prevent duplicate initialization with Turbo
+    if (calendarEl.dataset.initialized === "true") return;
+
+    calendarEl.dataset.initialized = "true";
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: "dayGridMonth",
+
+      headerToolbar: {
+        left: "prev,next today",
+        center: "title",
+        right: "dayGridMonth,timeGridWeek,timeGridDay"
+      },
+
+      buttonText: {
+        today: "Today",
+        month: "Month",
+        week: "Week",
+        day: "Day"
+      },
+
+      height: "auto",
+
+      nowIndicator: true,
+
+      editable: false,
+
+      selectable: true,
+
+      eventTimeFormat: {
+        hour: "numeric",
+        minute: "2-digit",
+        meridiem: "short"
+      },
+
+      events: "<%= calendar_path(format: :json) %>",
+
+      dateClick: function(info) {
+        const url = new URL(
+          "<%= new_interview_path %>",
+          window.location.origin
+        );
+
+        url.searchParams.set("scheduled_at", info.dateStr);
+
+        window.location.href = url.toString();
+      },
+
+      eventClick: function(info) {
+        if (info.event.url) {
+          info.jsEvent.preventDefault();
+          window.location.href = info.event.url;
+        }
+      }
+    });
+
+    calendar.render();
+
+    /*
+     * Filter events
+     */
+
+    document
+      .getElementById("show-ats-interviews")
+      ?.addEventListener("change", function () {
+        calendar.getEvents()
+          .filter(event => event.extendedProps.source === "ats")
+          .forEach(event => {
+            event.setProp("display", this.checked ? "auto" : "none");
+          });
+      });
+
+    document
+      .getElementById("show-google-calendar")
+      ?.addEventListener("change", function () {
+        calendar.getEvents()
+          .filter(event => event.extendedProps.source === "google")
+          .forEach(event => {
+            event.setProp("display", this.checked ? "auto" : "none");
+          });
+      });
+
+    document
+      .getElementById("show-outlook-calendar")
+      ?.addEventListener("change", function () {
+        calendar.getEvents()
+          .filter(event => event.extendedProps.source === "outlook")
+          .forEach(event => {
+            event.setProp("display", this.checked ? "auto" : "none");
+          });
+      });
+  });
+</script>
