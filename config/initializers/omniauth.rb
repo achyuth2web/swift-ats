@@ -4,7 +4,7 @@ Rails.application.config.middleware.use OmniAuth::Builder do
   provider :google_oauth2,
     ENV.fetch("GOOGLE_CLIENT_ID"),
     ENV.fetch("GOOGLE_CLIENT_SECRET"),
-    scope: "email,profile,https://www.googleapis.com/auth/calendar",
+    scope: "email,profile,https://www.googleapis.com/auth/calendar,https://www.googleapis.com/auth/drive.file",
     access_type: "offline",
     prompt: "consent"
 

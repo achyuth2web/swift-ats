@@ -31,6 +31,7 @@ gem "omniauth-microsoft_graph"
 gem "omniauth-rails_csrf_protection"
 
 gem "google-apis-calendar_v3"
+gem "google-apis-drive_v3"
 gem "signet"
 
 group :development, :test do
