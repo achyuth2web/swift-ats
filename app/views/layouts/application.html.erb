@@ -19,14 +19,17 @@
 <body>
 <div class="app-layout">
   <div class="sidebar">
-    <div class="sidebar-logo">
-      <%= image_tag "logo.png",
+    <div class="sidebar-logo" style="justify-content: center;">
+      <%= image_tag "logo-large.png",
+        alt: "Logo",
+        style: "height:40px;border-radius:8px;object-fit:cover" %>
+      <!-- <%= image_tag "logo-large.png",
       alt: "Logo",
       style: "width:32px;height:32px;border-radius:8px;object-fit:cover" %>
       <div>
         <div class="logo-text">Spritle<span>ATS</span></div>
         <div class="logo-sub">Spritle Software</div>
-      </div>
+      </div> -->
     </div>
     <nav class="sidebar-nav">
       <% if current_user.admin? %>
