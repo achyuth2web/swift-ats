@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_03_114106) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_15_101352) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -20,6 +20,22 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_03_114106) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_activity_logs_on_user_id"
+  end
+
+  create_table "applications", force: :cascade do |t|
+    t.bigint "candidate_id"
+    t.bigint "job_id"
+    t.bigint "assigned_to_id"
+    t.string "status", default: "open", null: false
+    t.string "source"
+    t.string "source_email"
+    t.datetime "applied_at"
+    t.datetime "closed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["assigned_to_id"], name: "index_applications_on_assigned_to_id"
+    t.index ["candidate_id"], name: "index_applications_on_candidate_id"
+    t.index ["job_id"], name: "index_applications_on_job_id"
   end
 
   create_table "calendar_integrations", force: :cascade do |t|
@@ -100,6 +116,34 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_03_114106) do
     t.string "error_message"
     t.index ["candidate_id"], name: "index_email_logs_on_candidate_id"
     t.index ["user_id"], name: "index_email_logs_on_user_id"
+  end
+
+  create_table "email_messages", force: :cascade do |t|
+    t.bigint "application_id"
+    t.bigint "candidate_id"
+    t.string "message_id", null: false
+    t.string "thread_id"
+    t.string "direction", null: false
+    t.string "status", default: "received", null: false
+    t.string "from_email", null: false
+    t.text "to_emails"
+    t.text "cc_emails"
+    t.string "subject"
+    t.text "body"
+    t.text "snippet"
+    t.string "mailbox"
+    t.datetime "received_at"
+    t.datetime "sent_at"
+    t.jsonb "headers", default: {}, null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["application_id"], name: "index_email_messages_on_application_id"
+    t.index ["candidate_id"], name: "index_email_messages_on_candidate_id"
+    t.index ["from_email"], name: "index_email_messages_on_from_email"
+    t.index ["mailbox"], name: "index_email_messages_on_mailbox"
+    t.index ["message_id"], name: "index_email_messages_on_message_id", unique: true
+    t.index ["thread_id"], name: "index_email_messages_on_thread_id"
   end
 
   create_table "interviews", force: :cascade do |t|
@@ -242,11 +286,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_03_114106) do
   end
 
   add_foreign_key "activity_logs", "users"
+  add_foreign_key "applications", "candidates"
+  add_foreign_key "applications", "jobs"
+  add_foreign_key "applications", "users", column: "assigned_to_id"
   add_foreign_key "calendar_integrations", "users"
   add_foreign_key "candidate_status_histories", "candidates"
   add_foreign_key "candidate_status_histories", "users"
   add_foreign_key "candidates", "jobs"
   add_foreign_key "candidates", "users", column: "recruiter_id"
+  add_foreign_key "email_messages", "applications"
+  add_foreign_key "email_messages", "candidates"
   add_foreign_key "interviews", "calendar_integrations"
   add_foreign_key "interviews", "candidates"
   add_foreign_key "job_openings", "jobs"

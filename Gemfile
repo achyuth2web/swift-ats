@@ -32,7 +32,12 @@ gem "omniauth-rails_csrf_protection"
 
 gem "google-apis-calendar_v3"
 gem "google-apis-drive_v3"
+gem "google-apis-gmail_v1"
 gem "signet"
+
+gem "mail"
+
+gem "sidekiq"
 
 group :development, :test do
   gem "debug", platforms: %i[mri mingw x64_mingw]

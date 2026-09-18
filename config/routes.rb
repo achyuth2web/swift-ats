@@ -57,6 +57,7 @@ Rails.application.routes.draw do
   delete "/outlook_calendar/disconnect", to: "outlook_calendar#disconnect", as: :disconnect_outlook_calendar
 
   get "/not_found", to: "errors#not_found"
+  patch "/applications/:id/assign", to: "applications#assign", as: :assign_application
   get "templates/candidate_import_template", to: "templates#candidate_import_template", as: :candidate_import_template
 
   match "*path",
