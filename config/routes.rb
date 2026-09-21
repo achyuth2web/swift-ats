@@ -52,6 +52,8 @@ Rails.application.routes.draw do
   get "/auth/failure", to: "google_calendar#failure"
   delete "/google_calendar/disconnect", to: "google_calendar#disconnect", as: :disconnect_google_calendar
 
+  post "/webhooks/google_calendar", to: "google_calendar_webhooks#receive"
+
   get "/auth/microsoft_graph/callback", to: "outlook_calendar#callback"
   get "/auth/failure", to: "outlook_calendar#failure"
   delete "/outlook_calendar/disconnect", to: "outlook_calendar#disconnect", as: :disconnect_outlook_calendar

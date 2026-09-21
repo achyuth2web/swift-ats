@@ -24,7 +24,7 @@ class GoogleCalendarService
       ),
       location: interview.location,
       attendees: build_attendees(attendees),
-
+      extended_properties: ats_event_properties(interview),
       conference_data: Google::Apis::CalendarV3::ConferenceData.new(
         create_request:
           Google::Apis::CalendarV3::CreateConferenceRequest.new(
@@ -72,6 +72,7 @@ class GoogleCalendarService
 
     event.location = interview.location.presence
     event.attendees = build_attendees(attendees)
+    event.extended_properties = ats_event_properties(interview)
 
     update_resume_attachment(
       interview,
@@ -124,6 +125,32 @@ class GoogleCalendarService
     # Even if the Calendar event is already gone,
     # clean up the Drive resume.
     delete_resume_from_drive(interview)
+  end
+
+  def watch_calendar!
+    channel_id = SecureRandom.uuid
+
+    channel = Google::Apis::CalendarV3::Channel.new(
+      id: channel_id,
+      type: "web_hook",
+      address: Rails.application.routes.url_helpers.google_calendar_webhook_url(
+        host: Rails.application.config.x.hosts.first,
+        protocol: "https"
+      )
+    )
+
+    response = @service.watch_event(
+      @integration.calendar_id.presence || "primary",
+      channel
+    )
+
+    @integration.update!(
+      google_channel_id: response.id,
+      google_resource_id: response.resource_id,
+      google_channel_expires_at: Time.at(response.expiration.to_i / 1000.0)
+    )
+
+    response
   end
 
   private
@@ -398,5 +425,15 @@ class GoogleCalendarService
       &.uri
 
     interview.update!(meet_link: meet_link) if meet_link.present?
+  end
+
+  def ats_event_properties(interview)
+    Google::Apis::CalendarV3::Event::ExtendedProperties.new(
+      private: {
+        "ats_source" => "spritle_ats",
+        "ats_entity" => "interview",
+        "ats_interview_id" => interview.id.to_s
+      }
+    )
   end
 end
