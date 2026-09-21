@@ -47,10 +47,12 @@ class InterviewsController < ApplicationController
   end
   def update
     if @interview.update(interview_params)
-      calendar_result = InterviewCalendarService.new(
-        @interview,
-        current_user
-      ).update
+      if @interview.status != "Completed"
+        calendar_result = InterviewCalendarService.new(
+          @interview,
+          current_user
+        ).update
+      end
 
       log_activity(
         "Interview updated: #{@interview.round_name} for #{@interview.candidate.name}"
@@ -63,10 +65,12 @@ class InterviewsController < ApplicationController
     end
   end
   def destroy
-    calendar_result = InterviewCalendarService.new(
-      @interview,
-      current_user
-    ).destroy
+    if @interview.status != "Completed"
+      calendar_result = InterviewCalendarService.new(
+        @interview,
+        current_user
+      ).destroy
+    end
 
     if calendar_result.success?
       @interview.discard

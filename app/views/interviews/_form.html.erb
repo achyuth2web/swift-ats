@@ -15,15 +15,15 @@
     <div class="form-group"><label class="label">Mode of Interview</label><%= f.text_field :mode_of_interview, class:"input" %></div>
   </div>
   <div class="input-row">
-    <div class="form-group"><label class="label">Status</label><%= f.select :status, Interview::STATUSES, {}, class:"select" %></div>
+    <% statuses = f.object.new_record? ? Interview::STATUSES.select { |status| status == "Scheduled" } : Interview::STATUSES %>
+    <div class="form-group"><label class="label">Status</label><%= f.select :status, statuses, {}, class:"select" %></div>
     <div class="form-group"><label class="label">Outcome</label><%= f.select :outcome, Interview::OUTCOMES, {}, class:"select" %></div>
   </div>
   <div class="form-group"><label class="label">Rating (1–5)</label>
     <%= f.select :rating, [[1,"★"],[2,"★★"],[3,"★★★"],[4,"★★★★"],[5,"★★★★★"]].map{|v,l|[l,v]},{include_blank:"No rating"},class:"select",style:"max-width:200px" %>
   </div>
-  <div class="form-group"><label class="label">Feedback</label><%= f.text_area :feedback, class:"textarea" %></div>
   
-  <div class="form-section calendar-invitation-section">
+  <div class="form-section calendar-invitation-section" id="calendar-invitation-section" style="<%= interview.status == "Completed" ? 'display:none;' : '' %>">
     <div class="section-title">
       <span class="fw-600">Calendar & Invitation</span>
     </div>
@@ -106,6 +106,11 @@
     </div>
   </div>
 
+  <div class="form-group" id="feedback-group" style="<%= interview.status == "Completed" ? '' : 'display:none;' %>">
+    <label class="label">Feedback</label>
+    <%= f.text_area :feedback, class:"textarea" %>
+  </div>
+
   <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px">
     <%= link_to "Cancel", interviews_path, class:"btn btn-ghost" %>
     <%= f.submit interview.persisted? ? "Update Interview" : "Schedule Interview", class:"btn btn-primary" %>
@@ -134,5 +139,20 @@ document.addEventListener("turbo:load", function () {
   });
 
   toggleMeetingFields();
+
+  document.getElementById("interview_status").addEventListener("change", function () {
+    const selectedStatus = this.value;
+    const feedbackGroup = document.getElementById("feedback-group");
+    const calendarInvitationSection = document.getElementById("calendar-invitation-section");
+
+    if (selectedStatus === "Completed") {
+      calendarInvitationSection.style.display = "none";
+      feedbackGroup.style.display = "";
+    } else {
+      calendarInvitationSection.style.display = "";
+      feedbackGroup.style.display = "none";
+    }
+  });
+
 });
 </script>
