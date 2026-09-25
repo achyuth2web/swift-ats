@@ -47,7 +47,7 @@ class InterviewsController < ApplicationController
   end
   def update
     if @interview.update(interview_params)
-      if @interview.status != "Completed"
+      if calendar_update_required?
         calendar_result = InterviewCalendarService.new(
           @interview,
           current_user
@@ -99,5 +99,12 @@ class InterviewsController < ApplicationController
     params.require(:interview).permit(:candidate_id,:round_name,:interviewer,:interviewer_email,
       :scheduled_at,:status,:outcome,:feedback,:rating,:mode_of_interview,:calendar_provider,
       :create_calendar_event,:send_calendar_invitation,:meeting_type,:location)
+  end
+  def calendar_update_required?
+    return false if @interview.status == "Completed"
+
+    @interview.saved_change_to_interviewer_email? ||
+      @interview.saved_change_to_scheduled_at? ||
+      @interview.saved_change_to_candidate_id?
   end
 end

@@ -33,6 +33,8 @@ class GoogleCalendarController < ApplicationController
 
     integration.save!
 
+    GoogleCalendarService.new(integration).watch_calendar!
+
     redirect_to calendar_integrations_path,
                 notice: "Google Calendar connected successfully."
   rescue ActiveRecord::RecordInvalid => e

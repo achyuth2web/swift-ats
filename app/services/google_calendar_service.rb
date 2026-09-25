@@ -14,7 +14,7 @@ class GoogleCalendarService
     end_time = start_time + DEFAULT_INTERVIEW_DURATION
 
     event = Google::Apis::CalendarV3::Event.new(
-      summary: "Interview - #{interview.candidate.name}",
+      summary: "[ATS] Interview - #{interview.round_name} - #{interview.candidate.name}",
       description: "Interview scheduled from ATS",
       start: Google::Apis::CalendarV3::EventDateTime.new(
         date_time: start_time.iso8601
@@ -58,7 +58,7 @@ class GoogleCalendarService
       interview.external_event_id
     )
 
-    event.summary = "Interview - #{interview.candidate.name}"
+    event.summary = "[ATS] Interview - #{interview.round_name} - #{interview.candidate.name}"
 
     event.start = Google::Apis::CalendarV3::EventDateTime.new(
       date_time: interview.scheduled_at.iso8601
@@ -133,10 +133,7 @@ class GoogleCalendarService
     channel = Google::Apis::CalendarV3::Channel.new(
       id: channel_id,
       type: "web_hook",
-      address: Rails.application.routes.url_helpers.google_calendar_webhook_url(
-        host: Rails.application.config.x.hosts.first,
-        protocol: "https"
-      )
+      address: ENV.fetch("GOOGLE_CALENDAR_WEBHOOK_URL")
     )
 
     response = @service.watch_event(
@@ -151,6 +148,52 @@ class GoogleCalendarService
     )
 
     response
+  end
+
+  def list_events(
+    calendar_id,
+    time_min: nil,
+    time_max: nil,
+    single_events: true,
+    order_by: nil,
+    page_token: nil,
+    show_deleted: false
+  )
+    @service.list_events(
+      calendar_id,
+      time_min: time_min,
+      time_max: time_max,
+      single_events: single_events,
+      order_by: order_by,
+      page_token: page_token,
+      show_deleted: show_deleted
+    )
+  end
+
+  def add_ats_metadata(event_id, interview_id)
+    calendar_id = @integration.calendar_id.presence || "primary"
+
+    event = @service.get_event(
+      calendar_id,
+      event_id
+    )
+
+    event.extended_properties ||= Google::Apis::CalendarV3::Event::ExtendedProperties.new
+
+    event.extended_properties.private ||= {}
+
+    event.extended_properties.private.merge!(
+      "ats_source" => "spritle_ats",
+      "ats_entity" => "interview",
+      "ats_interview_id" => interview_id.to_s
+    )
+
+    @service.update_event(
+      calendar_id,
+      event_id,
+      event,
+      send_updates: "none"
+    )
   end
 
   private

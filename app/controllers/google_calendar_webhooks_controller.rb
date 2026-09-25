@@ -14,7 +14,11 @@ class GoogleCalendarWebhooksController < ApplicationController
 
     return head :not_found unless integration
 
-    GoogleCalendarSyncJob.perform_later(integration.id)
+    # Process the webhook notification
+    # You can enqueue a background job to handle the sync
+    # GoogleCalendarSyncJob.perform_later(integration.id)
+
+    GoogleCalendarSyncService.new(integration).sync!
 
     head :ok
   end
