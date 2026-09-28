@@ -120,7 +120,8 @@ class GoogleCalendarService
     delete_resume_from_drive(interview)
   rescue Google::Apis::ClientError => e
     # Event may already have been deleted manually from Google Calendar.
-    raise unless e.status_code == 404
+    # Treat both 404 and 410 as "already deleted".
+    raise unless [404, 410].include?(e.status_code)
 
     # Even if the Calendar event is already gone,
     # clean up the Drive resume.
@@ -154,19 +155,29 @@ class GoogleCalendarService
     calendar_id,
     time_min: nil,
     time_max: nil,
+    sync_token: nil,
     single_events: true,
     order_by: nil,
     page_token: nil,
     show_deleted: false
   )
-    @service.list_events(
-      calendar_id,
-      time_min: time_min,
-      time_max: time_max,
+    params = {
       single_events: single_events,
-      order_by: order_by,
       page_token: page_token,
       show_deleted: show_deleted
+    }
+
+    if sync_token.present?
+      params[:sync_token] = sync_token
+    else
+      params[:time_min] = time_min if time_min.present?
+      params[:time_max] = time_max if time_max.present?
+      params[:order_by] = order_by if order_by.present?
+    end
+
+    @service.list_events(
+      calendar_id,
+      **params
     )
   end
 
@@ -193,6 +204,40 @@ class GoogleCalendarService
       event_id,
       event,
       send_updates: "none"
+    )
+  end
+
+  def attach_resume_to_existing_event(interview, event, attendees:)
+    attach_resume(
+      interview,
+      event,
+      attendees
+    )
+
+    event
+  end
+
+  def get_event(event_id)
+    @service.get_event(
+      @integration.calendar_id,
+      event_id
+    )
+  end
+
+  def update_existing_event(
+    event_id,
+    event,
+    send_updates: "none",
+    supports_attachments: true,
+    conference_data_version: 1
+  )
+    @service.update_event(
+      @integration.calendar_id,
+      event_id,
+      event,
+      send_updates: send_updates,
+      supports_attachments: supports_attachments,
+      conference_data_version: conference_data_version
     )
   end
 
