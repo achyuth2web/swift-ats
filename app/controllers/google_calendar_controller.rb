@@ -33,6 +33,8 @@ class GoogleCalendarController < ApplicationController
 
     integration.save!
 
+    GoogleCalendarService.new(integration).watch_calendar!
+
     redirect_to calendar_integrations_path,
                 notice: "Google Calendar connected successfully."
   rescue ActiveRecord::RecordInvalid => e
@@ -50,7 +52,14 @@ class GoogleCalendarController < ApplicationController
   end
 
   def disconnect
-    current_user.calendar_integrations.google.destroy_all
+    integrations = current_user.calendar_integrations.google
+
+    integrations.each do |integration|
+      Interview.where(calendar_integration_id: integration.id)
+              .update_all(calendar_integration_id: nil)
+
+      integration.destroy!
+    end
 
     redirect_to calendar_integrations_path,
                 notice: "Google Calendar disconnected successfully."

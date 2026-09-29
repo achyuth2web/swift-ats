@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_15_101352) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_18_114405) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -51,6 +51,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_15_101352) do
     t.datetime "subscription_expires_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "google_channel_id"
+    t.string "google_resource_id"
+    t.datetime "google_channel_expires_at"
+    t.index ["google_channel_id"], name: "index_calendar_integrations_on_google_channel_id", unique: true
+    t.index ["google_resource_id"], name: "index_calendar_integrations_on_google_resource_id"
     t.index ["user_id", "provider"], name: "index_calendar_integrations_on_user_id_and_provider", unique: true
     t.index ["user_id"], name: "index_calendar_integrations_on_user_id"
   end
