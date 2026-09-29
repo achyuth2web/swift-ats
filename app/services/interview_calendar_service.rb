@@ -122,9 +122,15 @@ class InterviewCalendarService
   end
 
   def update_interview(event)
+    calendar_id =
+      if @interview.calendar_provider == "google"
+        integration = @user.google_calendar_integration
+        integration.calendar_id.presence || "primary"
+      end
+
     @interview.update!(
       external_event_id: event.id,
-      calendar_id: event.organizer&.email || event.id,
+      calendar_id: calendar_id,
       meeting_url: meeting_url(event),
       calendar_sync_status: "synced"
     )

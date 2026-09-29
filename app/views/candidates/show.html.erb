@@ -74,7 +74,7 @@
                         <% oc = iv.outcome=="Pass" ? "green" : iv.outcome=="Rejected" ? "red" : "amber" %>
                         <span class="badge badge-<%= oc %>"><%= iv.outcome %></span>
                       <% end %>
-                      <%= render 'shared/status_badge', status: iv.status %>
+                      <%= render 'shared/interview_status_badge', status: iv.status %>
                       <%= link_to "Edit", edit_interview_path(iv), class: "btn btn-ghost btn-sm" %>
                       <%= button_to "✕", interview_path(iv), method: :delete, class: "btn btn-danger btn-sm btn-icon", data:{turbo_confirm:"Are you sure you want to delete this interview?"} %>
                     </div>

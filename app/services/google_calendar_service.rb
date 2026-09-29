@@ -14,7 +14,7 @@ class GoogleCalendarService
     end_time = start_time + DEFAULT_INTERVIEW_DURATION
 
     event = Google::Apis::CalendarV3::Event.new(
-      summary: "Interview - #{interview.candidate.name}",
+      summary: "[ATS] Interview - #{interview.round_name} - #{interview.candidate.name}",
       description: "Interview scheduled from ATS",
       start: Google::Apis::CalendarV3::EventDateTime.new(
         date_time: start_time.iso8601
@@ -24,7 +24,7 @@ class GoogleCalendarService
       ),
       location: interview.location,
       attendees: build_attendees(attendees),
-
+      extended_properties: ats_event_properties(interview),
       conference_data: Google::Apis::CalendarV3::ConferenceData.new(
         create_request:
           Google::Apis::CalendarV3::CreateConferenceRequest.new(
@@ -58,7 +58,7 @@ class GoogleCalendarService
       interview.external_event_id
     )
 
-    event.summary = "Interview - #{interview.candidate.name}"
+    event.summary = "[ATS] Interview - #{interview.round_name} - #{interview.candidate.name}"
 
     event.start = Google::Apis::CalendarV3::EventDateTime.new(
       date_time: interview.scheduled_at.iso8601
@@ -72,6 +72,7 @@ class GoogleCalendarService
 
     event.location = interview.location.presence
     event.attendees = build_attendees(attendees)
+    event.extended_properties = ats_event_properties(interview)
 
     update_resume_attachment(
       interview,
@@ -119,11 +120,125 @@ class GoogleCalendarService
     delete_resume_from_drive(interview)
   rescue Google::Apis::ClientError => e
     # Event may already have been deleted manually from Google Calendar.
-    raise unless e.status_code == 404
+    # Treat both 404 and 410 as "already deleted".
+    raise unless [404, 410].include?(e.status_code)
 
     # Even if the Calendar event is already gone,
     # clean up the Drive resume.
     delete_resume_from_drive(interview)
+  end
+
+  def watch_calendar!
+    channel_id = SecureRandom.uuid
+
+    channel = Google::Apis::CalendarV3::Channel.new(
+      id: channel_id,
+      type: "web_hook",
+      address: ENV.fetch("GOOGLE_CALENDAR_WEBHOOK_URL")
+    )
+
+    response = @service.watch_event(
+      @integration.calendar_id.presence || "primary",
+      channel
+    )
+
+    @integration.update!(
+      google_channel_id: response.id,
+      google_resource_id: response.resource_id,
+      google_channel_expires_at: Time.at(response.expiration.to_i / 1000.0)
+    )
+
+    response
+  end
+
+  def list_events(
+    calendar_id,
+    time_min: nil,
+    time_max: nil,
+    sync_token: nil,
+    single_events: true,
+    order_by: nil,
+    page_token: nil,
+    show_deleted: false
+  )
+    params = {
+      single_events: single_events,
+      page_token: page_token,
+      show_deleted: show_deleted
+    }
+
+    if sync_token.present?
+      params[:sync_token] = sync_token
+    else
+      params[:time_min] = time_min if time_min.present?
+      params[:time_max] = time_max if time_max.present?
+      params[:order_by] = order_by if order_by.present?
+    end
+
+    @service.list_events(
+      calendar_id,
+      **params
+    )
+  end
+
+  def add_ats_metadata(event_id, interview_id)
+    calendar_id = @integration.calendar_id.presence || "primary"
+
+    event = @service.get_event(
+      calendar_id,
+      event_id
+    )
+
+    event.extended_properties ||= Google::Apis::CalendarV3::Event::ExtendedProperties.new
+
+    event.extended_properties.private ||= {}
+
+    event.extended_properties.private.merge!(
+      "ats_source" => "spritle_ats",
+      "ats_entity" => "interview",
+      "ats_interview_id" => interview_id.to_s
+    )
+
+    @service.update_event(
+      calendar_id,
+      event_id,
+      event,
+      send_updates: "none"
+    )
+  end
+
+  def attach_resume_to_existing_event(interview, event, attendees:)
+    attach_resume(
+      interview,
+      event,
+      attendees
+    )
+
+    event
+  end
+
+  def get_event(event_id)
+    @service.get_event(
+      @integration.calendar_id,
+      event_id
+    )
+  end
+
+  def update_existing_event(
+    event_id,
+    event,
+    send_updates: "none",
+    supports_attachments: true,
+    conference_data_version: 1
+  )
+    @service.update_event(
+      @integration.calendar_id,
+      event_id,
+      event,
+      send_updates: send_updates,
+      supports_attachments: supports_attachments,
+      conference_data_version: conference_data_version
+    )
   end
 
   private
@@ -398,5 +513,15 @@ class GoogleCalendarService
       &.uri
 
     interview.update!(meet_link: meet_link) if meet_link.present?
+  end
+
+  def ats_event_properties(interview)
+    Google::Apis::CalendarV3::Event::ExtendedProperties.new(
+      private: {
+        "ats_source" => "spritle_ats",
+        "ats_entity" => "interview",
+        "ats_interview_id" => interview.id.to_s
+      }
+    )
   end
 end
