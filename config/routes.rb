@@ -6,6 +6,15 @@ Rails.application.routes.draw do
   end
   root to: redirect("/users/sign_in")
 
+  # ── Sidekiq Web UI ────────────────────────────────────────────────────────
+  require "sidekiq/web"
+  require "sidekiq-scheduler/web"
+  Sidekiq::Web.use(Rack::Auth::Basic) do |u, p|
+    u == ENV.fetch("SIDEKIQ_USERNAME","admin") &&
+    p == ENV.fetch("SIDEKIQ_PASSWORD","sidekiq_password")
+  end
+  mount Sidekiq::Web => "/sidekiq"
+
   get  "/dashboard",              to: "dashboard#index",          as: :dashboard
   resources :jobs do
     member { patch :update_status }
@@ -35,6 +44,7 @@ Rails.application.routes.draw do
   get  "/settings",               to: "settings#index",           as: :settings
   get  "/calendar_integrations",  to: "calendar_integrations#index",  as: :calendar_integrations
   get  "/calendar",  to: "calendars#index",  as: :calendar
+  get  "/email_integrations",  to: "email_integrations#index",  as: :email_integrations
 
   resources :naukri_configurations, only: [:index, :create]
 
@@ -44,13 +54,25 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :applications, only: [:show] do
+    patch :assign, on: :member
+    patch :update_status, on: :member
+  end
+
   get "email_hub", to: "email_hub#index"
   post "email_hub/send_email", to: "email_hub#send_email", as: :send_email_hubs
-  delete "email_hub/clear_log", to: "email_hub#clear_log"
+  delete "email_hub/clear_log", to: "email_hub#clear_log", as: :email_hub_clear_log
+  post "email_hub/confirm_application", to: "email_hub#confirm_application", as: :confirm_email_hub_application
+  post "email_hub/reject_application", to: "email_hub#reject_application", as: :reject_email_hub_application
+  post "email_hub/reply", to: "email_hub#reply", as: :email_hub_reply
 
-  get "/auth/google_oauth2/callback", to: "google_calendar#callback"
-  get "/auth/failure", to: "google_calendar#failure"
+  get "/auth/google_calendar/callback", to: "google_calendar#callback"
   delete "/google_calendar/disconnect", to: "google_calendar#disconnect", as: :disconnect_google_calendar
+
+  get "/auth/google_gmail/callback", to: "gmail#callback"
+  delete "/gmail/disconnect", to: "gmail#disconnect", as: :disconnect_gmail
+
+  get "/auth/failure", to: "omniauth#failure"
 
   post "/webhooks/google_calendar", to: "google_calendar_webhooks#receive", as: :google_calendar_webhook
 
@@ -59,7 +81,6 @@ Rails.application.routes.draw do
   delete "/outlook_calendar/disconnect", to: "outlook_calendar#disconnect", as: :disconnect_outlook_calendar
 
   get "/not_found", to: "errors#not_found"
-  patch "/applications/:id/assign", to: "applications#assign", as: :assign_application
   get "templates/candidate_import_template", to: "templates#candidate_import_template", as: :candidate_import_template
 
   match "*path",

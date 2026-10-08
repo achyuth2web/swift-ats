@@ -58,4 +58,7 @@ class User < ApplicationRecord
   def outlook_calendar_integration
     calendar_integrations.outlook.first
   end
+  def self.recruiters
+    kept.where(role: "recruiter").order(:name)
+  end
 end

@@ -1,5 +1,5 @@
 class SendApplicationAcknowledgementJob < ApplicationJob
-  queue_as :default
+  queue_as :email
 
   MAILBOX = ENV.fetch(
     "RECRUITMENT_MAILBOX",
@@ -33,9 +33,9 @@ class SendApplicationAcknowledgementJob < ApplicationJob
       body: body
     )
 
-    sent_message = GmailService.new(
-      access_token: google_access_token
-    ).send_message(raw_message)
+    gmail = GmailService.new(gmail_integration)
+
+    sent_message = gmail.send_message(raw_message)
 
     application.email_messages.create!(
       message_id: sent_message.id,
@@ -53,16 +53,7 @@ class SendApplicationAcknowledgementJob < ApplicationJob
 
   private
 
-  def google_access_token
-    GoogleTokenService.new(
-      integration: google_integration
-    ).access_token
-  end
-
-  def google_integration
-    CalendarIntegration
-      .where(provider: "google")
-      .where(email: MAILBOX)
-      .first!
+  def gmail_integration
+    GmailIntegration.recruitment.first
   end
 end

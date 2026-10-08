@@ -1,0 +1,30 @@
+<% content_for :page_title, "Email Integration" %>
+
+<div class="card">
+  <div class="card-header">
+    <span class="fw-600">Email Integration</span>
+  </div>
+
+  <div class="card-body">
+    <p style="padding-bottom: 10px;">
+      Recruitment mailbox:
+      <strong><%= ENV.fetch("RECRUITMENT_MAILBOX", "jobs@spritle.com") %></strong>
+    </p>
+
+    <% if @gmail_integration.present? %>
+      <p style="padding-bottom: 15px;">Gmail: <strong>Connected</strong></p>
+
+      <%= button_to "Disconnect Gmail",
+                    disconnect_gmail_path,
+                    method: :delete,
+                    class: "btn btn-danger",
+                    data: { turbo: false } %>
+    <% else %>
+      <%= button_to "Connect Gmail",
+                    "/auth/google_gmail",
+                    method: :post,
+                    class: "btn btn-primary",
+                    data: { turbo: false } %>
+    <% end %>
+  </div>
+</div>

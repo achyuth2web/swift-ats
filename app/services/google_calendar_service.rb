@@ -3,7 +3,7 @@ class GoogleCalendarService
 
   def initialize(integration)
     @integration = integration
-    @authorization = authorization
+    @authorization = GoogleAuthorizationService.new(integration)
 
     @service = build_calendar_service
     @drive_service = build_drive_service
@@ -248,36 +248,18 @@ class GoogleCalendarService
   # --------------------------------------------------
 
   def authorization
-    credentials = Signet::OAuth2::Client.new(
-      client_id: ENV.fetch("GOOGLE_CLIENT_ID"),
-      client_secret: ENV.fetch("GOOGLE_CLIENT_SECRET"),
-      token_credential_uri: "https://oauth2.googleapis.com/token",
-      access_token: @integration.access_token,
-      refresh_token: @integration.refresh_token,
-      expires_at: @integration.token_expires_at&.to_i
-    )
-
-    if credentials.expired?
-      credentials.fetch_access_token!
-
-      @integration.update!(
-        access_token: credentials.access_token,
-        token_expires_at: credentials.expires_at
-      )
-    end
-
-    credentials
+    @authorization.authorization
   end
 
   def build_calendar_service
     service = Google::Apis::CalendarV3::CalendarService.new
-    service.authorization = @authorization
+    service.authorization = authorization
     service
   end
 
   def build_drive_service
     service = Google::Apis::DriveV3::DriveService.new
-    service.authorization = @authorization
+    service.authorization = authorization
     service
   end
 

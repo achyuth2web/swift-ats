@@ -1,5 +1,5 @@
 class GmailIncomingSyncJob < ApplicationJob
-  queue_as :default
+  queue_as :email_sync
 
   MAILBOX = ENV.fetch(
     "RECRUITMENT_MAILBOX",
@@ -7,9 +7,10 @@ class GmailIncomingSyncJob < ApplicationJob
   )
 
   def perform
-    gmail = GmailService.new(
-      access_token: google_access_token
-    )
+    integration = gmail_integration
+    return unless integration
+
+    gmail = GmailService.new(integration)
 
     messages = gmail.list_messages(
       query: "to:#{MAILBOX} -from:#{MAILBOX}"
@@ -22,16 +23,7 @@ class GmailIncomingSyncJob < ApplicationJob
 
   private
 
-  def google_access_token
-    GoogleTokenService.new(
-      integration: google_integration
-    ).access_token
-  end
-
-  def google_integration
-    CalendarIntegration
-      .where(provider: "google")
-      .where(email: MAILBOX)
-      .first!
+  def gmail_integration
+    GmailIntegration.recruitment.first
   end
 end

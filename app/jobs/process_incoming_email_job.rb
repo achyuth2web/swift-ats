@@ -1,12 +1,13 @@
 class ProcessIncomingEmailJob < ApplicationJob
-  queue_as :default
+  queue_as :email
 
   def perform(message_id)
     return if EmailMessage.exists?(message_id: message_id)
 
-    gmail = GmailService.new(
-      access_token: google_access_token
-    )
+    integration = gmail_integration
+    return unless integration
+
+    gmail = GmailService.new(integration)
 
     message = gmail.get_message(message_id)
 
@@ -22,16 +23,7 @@ class ProcessIncomingEmailJob < ApplicationJob
 
   private
 
-  def google_access_token
-    GoogleTokenService.new(
-      integration: google_integration
-    ).access_token
-  end
-
-  def google_integration
-    CalendarIntegration
-      .where(provider: "google")
-      .where(email: "jobs@spritle.com")
-      .first!
+  def gmail_integration
+    GmailIntegration.recruitment.first
   end
 end
