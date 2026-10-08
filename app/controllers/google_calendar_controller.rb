@@ -46,11 +46,6 @@ class GoogleCalendarController < ApplicationController
                 alert: "Unable to connect Google Calendar."
   end
 
-  def failure
-    redirect_to calendar_integrations_path,
-                alert: "Google Calendar connection failed."
-  end
-
   def disconnect
     integrations = current_user.calendar_integrations.google
 

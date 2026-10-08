@@ -5,6 +5,8 @@ class Candidate < ApplicationRecord
   has_many :interviews, dependent: :destroy
   has_many :status_histories, class_name: "CandidateStatusHistory", dependent: :destroy
   has_many :email_logs, dependent: :destroy
+  has_many :applications, dependent: :nullify
+  has_many :email_messages, dependent: :nullify
   STATUSES    = %w[New Screening Interview Offer Rejected Hired].freeze
   SOURCES     = ["LinkedIn","Naukri","Referral","Job Board","Walk-in","Other"].freeze
   REFERRAL_TYPES = ["Employee","Others"].freeze

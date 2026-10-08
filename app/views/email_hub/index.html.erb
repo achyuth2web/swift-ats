@@ -1,135 +1,898 @@
-<div style="display:grid;grid-template-columns:340px 1fr;gap:16px"
-     data-controller="email-hub"
+<div class="card" data-controller="email-hub"
      data-email-hub-candidates-value="<%= @candidates_json.to_json %>"
      data-email-hub-templates-value="<%= @email_templates.to_json %>"
      data-email-hub-current-user-name-value="<%= current_user.name %>"
      data-email-hub-default-company-value="Spritle Software">
-  <!-- LEFT: Compose -->
-  <div class="flex flex-col gap-4">
-    <div class="card">
-      <div class="card-header">
-        Compose Email
+
+  <!-- HEADER -->
+  <div class="card-header"
+       style="display:flex;align-items:center;justify-content:space-between">
+
+    <div>
+      <div style="font-size:18px;font-weight:600;">
+        Email Hub
       </div>
 
-      <div class="card-body flex flex-col gap-3">
-        <%= form_with url: send_email_hubs_path, method: :post do |f| %>
-          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
-            <div class="label">Template</div>
-            <%= select_tag :template_name,
-                        options_for_select(@email_templates.map { |t| [t[:name], t[:id]] }),
-                        include_blank: "— Select a template —",
-                        class: "select",
-                        id: "em-template",
-                        data: { email_hub_target: "template", action: "change->email-hub#loadTemplate" } %>
-          </div>
-          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
-            <div class="label">Candidate</div>
-            <%= select_tag :candidate_id,
-                        options_from_collection_for_select(@candidates, :id, :name),
-                        prompt: "Select Candidate",
-                        class: "select",
-                        id: "em-candidate",
-                        data: { email_hub_target: "candidate", action: "change->email-hub#selectCandidate" } %>
-          </div>
-          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
-            <div class="label">To Email</div>
-            <%= text_field_tag :to_email, nil,
-                            placeholder: "To Email",
-                            required: true,
-                            class: "input",
-                            id: "em-to",
-                            data: { email_hub_target: "toEmail" } %>
-          </div>
-          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
-            <div class="label">CC</div>
-            <%= text_field_tag :cc, nil,
-                            placeholder: "CC (comma-separated)",
-                            class: "input",
-                            id: "em-cc",
-                            data: { email_hub_target: "cc" } %>
-          </div>
-          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
-            <div class="label">Subject</div>
-            <%= text_field_tag :subject, nil,
-                            placeholder: "Subject",
-                            required: true,
-                            class: "input",
-                            id: "em-subject",
-                            data: { email_hub_target: "subject" } %>
-          </div>
-          <div class="form-group" style="gap: 0 !important; margin-bottom: 20px;">
-            <div class="label">Body</div>
-            <%= text_area_tag :body, nil,
-                            rows: 10,
-                            required: true,
-                            class: "textarea",
-                            id: "em-body",
-                            data: { email_hub_target: "body" } %>
-          </div>
-          <div class="form-group" style="gap: 0 !important;">
-            <%= submit_tag "Send Email",
-                        class: "btn btn-primary" %>
-          </div>
-        <% end %>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;">
+        Manage recruitment emails and candidate applications
       </div>
     </div>
-  </div>
-  <div class="flex flex-col gap-4">
-    <div class="card">
-      <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
-        <span>Email Log</span>
-        <%= button_to "Clear Log", email_hub_clear_log_path,
-                    method: :delete,
-                    class: "btn btn-sm",
-                    data: { turbo_confirm: "Clear all email logs?" } %>
-      </div>
 
-      <div class="card-body">
-        <% if @email_logs.empty? %>
-          <div style="color:var(--text3);font-size:13px">No emails sent yet.</div>
+    <%= link_to "Compose Email",
+                email_hub_path(tab: "compose"),
+                class: "btn btn-primary" %>
+  </div>
+
+  <!-- TABS -->
+  <div style="border-bottom:1px solid var(--border);padding:0 20px;">
+
+    <div style="display:flex;gap:24px;">
+
+      <% if current_user.admin? %>
+        <%= link_to email_hub_path(tab: "inbox"),
+                    style: "padding:14px 2px;
+                            text-decoration:none;
+                            border-bottom:2px solid #{params[:tab].blank? || params[:tab] == 'inbox' ? 'var(--accent)' : 'transparent'};
+                            color:#{params[:tab].blank? || params[:tab] == 'inbox' ? 'var(--text)' : 'var(--text3)'};" do %>
+
+          Inbox
+
+          <% if defined?(@pending_email_count) && @pending_email_count.to_i > 0 %>
+            <span class="badge badge-amber"
+                  style="margin-left:5px;">
+              <%= @pending_email_count %>
+            </span>
+          <% end %>
+
         <% end %>
-        <% @email_logs.each do |log| %>
-          <% status_color = { "pending" => "amber", "sent" => "green", "failed" => "red" }[log.status] || "gray" %>
-          <div class="email-log-item">
-            <strong><%= log.subject %></strong>
-            <span class="badge badge-<%= status_color %>"><%= log.status %></span>
-            <div>
-              To: <%= log.recipient_email %><% if log.cc_email.present? %> · CC: <%= log.cc_email %><% end %>
-            </div>
-            <% if log.status == "failed" && log.error_message.present? %>
-              <div style="color:var(--danger, #c0392b);font-size:12px"><%= log.error_message %></div>
+      <% end %>
+
+      <%= link_to email_hub_path(tab: "applications"),
+                  style: "padding:14px 2px;
+                          text-decoration:none;
+                          border-bottom:2px solid #{params[:tab] == 'applications' ? 'var(--accent)' : 'transparent'};
+                          color:#{params[:tab] == 'applications' ? 'var(--text)' : 'var(--text3)'};" do %>
+
+        Applications
+
+        <% if defined?(@pending_application_count) && @pending_application_count.to_i > 0 %>
+          <span class="badge badge-amber"
+                style="margin-left:5px;">
+            <%= @pending_application_count %>
+          </span>
+        <% end %>
+
+      <% end %>
+
+      <%= link_to email_hub_path(tab: "sent"),
+                  style: "padding:14px 2px;
+                          text-decoration:none;
+                          border-bottom:2px solid #{params[:tab] == 'sent' ? 'var(--accent)' : 'transparent'};
+                          color:#{params[:tab] == 'sent' ? 'var(--text)' : 'var(--text3)'};" do %>
+
+        Sent
+
+      <% end %>
+
+
+      <%= link_to email_hub_path(tab: "compose"),
+                  style: "padding:14px 2px;
+                          text-decoration:none;
+                          border-bottom:2px solid #{params[:tab] == 'compose' ? 'var(--accent)' : 'transparent'};
+                          color:#{params[:tab] == 'compose' ? 'var(--text)' : 'var(--text3)'};" do %>
+
+        Compose
+
+      <% end %>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================= -->
+  <!-- INBOX -->
+  <!-- ========================================================= -->
+
+  <% if params[:tab].blank? || params[:tab] == "inbox" %>
+
+    <div class="card-body" style="padding:0;">
+
+      <% if @thread_groups.blank? %>
+
+        <div style="padding:40px;text-align:center;color:var(--text3);">
+          No recruitment emails found.
+        </div>
+
+      <% else %>
+
+        <div style="display:grid;grid-template-columns:360px 1fr;min-height:600px;">
+
+          <!-- THREAD LIST -->
+          <div style="border-right:1px solid var(--border);overflow:auto;">
+
+            <% @thread_groups.each do |thread_id, messages| %>
+              <% latest_message = messages.first %>
+
+              <%= link_to email_hub_path(
+                    tab: "inbox",
+                    thread_id: thread_id
+                  ) do %>
+
+                <div style="padding:14px 20px;
+                            border-bottom:1px solid var(--border);
+                            background:<%= @email_thread&.id == thread_id ? 'var(--bg3)' : 'transparent' %>">
+                  <strong>
+                    <%= latest_message.from_email %>
+                  </strong>
+
+                  <div>
+                    <%= latest_message.subject.presence || "(No subject)" %>
+                  </div>
+
+                  <div>
+                    <%= latest_message.received_at.present? ?
+                          time_ago_in_words(latest_message.received_at) + " ago" :
+                          "" %>
+                  </div>
+                </div>
+
+              <% end %>
             <% end %>
+
+          </div>
+
+
+          <!-- SELECTED THREAD -->
+          <div>
+
+            <% if @selected_thread_id.present? %>
+
+              <!-- THREAD HEADER -->
+              <div style="padding:18px 20px;border-bottom:1px solid var(--border);">
+
+                <% first_message = @selected_messages.first %>
+                <% latest_message = @selected_messages.last %>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+
+                  <div>
+
+                    <div style="font-size:16px;font-weight:600;">
+                      <%= first_message&.subject.presence || "(No subject)" %>
+                    </div>
+
+                    <div style="font-size:12px;color:var(--text3);margin-top:5px;">
+                      <%= first_message&.from_email %>
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- MESSAGES -->
+              <div style="padding:20px;max-height:480px;overflow:auto;">
+
+                <% @selected_messages.each do |message| %>
+
+                  <div style="
+                    margin-bottom:20px;
+                    padding:16px;
+                    border:1px solid var(--border);
+                    border-radius:var(--r-sm);
+                    background:<%= message.direction.to_s == 'incoming' ? 'var(--bg3)' : 'transparent' %>;
+                  ">
+
+                    <div style="display:flex;justify-content:space-between;">
+
+                      <div style="font-weight:600;font-size:13px;">
+                        <%= message.direction.to_s == "incoming" ?
+                              message.from_email :
+                              "You" %>
+                      </div>
+
+                      <div style="font-size:11px;color:var(--text3);">
+
+                        <% message_time = message.received_at || message.sent_at || message.created_at %>
+
+                        <%= message_time.present? ?
+                              time_ago_in_words(message_time) + " ago" :
+                              "" %>
+
+                      </div>
+
+                    </div>
+
+
+                    <div style="font-size:12px;color:var(--text3);margin-top:4px;">
+
+                      To:
+                      <%= message.to_emails %>
+
+                      <% if message.cc_emails.present? %>
+                        · CC: <%= message.cc_emails %>
+                      <% end %>
+
+                    </div>
+
+
+                    <div style="margin-top:12px;font-size:13px;line-height:1.6;">
+                      <%= simple_format(message.body) %>
+                    </div>
+
+                  </div>
+
+                <% end %>
+
+              </div>
+
+
+              <!-- APPLICATION REVIEW -->
+              <div style="border-top:1px solid var(--border);padding:20px;">
+
+                <div style="font-size:15px;font-weight:600;margin-bottom:4px;">
+                  Application Review
+                </div>
+
+                <div style="font-size:12px;color:var(--text3);margin-bottom:18px;">
+                  Review the candidate and job before creating the application.
+                </div>
+
+
+                <% candidate = @selected_messages
+                                .map(&:candidate)
+                                .compact
+                                .first %>
+
+                <% application = @selected_messages
+                                  .map(&:application)
+                                  .compact
+                                  .first %>
+
+
+                <%= form_with url: confirm_email_hub_application_path,
+                              method: :post do |f| %>
+
+                  <%= hidden_field_tag :thread_id, @selected_thread_id %>
+
+
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+                    <!-- CANDIDATE -->
+                    <div class="form-group">
+
+                      <div class="label">
+                        Candidate
+                      </div>
+
+                      <%= select_tag :candidate_id,
+                          options_from_collection_for_select(
+                            @candidates,
+                            :id,
+                            :name,
+                            @selected_candidate&.id
+                          ),
+                          prompt: "Select Candidate",
+                          required: true,
+                          class: "select" %>
+
+                      <% if @selected_candidate.present? %>
+                        <div style="font-size:11px;color:var(--text3);margin-top:5px;">
+                          Detected candidate:
+                          <%= @selected_candidate.email %>
+                        </div>
+                      <% end %>
+
+                    </div>
+
+
+                    <!-- JOB -->
+                    <div class="form-group">
+
+                      <div class="label">
+                        Job
+                      </div>
+
+                      <%= select_tag :job_id,
+                                    options_from_collection_for_select(
+                                      @jobs,
+                                      :id,
+                                      :title
+                                    ),
+                                    prompt: "Select Job",
+                                    required: true,
+                                    class: "select" %>
+
+                    </div>
+
+                  </div>
+
+
+                  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
+
+                    <%= button_to "Reject",
+                                  reject_email_hub_application_path,
+                                  method: :post,
+                                  params: {
+                                    thread_id: @selected_thread_id
+                                  },
+                                  class: "btn" %>
+
+
+                    <%= f.submit "Confirm & Create Application",
+                                class: "btn btn-primary" %>
+
+                  </div>
+
+                <% end %>
+
+              </div>
+
+
+              <!-- REPLY -->
+              <div style="border-top:1px solid var(--border);padding:20px;">
+
+                <div class="label">
+                  Reply
+                </div>
+
+
+                <%= form_with url: email_hub_reply_path,
+                              method: :post do |f| %>
+
+                  <%= hidden_field_tag :thread_id, @selected_thread_id %>
+
+
+                  <%= text_area_tag :body,
+                                    nil,
+                                    rows: 4,
+                                    placeholder: "Write a reply...",
+                                    class: "textarea",
+                                    required: true %>
+
+
+                  <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+
+                    <%= f.submit "Send Reply",
+                                class: "btn btn-primary" %>
+
+                  </div>
+
+                <% end %>
+
+              </div>
+
+
+            <% else %>
+
+              <div style="
+                height:100%;
+                min-height:600px;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                color:var(--text3);
+              ">
+
+                Select an email to view the conversation.
+
+              </div>
+
+            <% end %>
+
+          </div>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+  <!-- ========================================================= -->
+  <!-- APPLICATIONS -->
+  <!-- ========================================================= -->
+
+  <% elsif params[:tab] == "applications" %>
+
+    <div class="card-body">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+
+        <div>
+          <div style="font-weight:600;font-size:15px;">
+            Candidate Applications
+          </div>
+
+          <div style="font-size:12px;color:var(--text3);margin-top:3px;">
+            Review applications created from recruitment emails.
+          </div>
+        </div>
+
+      </div>
+
+
+      <% if @applications.blank? %>
+
+        <div style="padding:40px;text-align:center;color:var(--text3);">
+          No applications found.
+        </div>
+
+      <% else %>
+
+        <div style="overflow:auto;">
+
+          <table style="width:100%;border-collapse:collapse;">
+
+            <thead>
+
+              <tr style="text-align:left;border-bottom:1px solid var(--border);">
+
+                <th style="padding:10px;">Candidate</th>
+                <th style="padding:10px;">Job</th>
+                <th style="padding:10px;">Source</th>
+                <th style="padding:10px;">Recruiter</th>
+                <th style="padding:10px;">Status</th>
+                <th style="padding:10px;"></th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              <% @applications.each do |application| %>
+
+                <tr style="border-bottom:1px solid var(--border);">
+
+                  <td style="padding:12px;">
+
+                    <div style="font-weight:500;">
+                      <%= application.candidate.name %>
+                    </div>
+
+                    <div style="font-size:11px;color:var(--text3);">
+                      <%= application.candidate.email %>
+                    </div>
+
+                  </td>
+
+                  <td style="padding:12px;">
+                    <%= application.job.title %>
+                  </td>
+
+                  <td style="padding:12px;">
+                    <span class="badge badge-gray">
+                      <%= application.source.presence || "Email" %>
+                    </span>
+                  </td>
+
+                  <td style="padding:12px;">
+                    <%= application.assigned_to&.name || "Unassigned" %>
+                  </td>
+
+                  <td style="padding:12px;">
+
+                    <% status_color =
+                         case application.status.to_s
+                         when "open" then "amber"
+                         when "confirmed" then "green"
+                         when "closed" then "gray"
+                         else "gray"
+                         end %>
+
+                    <span class="badge badge-<%= status_color %>">
+                      <%= application.status %>
+                    </span>
+
+                  </td>
+
+                  <td style="padding:12px;text-align:right;">
+
+                    <%= link_to "View",
+                                application_path(application),
+                                class: "btn btn-sm" %>
+
+                  </td>
+
+                </tr>
+
+              <% end %>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+
+  <!-- ========================================================= -->
+  <!-- SENT -->
+  <!-- ========================================================= -->
+
+  <% elsif params[:tab] == "sent" %>
+
+    <div style="
+      display:grid;
+      grid-template-columns:360px 1fr;
+      height:650px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      overflow:hidden;
+      background:var(--surface);
+    ">
+
+      <!-- Sent Message List -->
+      <div style="
+        border-right:1px solid var(--border);
+        overflow-y:auto;
+      ">
+
+        <div style="
+          padding:18px;
+          border-bottom:1px solid var(--border);
+          font-weight:600;
+          font-size:15px;
+        ">
+          Sent
+        </div>
+
+        <% if @email_messages.blank? %>
+
+          <div style="
+            padding:40px 20px;
+            text-align:center;
+            color:var(--text3);
+          ">
+            No emails sent yet.
+          </div>
+
+        <% else %>
+
+          <% @email_messages.each do |message| %>
+
+            <%= link_to email_hub_path(
+                  tab: "sent",
+                  message_id: message.id
+                ),
+                style: "
+                  display:block;
+                  padding:14px 16px;
+                  text-decoration:none;
+                  color:inherit;
+                  border-bottom:1px solid var(--border);
+                  background:#{@selected_message&.id == message.id ? 'var(--surface2)' : 'transparent'};
+                " do %>
+
+              <div style="
+                display:flex;
+                justify-content:space-between;
+                gap:10px;
+                margin-bottom:5px;
+              ">
+
+                <div style="
+                  font-weight:600;
+                  font-size:14px;
+                  overflow:hidden;
+                  text-overflow:ellipsis;
+                  white-space:nowrap;
+                ">
+                  <%= message.to_emails.presence || "-" %>
+                </div>
+
+                <div style="
+                  font-size:11px;
+                  color:var(--text3);
+                  white-space:nowrap;
+                ">
+                  <%= message.sent_at&.strftime("%d %b") %>
+                </div>
+
+              </div>
+
+              <div style="
+                font-size:13px;
+                font-weight:500;
+                margin-bottom:4px;
+                overflow:hidden;
+                text-overflow:ellipsis;
+                white-space:nowrap;
+              ">
+                <%= message.subject.presence || "(No subject)" %>
+              </div>
+
+              <div style="
+                font-size:12px;
+                color:var(--text3);
+                overflow:hidden;
+                text-overflow:ellipsis;
+                white-space:nowrap;
+              ">
+                <%= strip_tags(message.body.to_s).truncate(80) %>
+              </div>
+
+            <% end %>
+
+          <% end %>
+
+        <% end %>
+
+      </div>
+
+
+      <!-- Selected Sent Message -->
+      <div style="
+        overflow-y:auto;
+        background:var(--surface);
+      ">
+
+        <% if @selected_message.present? %>
+
+          <!-- Header -->
+          <div style="
+            padding:20px 24px;
+            border-bottom:1px solid var(--border);
+          ">
+
+            <div style="
+              font-size:18px;
+              font-weight:600;
+              margin-bottom:14px;
+            ">
+              <%= @selected_message.subject.presence || "(No subject)" %>
+            </div>
+
+            <div style="
+              font-size:13px;
+              color:var(--text2);
+              line-height:1.7;
+            ">
+
+              <div>
+                <strong>From:</strong>
+                <%= @selected_message.from_email %>
+              </div>
+
+              <div>
+                <strong>To:</strong>
+                <%= @selected_message.to_emails.presence || "-" %>
+              </div>
+
+              <% if @selected_message.cc_emails.present? %>
+                <div>
+                  <strong>Cc:</strong>
+                  <%= @selected_message.cc_emails %>
+                </div>
+              <% end %>
+
+              <div>
+                <strong>Sent:</strong>
+                <%= @selected_message.sent_at&.strftime("%d %b %Y, %I:%M %p") || "-" %>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- Message Body -->
+          <div style="
+            padding:24px;
+            line-height:1.7;
+            font-size:14px;
+            color:var(--text);
+            white-space:pre-wrap;
+          ">
+            <%= @selected_message.body.to_s %>
+          </div>
+
+
+          <!-- Related Information -->
+          <% if @selected_message.candidate.present? ||
+                @selected_message.application.present? %>
+
+            <div style="
+              margin:0 24px 24px;
+              padding:16px;
+              border:1px solid var(--border);
+              border-radius:8px;
+              background:var(--surface2);
+            ">
+
+              <div style="
+                font-size:12px;
+                color:var(--text3);
+                margin-bottom:10px;
+              ">
+                Related Information
+              </div>
+
+              <% if @selected_message.candidate.present? %>
+                <div style="
+                  font-size:14px;
+                  margin-bottom:6px;
+                ">
+                  <strong>Candidate:</strong>
+                  <%= @selected_message.candidate.name %>
+                </div>
+              <% end %>
+
+              <% if @selected_message.application.present? %>
+                <div style="
+                  font-size:14px;
+                ">
+                  <strong>Application:</strong>
+                  <%= link_to(
+                        "Application ##{@selected_message.application.id}",
+                        application_path(@selected_message.application),
+                        style: "color:var(--accent);text-decoration:none;"
+                      ) %>
+                </div>
+              <% end %>
+
+            </div>
+
+          <% end %>
+
+
+        <% else %>
+
+          <!-- Nothing Selected -->
+          <div style="
+            height:100%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:var(--text3);
+            text-align:center;
+            padding:40px;
+          ">
             <div>
-              <%= time_ago_in_words(log.created_at) %> ago
+              <div style="
+                font-size:32px;
+                margin-bottom:10px;
+              ">
+                ✉
+              </div>
+
+              <div style="
+                font-size:14px;
+              ">
+                Select a sent email to view its details.
+              </div>
             </div>
           </div>
+
         <% end %>
+
       </div>
+
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        Quick Templates Preview
-      </div>
 
-      <div class="card-body">
-        <% @email_templates.each do |t| %>
-          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px;cursor:pointer"
-              data-action="click->email-hub#quickLoad"
-              data-email-hub-id-param="<%= t[:id] %>"
-              onmouseover="this.style.borderColor='var(--accent)'"
-              onmouseout="this.style.borderColor='var(--border)'">
+  <!-- ========================================================= -->
+  <!-- COMPOSE -->
+  <!-- ========================================================= -->
 
-            <div style="font-weight:500;font-size:13px;margin-bottom:3px">
-              <%= t[:name] %>
-            </div>
+  <% elsif params[:tab] == "compose" %>
 
-            <div style="font-size:11px;color:var(--text3)">
-              <%= t[:subject] %>
-            </div>
+    <div class="card-body">
+
+      <div style="max-width:760px;">
+
+        <%= form_with url: send_email_hubs_path,
+                      method: :post do |f| %>
+
+          <div class="form-group" style="margin-bottom:20px;">
+            <div class="label">Template</div>
+
+            <%= select_tag :template_name,
+                           options_for_select(
+                             @email_templates.map { |t| [t[:name], t[:id]] }
+                           ),
+                           include_blank: "— Select a template —",
+                           class: "select",
+                           id: "em-template",
+                           data: {
+                             email_hub_target: "template",
+                             action: "change->email-hub#loadTemplate"
+                           } %>
           </div>
+
+
+          <div class="form-group" style="margin-bottom:20px;">
+            <div class="label">Candidate</div>
+
+            <%= select_tag :candidate_id,
+                           options_from_collection_for_select(
+                             @candidates,
+                             :id,
+                             :name
+                           ),
+                           prompt: "Select Candidate",
+                           class: "select",
+                           id: "em-candidate",
+                           data: {
+                             email_hub_target: "candidate",
+                             action: "change->email-hub#selectCandidate"
+                           } %>
+          </div>
+
+
+          <div class="form-group" style="margin-bottom:20px;">
+            <div class="label">To Email</div>
+
+            <%= text_field_tag :to_email,
+                               nil,
+                               placeholder: "To Email",
+                               required: true,
+                               class: "input",
+                               id: "em-to",
+                               data: {
+                                 email_hub_target: "toEmail"
+                               } %>
+          </div>
+
+
+          <div class="form-group" style="margin-bottom:20px;">
+            <div class="label">CC</div>
+
+            <%= text_field_tag :cc,
+                               nil,
+                               placeholder: "CC (comma-separated)",
+                               class: "input",
+                               id: "em-cc",
+                               data: {
+                                 email_hub_target: "cc"
+                               } %>
+          </div>
+
+
+          <div class="form-group" style="margin-bottom:20px;">
+            <div class="label">Subject</div>
+
+            <%= text_field_tag :subject,
+                               nil,
+                               placeholder: "Subject",
+                               required: true,
+                               class: "input",
+                               id: "em-subject",
+                               data: {
+                                 email_hub_target: "subject"
+                               } %>
+          </div>
+
+
+          <div class="form-group" style="margin-bottom:20px;">
+            <div class="label">Body</div>
+
+            <%= text_area_tag :body,
+                               nil,
+                               rows: 12,
+                               required: true,
+                               class: "textarea",
+                               id: "em-body",
+                               data: {
+                                 email_hub_target: "body"
+                               } %>
+          </div>
+
+
+          <%= submit_tag "Send Email",
+                         class: "btn btn-primary" %>
+
         <% end %>
+
       </div>
+
     </div>
-  </div>
+
+  <% end %>
+
 </div>

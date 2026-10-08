@@ -5,6 +5,7 @@ class Job < ApplicationRecord
   has_many :candidates, dependent: :nullify
   has_many :status_histories, class_name: "JobStatusHistory", dependent: :destroy
   has_many :job_openings, dependent: :destroy
+  has_many :applications, dependent: :nullify
 
   accepts_nested_attributes_for :job_openings, allow_destroy: true
   STATUSES       = %w[Open Closed Reopened On-Hold].freeze

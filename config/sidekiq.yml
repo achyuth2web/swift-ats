@@ -1,0 +1,17 @@
+:concurrency: 5
+
+:queues:
+  - critical
+  - email_sync
+  - email
+  - mailers
+  - calendar
+  - default
+
+:scheduler:
+  :schedule:
+    gmail_incoming_sync:
+      cron: "*/5 * * * *"
+      class: "GmailIncomingSyncJob"
+      description: "Sync the recruitment mailbox every 5 minutes"
+      queue: email_sync

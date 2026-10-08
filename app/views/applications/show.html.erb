@@ -1,0 +1,437 @@
+<div style="max-width:1200px; margin:30px auto; padding:0 20px;">
+
+  <!-- Header -->
+  <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:24px;
+  ">
+    <div>
+      <div style="
+        font-size:13px;
+        color:var(--text3);
+        margin-bottom:6px;
+      ">
+        Application #<%= @application.id %>
+      </div>
+
+      <h1 style="
+        margin:0;
+        font-size:26px;
+        font-weight:600;
+      ">
+        <%= @application.candidate&.name || "Candidate" %>
+      </h1>
+    </div>
+
+    <%= link_to "← Applications",
+                email_hub_path(tab: "applications"),
+                style: "
+                  text-decoration:none;
+                  color:var(--text2);
+                  padding:8px 14px;
+                  border:1px solid var(--border);
+                  border-radius:6px;
+                " %>
+  </div>
+
+
+  <!-- Application Summary -->
+  <div style="
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:16px;
+    margin-bottom:24px;
+  ">
+
+    <!-- Candidate -->
+    <div style="
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:18px;
+      background:var(--surface);
+    ">
+      <div style="
+        font-size:12px;
+        color:var(--text3);
+        margin-bottom:8px;
+      ">
+        Candidate
+      </div>
+
+      <div style="
+        font-size:17px;
+        font-weight:600;
+        margin-bottom:6px;
+      ">
+        <%= @application.candidate&.name || "-" %>
+      </div>
+
+      <% if @application.candidate&.email.present? %>
+        <div style="
+          font-size:14px;
+          color:var(--text2);
+        ">
+          <%= @application.candidate.email %>
+        </div>
+      <% end %>
+
+      <% if @application.candidate&.phone.present? %>
+        <div style="
+          font-size:14px;
+          color:var(--text2);
+          margin-top:4px;
+        ">
+          <%= @application.candidate.phone %>
+        </div>
+      <% end %>
+    </div>
+
+
+    <!-- Job -->
+    <div style="
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:18px;
+      background:var(--surface);
+    ">
+      <div style="
+        font-size:12px;
+        color:var(--text3);
+        margin-bottom:8px;
+      ">
+        Job
+      </div>
+
+      <div style="
+        font-size:17px;
+        font-weight:600;
+        margin-bottom:6px;
+      ">
+        <%= @application.job&.title || "-" %>
+      </div>
+
+      <% if @application.job&.company.present? %>
+        <div style="
+          font-size:14px;
+          color:var(--text2);
+        ">
+          <%= @application.job.company %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div style="
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:16px;
+    margin-bottom:24px;
+  ">
+
+    <!-- Status -->
+    <div style="
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:18px;
+      background:var(--surface);
+    ">
+
+      <div style="
+        font-size:12px;
+        color:var(--text3);
+        margin-bottom:10px;
+      ">
+        Application Status
+      </div>
+
+      <% if current_user.admin? ||
+            @application.assigned_to_id == current_user.id %>
+
+        <%= form_with model: @application,
+                      url: update_status_application_path(@application),
+                      method: :patch,
+                      local: true do |f| %>
+
+          <div style="
+            display:flex;
+            gap:8px;
+            align-items:center;
+          ">
+
+            <%= f.select :status,
+                        [
+                          ["Open", "open"],
+                          ["In Progress", "in_progress"],
+                          ["Shortlisted", "shortlisted"],
+                          ["Interview", "interview"],
+                          ["Selected", "selected"],
+                          ["Rejected", "rejected"],
+                          ["Closed", "closed"]
+                        ],
+                        {},
+                        class: "input",
+                        style: "
+                          width:100%;
+                          height:40px;
+                        " %>
+
+            <%= f.submit "Update",
+                        class: "btn btn-primary",
+                        style: "
+                          height:40px;
+                          padding:0 12px;
+                          white-space:nowrap;
+                        " %>
+
+          </div>
+
+        <% end %>
+
+      <% else %>
+
+        <div style="
+          display:flex;
+          align-items:center;
+          height:40px;
+        ">
+          <span class="badge">
+            <%= @application.status.titleize %>
+          </span>
+        </div>
+
+      <% end %>
+
+    </div>
+
+
+    <!-- Recruiter -->
+    <div style="
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:18px;
+      background:var(--surface);
+    ">
+
+      <div style="
+        font-size:12px;
+        color:var(--text3);
+        margin-bottom:8px;
+      ">
+        Recruiter
+      </div>
+
+      <% if current_user.admin? %>
+
+        <%= form_with model: @application,
+                      url: assign_application_path(@application),
+                      method: :patch,
+                      local: true do |f| %>
+
+          <div style="
+            display:flex;
+            gap:8px;
+            align-items:center;
+          ">
+
+            <%= f.collection_select :assigned_to_id,
+                                    User.recruiters,
+                                    :id,
+                                    :name,
+                                    { include_blank: "Unassigned" },
+                                    {
+                                      class: "input",
+                                      style: "
+                                        flex:1;
+                                        min-width:0;
+                                        height:40px;
+                                      "
+                                    } %>
+
+            <%= f.submit "Assign",
+                        style: "
+                          height:40px;
+                          padding:0 12px;
+                          border:0;
+                          border-radius:6px;
+                          cursor:pointer;
+                          background:var(--accent);
+                          color:white;
+                          white-space:nowrap;
+                        " %>
+
+          </div>
+
+        <% end %>
+
+      <% else %>
+        <div style="
+          font-size:16px;
+          font-weight:600;
+          margin-bottom:12px;
+        ">
+          <%= @application.assigned_to&.name || "Unassigned" %>
+        </div>
+      <% end %>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- Email Conversation -->
+  <div style="
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:var(--surface);
+    overflow:hidden;
+  ">
+
+    <div style="
+      padding:18px;
+      border-bottom:1px solid var(--border);
+    ">
+      <div style="
+        font-size:18px;
+        font-weight:600;
+      ">
+        Email Conversation
+      </div>
+
+      <div style="
+        font-size:13px;
+        color:var(--text3);
+        margin-top:4px;
+      ">
+        Communication related to this application
+      </div>
+    </div>
+
+
+    <div style="padding:20px;">
+
+      <% if @email_messages.present? %>
+
+        <% @email_messages.each do |message| %>
+
+          <div style="
+            padding:16px 0;
+            border-bottom:1px solid var(--border);
+          ">
+
+            <div style="
+              display:flex;
+              justify-content:space-between;
+              align-items:center;
+              margin-bottom:8px;
+            ">
+
+              <div style="
+                font-weight:600;
+              ">
+                <% if message.direction == "incoming" %>
+                  <%= message.from_email %>
+                <% else %>
+                  <%= message.from_email %>
+                <% end %>
+              </div>
+
+              <div style="
+                font-size:12px;
+                color:var(--text3);
+              ">
+                <%= l(
+                      message.received_at || message.sent_at || message.created_at,
+                      format: :short
+                    ) %>
+              </div>
+
+            </div>
+
+
+            <% if message.subject.present? %>
+              <div style="
+                font-weight:500;
+                margin-bottom:8px;
+              ">
+                <%= message.subject %>
+              </div>
+            <% end %>
+
+
+            <div style="
+              white-space:pre-wrap;
+              line-height:1.6;
+              color:var(--text2);
+            ">
+              <%= message.body %>
+            </div>
+
+          </div>
+
+        <% end %>
+
+      <% else %>
+
+        <div style="
+          padding:30px;
+          text-align:center;
+          color:var(--text3);
+        ">
+          No email messages found for this application.
+        </div>
+
+      <% end %>
+
+    </div>
+
+
+    <!-- Reply -->
+    <% if @application.assigned_to_id == current_user.id ||
+          current_user.admin? %>
+
+      <div style="
+        padding:18px;
+        border-top:1px solid var(--border);
+      ">
+
+        <%= form_with url: email_hub_reply_path,
+              method: :post,
+              local: true do |f| %>
+
+          <%= hidden_field_tag :application_id, @application.id %>
+
+          <%= text_area_tag :body,
+                            nil,
+                            rows: 6,
+                            placeholder: "Write your reply...",
+                            class: "input",
+                            style: "
+                              width:100%;
+                              resize:vertical;
+                              margin-bottom:10px;
+                            " %>
+
+          <div style="text-align:right;">
+            <%= submit_tag "Send Reply",
+                          style: "
+                            padding:9px 18px;
+                            border:0;
+                            border-radius:6px;
+                            cursor:pointer;
+                            background:var(--accent);
+                            color:white;
+                          " %>
+          </div>
+
+        <% end %>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
+</div>
