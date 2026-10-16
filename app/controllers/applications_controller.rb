@@ -14,12 +14,27 @@ class ApplicationsController < ApplicationController
     end
 
     @email_messages = EmailMessage
-                        .where(application_id: @application.id)
-                        .order(
-                          Arel.sql(
-                            "COALESCE(received_at, sent_at, created_at) ASC"
-                          )
+                      .where(application_id: @application.id)
+                      .order(
+                        Arel.sql(
+                          "COALESCE(received_at, sent_at, created_at) ASC"
                         )
+                      )
+
+    @email_message_attachments = {}
+
+    integration = GmailIntegration.recruitment.first
+
+    if integration
+      gmail = GmailService.new(integration)
+
+      @email_messages.each do |message|
+        next if message.message_id.blank?
+
+        @email_message_attachments[message.id] =
+          gmail.list_attachments(message.message_id)
+      end
+    end
   end
 
   def assign

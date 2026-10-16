@@ -13,7 +13,7 @@ class GmailIncomingSyncJob < ApplicationJob
     gmail = GmailService.new(integration)
 
     messages = gmail.list_messages(
-      query: "to:#{MAILBOX} -from:#{MAILBOX}"
+      query: "in:inbox to:#{MAILBOX} -from:#{MAILBOX} category:primary"
     )
 
     messages.each do |message|

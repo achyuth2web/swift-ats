@@ -371,6 +371,56 @@
 
           </div>
 
+          <% attachments = @email_message_attachments[message.id] || [] %>
+
+          <% if attachments.present? %>
+            <div style="
+              margin-top:14px;
+              padding:12px;
+              border:1px solid var(--border);
+              border-radius:8px;
+              background:var(--surface2);
+            ">
+              <div style="
+                font-weight:600;
+                font-size:13px;
+                margin-bottom:8px;
+              ">
+                Attachments (<%= attachments.size %>)
+              </div>
+
+              <% attachments.each_with_index do |attachment, index| %>
+                <div style="
+                  display:flex;
+                  justify-content:space-between;
+                  align-items:center;
+                  gap:12px;
+                  padding:8px 0;
+                ">
+                  <div style="overflow-wrap:anywhere; min-width:0;">
+                    <icon name="paperclip" size="sm" inline />
+                    <%= attachment[:filename].presence || "Attachment #{index + 1}" %>
+
+                    <% if attachment[:size].present? %>
+                      <span style="color:var(--text3);font-size:12px;">
+                        (<%= number_to_human_size(attachment[:size]) %>)
+                      </span>
+                    <% end %>
+                  </div>
+
+                  <% if attachment[:attachment_id].present? %>
+                    <%= link_to "Download",
+                        download_email_hub_attachment_path(
+                          message_id: message.id,
+                          attachment_index: index
+                        ),
+                        style: "white-space:nowrap;color:var(--accent);text-decoration:none;" %>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
         <% end %>
 
       <% else %>

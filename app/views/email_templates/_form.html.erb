@@ -1,0 +1,58 @@
+
+<%= form_with model: @email_template, html: { class: "flex flex-col gap-3" } do |f| %>
+  <% if @email_template.errors.any? %>
+    <div class="flash-alert">
+      <ul>
+        <% @email_template.errors.full_messages.each do |error| %>
+          <li><%= error %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group">
+    <%= f.label :name, "Template Name", class: "label" %>
+    <%= f.text_field :name,
+                     class: "input",
+                     placeholder: "Interview Invitation",
+                     required: true %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :subject, "Email Subject", class: "label" %>
+    <%= f.text_field :subject,
+                     class: "input",
+                     placeholder: "Interview Invitation — {role} at {company}",
+                     required: true %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :body, "Email Body", class: "label" %>
+    <%= f.text_area :body,
+                    rows: 10,
+                    class: "input",
+                    placeholder: "Dear {name}, ...",
+                    required: true %>
+    <small class="form-hint">
+      **Available placeholders:** Use these placeholders to insert dynamic values into your email.
+      <br>
+      <code>{name}</code> – Candidate Name<br>
+      <code>{role}</code> – Job Role<br>
+      <code>{company}</code> – Company Name<br>
+      <code>{ctc}</code> – Expected CTC<br>
+      <code>{date}</code> – Interview Date<br>
+      <code>{time}</code> – Interview Time<br>
+      <code>{interviewer}</code> – Interviewer Name<br>
+      <code>{mode}</code> – Interview Mode<br>
+      <code>{location}</code> – Location or Meeting Link<br>
+      <code>{recruiter}</code> – Recruiter Name
+    </small>
+  </div>
+
+  <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px">
+    <%= link_to "Cancel", email_templates_path, class: "btn btn-ghost" %>
+    <%= f.submit @email_template.persisted? ? "Save Changes" : "Create Template", class: "btn btn-primary" %>
+  </div>
+<% end %>
+
+

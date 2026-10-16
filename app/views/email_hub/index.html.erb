@@ -28,23 +28,21 @@
 
     <div style="display:flex;gap:24px;">
 
-      <% if current_user.admin? %>
-        <%= link_to email_hub_path(tab: "inbox"),
-                    style: "padding:14px 2px;
-                            text-decoration:none;
-                            border-bottom:2px solid #{params[:tab].blank? || params[:tab] == 'inbox' ? 'var(--accent)' : 'transparent'};
-                            color:#{params[:tab].blank? || params[:tab] == 'inbox' ? 'var(--text)' : 'var(--text3)'};" do %>
+      <%= link_to email_hub_path(tab: "inbox"),
+                  style: "padding:14px 2px;
+                          text-decoration:none;
+                          border-bottom:2px solid #{params[:tab].blank? || params[:tab] == 'inbox' ? 'var(--accent)' : 'transparent'};
+                          color:#{params[:tab].blank? || params[:tab] == 'inbox' ? 'var(--text)' : 'var(--text3)'};" do %>
 
-          Inbox
+        Inbox
 
-          <% if defined?(@pending_email_count) && @pending_email_count.to_i > 0 %>
-            <span class="badge badge-amber"
-                  style="margin-left:5px;">
-              <%= @pending_email_count %>
-            </span>
-          <% end %>
-
+        <% if defined?(@pending_email_count) && @pending_email_count.to_i > 0 %>
+          <span class="badge badge-amber"
+                style="margin-left:5px;">
+            <%= @pending_email_count %>
+          </span>
         <% end %>
+
       <% end %>
 
       <%= link_to email_hub_path(tab: "applications"),
@@ -219,10 +217,47 @@
 
 
                     <div style="margin-top:12px;font-size:13px;line-height:1.6;">
-                      <%= simple_format(message.body) %>
+                      <% body = message.body.to_s %>
+                      <% html_body = body.match?(/<\s*(html|body|div|table|p|br|span|meta|style)\b/i) %>
+
+                      <% if body.present? %>
+                        <% if html_body %>
+                          <%= tag.iframe(
+                            nil,
+                            srcdoc: body,
+                            sandbox: "",
+                            title: "Email content",
+                            style: "width:100%; min-height:500px; border:0; background:#fff;"
+                          ) %>
+                        <% else %>
+                          <div style="white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.7;">
+                            <%= simple_format(body) %>
+                          </div>
+                        <% end %>
+                      <% else %>
+                        <p>No email content available.</p>
+                      <% end %>
                     </div>
 
                   </div>
+
+                  <% attachments = @selected_message_attachments[message.id] || [] %>
+
+                  <% if attachments.any? %>
+                    <div class="email-attachments">
+                      <strong>Attachments</strong>
+
+                      <% attachments.each_with_index do |attachment, index| %>
+                        <div style="color:var(--accent2)">
+                          <%= link_to attachment[:filename],
+                            download_email_hub_attachment_path(
+                              message_id: message.id,
+                              attachment_index: index
+                            ) %>
+                        </div>
+                      <% end %>
+                    </div>
+                  <% end %>
 
                 <% end %>
 
@@ -240,93 +275,20 @@
                   Review the candidate and job before creating the application.
                 </div>
 
+                <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
+                  <%= button_to "Reject",
+                      reject_email_hub_path(@selected_thread_id),
+                      method: :post,
+                      data: {
+                        turbo_confirm: "Are you sure you want to reject this conversation?"
+                      },
+                      class: "btn btn-ghost" %>
 
-                <% candidate = @selected_messages
-                                .map(&:candidate)
-                                .compact
-                                .first %>
-
-                <% application = @selected_messages
-                                  .map(&:application)
-                                  .compact
-                                  .first %>
-
-
-                <%= form_with url: confirm_email_hub_application_path,
-                              method: :post do |f| %>
-
-                  <%= hidden_field_tag :thread_id, @selected_thread_id %>
-
-
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-
-                    <!-- CANDIDATE -->
-                    <div class="form-group">
-
-                      <div class="label">
-                        Candidate
-                      </div>
-
-                      <%= select_tag :candidate_id,
-                          options_from_collection_for_select(
-                            @candidates,
-                            :id,
-                            :name,
-                            @selected_candidate&.id
-                          ),
-                          prompt: "Select Candidate",
-                          required: true,
-                          class: "select" %>
-
-                      <% if @selected_candidate.present? %>
-                        <div style="font-size:11px;color:var(--text3);margin-top:5px;">
-                          Detected candidate:
-                          <%= @selected_candidate.email %>
-                        </div>
-                      <% end %>
-
-                    </div>
-
-
-                    <!-- JOB -->
-                    <div class="form-group">
-
-                      <div class="label">
-                        Job
-                      </div>
-
-                      <%= select_tag :job_id,
-                                    options_from_collection_for_select(
-                                      @jobs,
-                                      :id,
-                                      :title
-                                    ),
-                                    prompt: "Select Job",
-                                    required: true,
-                                    class: "select" %>
-
-                    </div>
-
-                  </div>
-
-
-                  <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px;">
-
-                    <%= button_to "Reject",
-                                  reject_email_hub_application_path,
-                                  method: :post,
-                                  params: {
-                                    thread_id: @selected_thread_id
-                                  },
-                                  class: "btn" %>
-
-
-                    <%= f.submit "Confirm & Create Application",
-                                class: "btn btn-primary" %>
-
-                  </div>
-
-                <% end %>
+                  <%= button_to "Move to Job Application",
+                      move_to_application_email_hub_path(@selected_thread_id),
+                      method: :post,
+                      class: "btn btn-primary" %>
+                </div>
 
               </div>
 
@@ -682,16 +644,25 @@
 
 
           <!-- Message Body -->
-          <div style="
-            padding:24px;
-            line-height:1.7;
-            font-size:14px;
-            color:var(--text);
-            white-space:pre-wrap;
-          ">
-            <%= @selected_message.body.to_s %>
-          </div>
+          <% body = @selected_message.body.to_s %>
+          <% html_body = body.match?(/<\s*(html|body|div|table|p|br|span|meta)\b/i) %>
 
+          <% if body.present? %>
+            <% if html_body %>
+              <iframe
+                sandbox=""
+                srcdoc="<%= body %>"
+                style="width: 100%; min-height: 500px; border: none; background: white;"
+                title="Email content">
+              </iframe>
+            <% else %>
+              <div style="white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.7;">
+                <%= simple_format(body) %>
+              </div>
+            <% end %>
+          <% else %>
+            <p>No email content available.</p>
+          <% end %>
 
           <!-- Related Information -->
           <% if @selected_message.candidate.present? ||

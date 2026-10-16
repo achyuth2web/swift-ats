@@ -3,6 +3,8 @@
 class EmailHubController < ApplicationController
   before_action :authenticate_user!
 
+  class CandidateOwnedByAnotherRecruiter < StandardError; end
+
   # def index
   #   @email_templates = email_templates
   #   @candidates = current_user.visible_candidates
@@ -35,12 +37,7 @@ class EmailHubController < ApplicationController
     when "compose"
       load_compose
     else
-      if current_user.admin?
-        load_inbox
-      else
-        redirect_to email_hub_path(tab: "applications")
-        return
-      end
+      load_inbox
     end
   end
 
@@ -114,44 +111,135 @@ class EmailHubController < ApplicationController
                 notice: "Email log cleared."
   end
 
-  def confirm_application
-    thread_id = params[:thread_id]
+  # POST /email_hub/:thread_id/reject
+  def reject_email
+    messages = visible_inbox_thread!
 
-    messages = EmailMessage
-                .where(
-                  mailbox: ENV.fetch(
-                    "RECRUITMENT_MAILBOX",
-                    "jobs@spritle.com"
-                  ),
-                  thread_id: thread_id
-                )
-                .order(received_at: :asc, created_at: :asc)
+    EmailMessage.transaction do
+      locked_messages = messages.lock.to_a
 
-    if messages.empty?
+      if locked_messages.empty? ||
+        locked_messages.any? { |message| message.application_id.present? }
+        raise ActiveRecord::RecordNotFound
+      end
+
+      EmailMessage.where(id: locked_messages.map(&:id))
+                  .update_all(status: "rejected", updated_at: Time.current)
+    end
+
+    redirect_to email_hub_path(tab: "inbox"),
+                notice: "Email conversation rejected successfully."
+  rescue ActiveRecord::RecordNotFound
+    redirect_to email_hub_path(tab: "inbox"),
+                alert: "Email conversation not found or access denied."
+  end
+
+  # POST /email_hub/:thread_id/move_to_application
+  def move_to_application
+    messages = visible_inbox_thread!
+    first_message = messages.first
+
+    applicant_email = extract_applicant_email(first_message.from_email)
+
+    if applicant_email.blank?
       redirect_to email_hub_path(tab: "inbox"),
-                  alert: "Email conversation not found."
+                  alert: "Unable to identify the applicant's email address."
       return
     end
 
-    candidate = Candidate.find(params[:candidate_id])
-    job = Job.find(params[:job_id])
+    normalized_email = applicant_email.downcase
 
-    application = Application.create!(
-      candidate: candidate,
-      job: job,
-      status: "open",
-      assigned_to_id: nil,
-      source: "email",
-      source_email: messages.first.from_email,
-      applied_at: Time.current
-    )
+    matched_jobs = EmailJobMatcher.new(first_message).matched_jobs
 
-    messages.update_all(application_id: application.id)
+    job = matched_jobs.find do |matched_job|
+      current_user.admin? ||
+        matched_job.recruiters.exists?(id: current_user.id)
+    end
 
-    redirect_to email_hub_path(
-      tab: "inbox",
-      thread_id: thread_id
-    ), notice: "Application created successfully."
+    unless job
+      redirect_to email_hub_path(tab: "inbox"),
+                  alert: "No matching job opening was found for this recruiter."
+      return
+    end
+
+    recruiter_id =
+      if job.recruiters.exists?(id: current_user.id)
+        current_user.id
+      else
+        job.recruiters.first&.id
+      end
+
+    unless recruiter_id
+      redirect_to email_hub_path(tab: "inbox"),
+                  alert: "No recruiter is assigned to the matching job."
+      return
+    end
+
+    EmailMessage.transaction do
+      locked_messages = messages.lock.to_a
+
+      if locked_messages.empty? ||
+        locked_messages.any? do |message|
+          message.application_id.present? ||
+            message.status == "rejected"
+        end
+        raise ActiveRecord::RecordNotFound
+      end
+
+      # Find the candidate without regard to case.
+      candidate = Candidate.where(
+        "LOWER(email) = ?",
+        normalized_email
+      ).first
+
+      # Prevent using a candidate owned by another recruiter.
+      if candidate.present? &&
+        candidate.recruiter_id.present? &&
+        candidate.recruiter_id != recruiter_id
+        raise CandidateOwnedByAnotherRecruiter
+      end
+
+      unless candidate
+        candidate = Candidate.create!(
+          email: normalized_email,
+          name: normalized_email.split("@").first,
+          recruiter_id: recruiter_id,
+          job_id: job.id,
+          status: "New"
+        )
+      end
+
+      application = Application.create!(
+        candidate: candidate,
+        job: job,
+        status: "open",
+        assigned_to_id: recruiter_id,
+        source: "email",
+        source_email: normalized_email,
+        applied_at: Time.current
+      )
+
+      EmailMessage.where(id: locked_messages.map(&:id))
+                  .update_all(
+                    application_id: application.id,
+                    updated_at: Time.current
+                  )
+    end
+
+    redirect_to email_hub_path(tab: "applications"),
+                notice: "Application created successfully."
+
+  rescue CandidateOwnedByAnotherRecruiter
+    redirect_to email_hub_path(tab: "inbox"),
+                alert: "Can't move this email to a job application because this candidate already belongs to another recruiter."
+
+  rescue ActiveRecord::RecordNotFound
+    redirect_to email_hub_path(tab: "inbox"),
+                alert: "Email conversation not found, already processed, or access denied."
+
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to email_hub_path(tab: "inbox"),
+                alert: "Unable to create application: #{e.record.errors.full_messages.join(', ')}"
   end
 
   def reply
@@ -216,41 +304,74 @@ class EmailHubController < ApplicationController
     end
   end
 
+  def download_attachment
+    mailbox = ENV.fetch("RECRUITMENT_MAILBOX", "jobs@spritle.com")
+
+    message = EmailMessage.find_by(id: params[:message_id])
+
+    unless message
+      Rails.logger.error("404: EmailMessage not found: #{params[:message_id]}")
+      head :not_found
+      return
+    end
+
+    unless message.mailbox == mailbox && message.direction == "incoming"
+      Rails.logger.error("404: Message mailbox or direction does not match")
+      head :not_found
+      return
+    end
+
+    integration = GmailIntegration.recruitment.first
+
+    unless integration
+      Rails.logger.error("Gmail integration not found")
+      head :service_unavailable
+      return
+    end
+
+    gmail = GmailService.new(integration)
+    attachments = gmail.list_attachments(message.message_id)
+    index = Integer(params[:attachment_index], exception: false)
+
+    unless index && index >= 0 && index < attachments.length
+      head :not_found
+      return
+    end
+
+    attachment = attachments[index]
+
+    unless attachment[:attachment_id].present?
+      head :not_found
+      return
+    end
+
+    result = gmail.get_attachment(
+      message.message_id,
+      attachment[:attachment_id]
+    )
+
+    file_data = result.data.to_s
+    filename = File.basename(attachment[:filename].to_s)
+    filename = "attachment" if filename.blank? || filename == "."
+
+    send_data file_data,
+              filename: filename,
+              type: attachment[:mime_type].presence ||
+                    "application/octet-stream",
+              disposition: "attachment"
+  end
+
   private
 
   def email_templates
-    [
-      {
-        id:'interview-invite',
-        name:'Interview Invitation',
-        subject:'Interview Invitation — {role} at {company}',
-        body:"Dear {name},\n\nThank you for applying for the {role} position at {company}.\n\nWe are pleased to invite you for an interview on {date} at {time}.\n\nDetails:\n- Role: {role}\n- Interviewer: {interviewer}\n- Mode: {mode}\n- Location/Link: {location}\n\nPlease confirm your availability by replying to this email.\n\nBest regards,\n{recruiter}\n{company}"
-      },
-      {
-        id:'offer-letter',
-        name:'Offer Letter',
-        subject:'Offer Letter — {role} at {company}',
-        body:"Dear {name},\n\nWe are delighted to offer you the position of {role} at {company}.\n\nOffer Details:\n- Role: {role}\n- CTC: {ctc} LPA\n- Joining Date: {date}\n- Location: {location}\n\nKindly sign and return this offer within 3 working days to confirm your acceptance.\n\nWelcome to the team!\n\nWarm regards,\n{recruiter}\n{company}"
-      },
-      {
-        id:'rejection',
-        name:'Rejection (Polite)',
-        subject:'Update on your application — {role}',
-        body:"Dear {name},\n\nThank you for your time and interest in the {role} position at {company}.\n\nAfter careful consideration, we have decided to move forward with other candidates whose experience more closely matches our current requirements.\n\nWe truly appreciate the effort you put into the process and encourage you to apply for future openings that align with your profile.\n\nWishing you all the best.\n\nSincerely,\n{recruiter}\n{company}"
-      },
-      {
-        id:'shortlist',
-        name:'Shortlist Notification',
-        subject:'Good news — you have been shortlisted for {role}',
-        body:"Dear {name},\n\nWe are pleased to inform you that you have been shortlisted for the {role} position at {company}.\n\nNext steps will be communicated to you shortly. In the meantime, feel free to reach out if you have any questions.\n\nBest regards,\n{recruiter}\n{company}"
-      },
-      {
-        id:'follow-up',
-        name:'Follow-up / Status Check',
-        subject:'Following up — {role} application',
-        body:"Dear {name},\n\nI hope you are doing well. I wanted to follow up regarding your application for the {role} position at {company}.\n\nWe are currently in the evaluation phase and expect to get back to you by {date}.\n\nThank you for your patience.\n\nBest,\n{recruiter}\n{company}"
-      }
-    ]
+    EmailTemplate.active.order(:name).map do |template|
+    {
+      id: template.id.to_s,
+      name: template.name,
+      subject: template.subject,
+      body: template.body
+    }
+    end
   end
 
   def load_compose
@@ -300,14 +421,29 @@ class EmailHubController < ApplicationController
     )
 
     @candidates = current_user.visible_candidates
-                            .includes(:job, :recruiter)
-                            .order(:name)
+                              .includes(:job, :recruiter)
+                              .order(:name)
 
-    @email_messages = EmailMessage
-                        .where(mailbox: mailbox, direction: "incoming", application_id: nil)
-                        .includes(:candidate, :application)
-                        .order(received_at: :desc, created_at: :desc)
-                        .limit(200)
+    incoming_messages = EmailMessage
+      .where(
+        mailbox: mailbox,
+        direction: "incoming",
+        status: "received",
+        application_id: nil
+      )
+      .includes(:candidate, :application)
+      .order(received_at: :desc, created_at: :desc)
+      .limit(200)
+
+    if current_user.admin?
+      @email_messages = incoming_messages
+    else
+      @email_messages = incoming_messages.select do |message|
+        EmailJobMatcher.new(message).matched_jobs.any? do |job|
+          job.recruiters.exists?(id: current_user.id)
+        end
+      end
+    end
 
     @thread_groups = @email_messages.group_by(&:thread_id)
 
@@ -318,7 +454,8 @@ class EmailHubController < ApplicationController
         EmailMessage
           .where(
             mailbox: mailbox,
-            thread_id: @selected_thread_id
+            thread_id: @selected_thread_id,
+            direction: "incoming"
           )
           .includes(:candidate, :application)
           .order(received_at: :asc, created_at: :asc)
@@ -336,12 +473,27 @@ class EmailHubController < ApplicationController
                               .compact
                               .first
 
-    @pending_email_count = @email_messages
-                            .where(
-                              direction: "incoming",
-                              status: "received"
-                            )
-                            .count
+    # NEW: Fetch attachment metadata for the selected conversation only.
+    @selected_message_attachments = {}
+
+    if @selected_messages.exists?
+      integration = GmailIntegration.recruitment.first
+
+      if integration
+        gmail = GmailService.new(integration)
+
+        @selected_messages.each do |message|
+          @selected_message_attachments[message.id] =
+            gmail.list_attachments(message.message_id)
+        end
+      end
+    end
+
+    @pending_email_count = if @email_messages.is_a?(ActiveRecord::Relation)
+                         @email_messages.where(status: "received").count
+                       else
+                         @email_messages.count { |message| message.status == "received" }
+                       end
 
     @jobs = current_user.visible_jobs.order(:title)
   end
@@ -395,5 +547,42 @@ class EmailHubController < ApplicationController
 
   def reply_subject(subject)
     subject.to_s.start_with?("Re:") ? subject : "Re: #{subject}"
+  end
+
+  def visible_inbox_thread!
+    thread_id = params[:thread_id].to_s
+
+    raise ActiveRecord::RecordNotFound if thread_id.blank?
+
+    messages = EmailMessage.where(
+      mailbox: ENV.fetch("RECRUITMENT_MAILBOX", "jobs@spritle.com"),
+      thread_id: thread_id,
+      direction: "incoming"
+    ).order(received_at: :asc, created_at: :asc)
+
+    raise ActiveRecord::RecordNotFound if messages.empty?
+
+    # Do not allow actions on conversations already converted or rejected.
+    if messages.any? do |message|
+        message.application_id.present? || message.status == "rejected"
+      end
+      raise ActiveRecord::RecordNotFound
+    end
+
+    unless current_user.admin?
+      visible_to_recruiter = messages.any? do |message|
+        EmailJobMatcher.new(message).matched_jobs.any? do |job|
+          job.recruiters.exists?(id: current_user.id)
+        end
+      end
+
+      raise ActiveRecord::RecordNotFound unless visible_to_recruiter
+    end
+
+    messages
+  end
+
+  def extract_applicant_email(from_email)
+    from_email.to_s[/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i]
   end
 end

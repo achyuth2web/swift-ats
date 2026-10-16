@@ -59,12 +59,17 @@ Rails.application.routes.draw do
     patch :update_status, on: :member
   end
 
+  resources :email_templates do
+    patch :toggle_active, on: :member
+  end
+
   get "email_hub", to: "email_hub#index"
   post "email_hub/send_email", to: "email_hub#send_email", as: :send_email_hubs
   delete "email_hub/clear_log", to: "email_hub#clear_log", as: :email_hub_clear_log
-  post "email_hub/confirm_application", to: "email_hub#confirm_application", as: :confirm_email_hub_application
-  post "email_hub/reject_application", to: "email_hub#reject_application", as: :reject_email_hub_application
+  post "email_hub/:thread_id/reject_email", to: "email_hub#reject_email", as: :reject_email_hub
+post "email_hub/:thread_id/move_to_application", to: "email_hub#move_to_application", as: :move_to_application_email_hub
   post "email_hub/reply", to: "email_hub#reply", as: :email_hub_reply
+  get "email_hub/:message_id/attachments/:attachment_index/download", to: "email_hub#download_attachment", as: :download_email_hub_attachment
 
   get "/auth/google_calendar/callback", to: "google_calendar#callback"
   delete "/google_calendar/disconnect", to: "google_calendar#disconnect", as: :disconnect_google_calendar
