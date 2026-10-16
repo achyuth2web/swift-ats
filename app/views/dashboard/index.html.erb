@@ -11,6 +11,29 @@
     <div class="stat-card blue"><div class="stat-label">Offers Made</div><div class="stat-value"><%= (@statuses["Offer"]||0)%></div><div class="stat-sub"><%= @statuses["Rejected"]||0 %> rejected</div></div>
     <div class="stat-card blue"><div class="stat-label">Hired</div><div class="stat-value"><%= (@statuses["Hired"]||0) %></div></div>
   <% end %>
+  <div class="stat-card purple">
+    <div class="stat-label">Total Email Received</div>
+    <div class="stat-value"><%= @total_emails_received %></div>
+    <div class="stat-sub">Incoming emails</div>
+  </div>
+
+  <div class="stat-card green">
+    <div class="stat-label">Total Emails Sent</div>
+    <div class="stat-value"><%= @total_emails_sent %></div>
+    <div class="stat-sub">Outgoing emails</div>
+  </div>
+
+  <div class="stat-card amber">
+    <div class="stat-label">Emails Rejected</div>
+    <div class="stat-value"><%= @emails_rejected %></div>
+    <div class="stat-sub">Rejected incoming emails</div>
+  </div>
+
+  <div class="stat-card blue">
+    <div class="stat-label">Emails Moved To Applications</div>
+    <div class="stat-value"><%= @emails_moved_to_applications %></div>
+    <div class="stat-sub">Emails linked to applications</div>
+  </div>
 </div>
 <% if current_user.admin? %>
 <div class="dash-grid">

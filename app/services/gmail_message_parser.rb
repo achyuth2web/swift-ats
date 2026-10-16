@@ -19,31 +19,43 @@ class GmailMessageParser
   private
 
   def header(name)
-    @message.payload.headers.find do |item|
+    Array(@message.payload.headers).find do |item|
       item.name.casecmp?(name)
     end&.value
   end
 
-  def extract_body(part)
-    return decode_body(part.body.data) if text_plain?(part)
-    return decode_body(part.body.data) if text_html?(part)
+  def extract_body(payload)
+    parts = collect_text_parts(payload)
 
-    Array(part.parts).each do |child|
-      body = extract_body(child)
-      return body if body.present?
+    # Prefer plain text; fall back to HTML.
+    plain_part = parts.find do |part|
+      part.mime_type.to_s.casecmp?("text/plain") &&
+        part.body&.data.present?
     end
 
-    nil
+    html_part = parts.find do |part|
+      part.mime_type.to_s.casecmp?("text/html") &&
+        part.body&.data.present?
+    end
+
+    selected_part = plain_part || html_part
+    return nil unless selected_part
+
+    decode_body(selected_part.body.data)
   end
 
-  def text_plain?(part)
-    part.mime_type.to_s.casecmp?("text/plain") &&
-      part.body&.data.present?
-  end
+  def collect_text_parts(part, result = [])
+    if %w[text/plain text/html].any? do |mime_type|
+         part.mime_type.to_s.casecmp?(mime_type)
+       end
+      result << part
+    end
 
-  def text_html?(part)
-    part.mime_type.to_s.casecmp?("text/html") &&
-      part.body&.data.present?
+    Array(part.parts).each do |child|
+      collect_text_parts(child, result)
+    end
+
+    result
   end
 
   def decode_body(data)
@@ -54,7 +66,6 @@ class GmailMessageParser
 
   def received_at
     timestamp = @message.internal_date
-
     return Time.current unless timestamp.present?
 
     Time.at(timestamp.to_i / 1000).utc

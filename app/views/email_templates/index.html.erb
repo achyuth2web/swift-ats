@@ -1,0 +1,85 @@
+<% content_for :page_title, "Email Templates" %>
+
+<% content_for :topbar_actions do %>
+  <%= link_to "＋ Create New Template",
+              new_email_template_path,
+              class: "btn btn-primary" %>
+<% end %>
+
+<div class="card">
+  <div class="card-header">
+    <span class="fw-600">Email Templates</span>
+  </div>
+
+  <div class="card-body">
+    <% if @email_templates.any? %>
+      <div class="table-responsive">
+        <table class="email-templates-table">
+          <thead>
+            <tr>
+              <th>Template Name</th>
+              <th>Subject</th>
+              <th>Status</th>
+              <th>Last Updated</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% @email_templates.each do |template| %>
+              <tr>
+                <td>
+                  <strong><%= template.name %></strong>
+                  <div class="template-slug">
+                    <%= template.slug %>
+                  </div>
+                </td>
+
+                <td><%= template.subject %></td>
+
+                <td>
+                  <span class="template-status <%= template.active? ? 'active' : 'inactive' %>">
+                    <%= template.active? ? "Active" : "Inactive" %>
+                  </span>
+                </td>
+
+                <td>
+                  <%= l(template.updated_at, format: :short) %>
+                </td>
+
+                <td>
+                  <div class="template-actions" style="display:flex;gap:5px;">
+                    <%= link_to "Edit",
+                                edit_email_template_path(template),
+                                class: "btn btn-sm btn-primary" %>
+
+                    <%= button_to(
+                      template.active? ? "Deactivate" : "Activate",
+                      toggle_active_email_template_path(template),
+                      method: :patch,
+                      class: template.active? ? "btn btn-sm btn-danger" : "btn btn-sm btn-success",
+                      form: {
+                        data: {
+                          turbo_confirm: "#{template.active? ? 'Deactivate' : 'Activate'} '#{template.name}'?"
+                        }
+                      }
+                    ) %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state">
+        <h3>No email templates yet</h3>
+        <p>Create your first template to reuse it when sending recruitment emails.</p>
+
+        <%= link_to "Create New Template",
+                    new_email_template_path,
+                    class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

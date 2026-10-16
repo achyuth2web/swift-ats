@@ -13,11 +13,13 @@ export default class extends Controller {
     const templateId = this.templateTarget.value
     if (!templateId) return
 
-    const template = this.templatesValue.find((t) => t.id === templateId)
+    const template = this.templatesValue.find(
+      (t) => String(t.id) === String(templateId)
+    )
     if (!template) return
 
     this.subjectTarget.value = template.subject || ""
-    this.bodyTarget.value = template.body || ""
+    this.bodyTarget.value = (template.body || "").replace(/\\n/g, "\n")
 
     this.prefillFromCandidate()
   }

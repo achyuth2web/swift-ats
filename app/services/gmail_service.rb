@@ -24,11 +24,28 @@ class GmailService
     response.messages || []
   end
 
+  def list_attachments(message_id)
+    message = get_message(message_id)
+
+    attachments = []
+    collect_attachments(message.payload, attachments)
+
+    attachments
+  end
+
   def get_message(message_id)
     @service.get_user_message(
       "me",
       message_id,
       format: "full"
+    )
+  end
+
+  def get_attachment(message_id, attachment_id)
+    @service.get_user_message_attachment(
+      "me",
+      message_id,
+      attachment_id
     )
   end
 
@@ -149,5 +166,22 @@ class GmailService
     mail.body = body.to_s
 
     mail.to_s
+  end
+
+  def collect_attachments(part, attachments)
+    if part.filename.present?
+      attachments << {
+        filename: part.filename,
+        mime_type: part.mime_type,
+        attachment_id: part.body&.attachment_id,
+        size: part.body&.size,
+        inline_data: part.body&.data,
+        part_id: part.part_id
+      }
+    end
+
+    Array(part.parts).each do |child|
+      collect_attachments(child, attachments)
+    end
   end
 end

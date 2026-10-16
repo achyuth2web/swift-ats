@@ -10,7 +10,8 @@ class EmailMessage < ApplicationRecord
   enum :status, {
     received: "received",
     sent: "sent",
-    failed: "failed"
+    failed: "failed",
+    rejected: "rejected"
   }
 
   validates :message_id, presence: true, uniqueness: true
