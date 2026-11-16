@@ -21,7 +21,9 @@ export default class extends Controller {
     this.subjectTarget.value = template.subject || ""
     this.bodyTarget.value = (template.body || "").replace(/\\n/g, "\n")
 
-    this.prefillFromCandidate()
+     if (this.hasCandidateTarget) {
+      this.prefillFromCandidate()
+    }
   }
 
   selectCandidate() {
