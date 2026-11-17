@@ -1,0 +1,42 @@
+<div data-controller="email-hub" data-email-hub-templates-value="<%= @email_templates.to_json %>"
+     data-email-hub-current-user-name-value="<%= current_user.name %>"
+     data-email-hub-default-company-value="Spritle Software">
+
+  <div class="form-group" style="margin-bottom:20px;">
+    <%= label_tag :template_id, "Email Template", class: "label" %>
+
+    <%= select_tag :template_id,
+          options_for_select(
+            @email_templates.map { |t| [t[:name], t[:id]] }
+          ),
+          include_blank: "— Select a template —",
+          class: "select",
+          id: "em-template",
+          data: {
+            email_hub_target: "template",
+            action: "change->email-hub#loadTemplate"
+          } %>
+  </div>
+
+  <div class="form-group" style="margin-bottom:20px;">
+    <%= label_tag :subject, "Subject", class: "label" %>
+
+    <%= text_field_tag :subject,
+          nil,
+          required: true,
+          class: "input",
+          data: { email_hub_target: "subject" } %>
+  </div>
+
+  <div class="form-group" style="margin-bottom:20px;">
+    <%= label_tag :body, "Email Body", class: "label" %>
+
+    <%= text_area_tag :body,
+          nil,
+          rows: 10,
+          required: true,
+          class: "textarea",
+          data: { email_hub_target: "body" } %>
+  </div>
+
+</div>

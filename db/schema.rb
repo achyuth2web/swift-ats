@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_10_14_125449) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_06_060516) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -143,7 +143,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_14_125449) do
     t.jsonb "metadata", default: {}, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "assigned_to_id"
+    t.string "application_status"
+    t.datetime "processed_at"
     t.index ["application_id"], name: "index_email_messages_on_application_id"
+    t.index ["application_status"], name: "index_email_messages_on_application_status"
+    t.index ["assigned_to_id"], name: "index_email_messages_on_assigned_to_id"
     t.index ["candidate_id"], name: "index_email_messages_on_candidate_id"
     t.index ["from_email"], name: "index_email_messages_on_from_email"
     t.index ["mailbox"], name: "index_email_messages_on_mailbox"
@@ -208,6 +213,21 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_14_125449) do
     t.index ["discarded_at"], name: "index_interviews_on_discarded_at"
     t.index ["feedback_token"], name: "index_interviews_on_feedback_token", unique: true
     t.index ["resume_drive_file_id"], name: "index_interviews_on_resume_drive_file_id"
+  end
+
+  create_table "job_application_activities", force: :cascade do |t|
+    t.bigint "email_message_id", null: false
+    t.bigint "actor_id", null: false
+    t.string "action", null: false
+    t.integer "from_user_id"
+    t.integer "to_user_id"
+    t.jsonb "details", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_job_application_activities_on_actor_id"
+    t.index ["email_message_id"], name: "index_job_application_activities_on_email_message_id"
+    t.index ["from_user_id"], name: "index_job_application_activities_on_from_user_id"
+    t.index ["to_user_id"], name: "index_job_application_activities_on_to_user_id"
   end
 
   create_table "job_openings", force: :cascade do |t|
@@ -323,8 +343,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_10_14_125449) do
   add_foreign_key "candidates", "users", column: "recruiter_id"
   add_foreign_key "email_messages", "applications"
   add_foreign_key "email_messages", "candidates"
+  add_foreign_key "email_messages", "users", column: "assigned_to_id"
   add_foreign_key "interviews", "calendar_integrations"
   add_foreign_key "interviews", "candidates"
+  add_foreign_key "job_application_activities", "email_messages"
+  add_foreign_key "job_application_activities", "users", column: "actor_id"
   add_foreign_key "job_openings", "jobs"
   add_foreign_key "job_recruiters", "jobs"
   add_foreign_key "job_recruiters", "users"

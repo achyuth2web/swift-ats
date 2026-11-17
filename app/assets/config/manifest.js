@@ -4,3 +4,4 @@
 //= link controllers/application.js
 //= link controllers/index.js
 //= link controllers/email_hub_controller.js
+//= link controllers/job_application_actions_controller.js

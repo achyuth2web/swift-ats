@@ -1,0 +1,333 @@
+<% content_for :page_title, "Job Application Details" %>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="card-header"
+       style="display:flex;align-items:center;justify-content:space-between;">
+
+    <div>
+      <div style="font-size:18px;font-weight:600;">
+        Job Application Details
+      </div>
+
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;">
+        Review applicant email and manage recruitment status.
+      </div>
+    </div>
+
+    <%= link_to "Back to Applications",
+        job_applications_path(tab: params[:tab].presence ||
+          (@email_message.assigned_to_id.present? ? "assigned" : "unassigned")),
+        class: "btn btn-secondary" %>
+  </div>
+
+  <div style="padding:24px;">
+
+    <!-- EMAIL INFORMATION -->
+    <div style="border-bottom:1px solid var(--border);padding-bottom:20px;">
+
+      <h3 style="font-size:18px;font-weight:600;margin-bottom:18px;">
+        <%= @email_message.subject.presence || "No Subject" %>
+      </h3>
+
+      <div style="display:grid;gap:12px;">
+
+        <div>
+          <strong>From:</strong>
+          <%= @email_message.from_email %>
+        </div>
+
+        <div>
+          <strong>Received:</strong>
+          <%= @email_message.received_at&.strftime("%d %b %Y, %I:%M %p") %>
+        </div>
+
+        <div>
+          <strong>Candidate:</strong>
+          <%= @email_message.candidate&.name || "Not identified" %>
+        </div>
+
+        <% if @email_message.assigned_to.present? %>
+          <div>
+            <strong>Currently Assigned To:</strong>
+            <%= @email_message.assigned_to.name %>
+          </div>
+        <% end %>
+
+        <% if @email_message.application_status.present? %>
+          <div>
+            <strong>Application Status:</strong>
+            <%= @email_message.application_status.humanize %>
+          </div>
+        <% end %>
+
+      </div>
+    </div>
+
+    <!-- EMAIL BODY -->
+    <div style="padding:24px 0;border-bottom:1px solid var(--border);">
+
+      <div style="font-weight:600;margin-bottom:15px;">
+        Email Content
+      </div>
+
+      <div style="line-height:1.7;overflow-wrap:anywhere;">
+        <% body = @email_message.body.to_s %>
+        <% html_body = body.match?(/<\s*(html|body|div|table|p|br|span|meta|style)\b/i) %>
+
+        <% if body.present? %>
+          <% if html_body %>
+            <%= tag.iframe(
+              nil,
+              srcdoc: body,
+              sandbox: "",
+              title: "Email content",
+              style: "width:100%; min-height:500px; border:0; background:#fff;"
+            ) %>
+          <% else %>
+            <div style="white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.7;">
+              <%= simple_format(body) %>
+            </div>
+          <% end %>
+        <% else %>
+          <p>No email content available.</p>
+        <% end %>
+      </div>
+
+    </div>
+
+    <!-- ATTACHMENTS -->
+    <div style="padding:24px 0;border-bottom:1px solid var(--border);">
+
+      <div style="font-weight:600;margin-bottom:15px;">
+        Attachments
+      </div>
+
+      <% if @email_message_attachments.present? %>
+
+        <div style="display:grid;gap:12px;">
+
+          <% @email_message_attachments.each_with_index do |attachment, index| %>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                        padding:12px;border:1px solid var(--border);border-radius:8px;">
+
+              <div style="display:flex;align-items:center;gap:10px;">
+
+                <span style="font-size:20px;">📎</span>
+
+                <div>
+                  <div style="font-weight:500;">
+                    <%= attachment[:filename] || attachment["filename"] %>
+                  </div>
+
+                  <div style="font-size:12px;color:var(--text3);">
+                    <%= number_to_human_size(
+                      attachment[:size] || attachment["size"] || 0
+                    ) %>
+                  </div>
+                </div>
+
+              </div>
+
+              <%= link_to "Download",
+                  email_attachment_download_path(
+                    @email_message.id,
+                    index
+                  ),
+                  class: "btn btn-secondary",
+                  data: { turbo: false } %>
+
+            </div>
+
+          <% end %>
+
+        </div>
+
+      <% else %>
+
+        <div style="color:var(--text3);">
+          No attachments available.
+        </div>
+
+      <% end %>
+
+    </div>
+
+    <!-- ASSIGNMENT AND DECISION -->
+    <div style="padding-top:24px;">
+
+      <div style="font-weight:600;margin-bottom:15px;">
+        Assign & Update Application
+      </div>
+
+      <% if current_user.admin? %>
+        <%= form_with url: assign_job_application_path(@email_message),
+                      method: :patch do |f| %>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            
+            <div class="form-group">
+              <%= f.collection_select :assigned_to_id,
+                                    @recruiters,
+                                    :id,
+                                    :name,
+                                    { prompt: "Select recruiter",
+                                      selected: @email_message.assigned_to_id },
+                                    { class: "input", required: true, style: "width: 250px;" } %>
+            </div>
+            <div>
+              <%= f.submit @email_message.assigned_to_id.present? ?
+                  "Reassign Application" : "Assign Application",
+                  class: "btn btn-primary" %>
+            <div>
+          </div>
+        <% end %>
+      <% end %>
+      
+      <% if current_user.recruiter? &&
+      @email_message.assigned_to_id == current_user.id &&
+      @email_message.application_id.blank? %>
+        <div class="card-body" data-controller="job-application-actions">
+          <div class="flex gap-2 flex-wrap">
+
+            <%= button_to "Shortlist",
+                  process_job_application_path(message_id: @email_message.id),
+                  method: :patch,
+                  params: { decision: "shortlist" },
+                  class: "btn btn-success" %>
+
+            <button type="button"
+                    class="btn btn-primary"
+                    data-action="click->job-application-actions#showForward">
+              Forward
+            </button>
+
+            <button type="button"
+                    class="btn btn-secondary"
+                    data-action="click->job-application-actions#showMaybe">
+              May Be
+            </button>
+
+            <button type="button"
+                    class="btn btn-danger"
+                    data-action="click->job-application-actions#showReject">
+              Reject
+            </button>
+
+          </div>
+
+          <%# Forward section %>
+          <div data-job-application-actions-target="forward" hidden class="job-application-action-div">
+            <%= form_with url: process_job_application_path(
+                  message_id: @email_message.id
+                ),
+              method: :patch do |f| %>
+
+              <%= hidden_field_tag :decision, "forward" %>
+
+              <div class="form-group" style="margin-bottom:20px;">
+                <%= f.label :recruiter_id, "Select Recruiter", class: "label" %>
+
+                <%= f.collection_select :recruiter_id,
+                      @recruiters,
+                      :id,
+                      :name,
+                      { prompt: "Select recruiter" },
+                      { class: "select", required: true } %>
+              </div>
+
+              <%= f.submit "Forward Application", class: "btn btn-primary" %>
+            <% end %>
+          </div>
+
+          <%# May Be section %>
+          <div data-job-application-actions-target="mayBe" hidden class="job-application-action-div">
+            <%= form_with url: process_job_application_path(
+                  message_id: @email_message.id
+                ),
+              method: :patch do |f| %>
+
+              <%= hidden_field_tag :decision, "maybe" %>
+
+              <div class="form-group" style="margin-bottom:20px;">
+                <%= f.label :recruiter_id, "Select Recruiter", class: "label" %>
+
+                <%= f.collection_select :recruiter_id,
+                      @recruiters,
+                      :id,
+                      :name,
+                      { prompt: "Select recruiter" },
+                      { class: "select", required: true } %>
+              </div>
+
+              <%= render "job_applications/decision_email_fields" %>
+
+              <%= f.submit "Send May Be Email", class: "btn btn-primary" %>
+            <% end %>
+          </div>
+
+          <%# Reject section %>
+          <div data-job-application-actions-target="reject" hidden class="job-application-action-div">
+            <%= form_with url: process_job_application_path(
+                  message_id: @email_message.id
+                ),
+              method: :patch do |f| %>
+
+              <%= hidden_field_tag :decision, "reject" %>
+
+              <%= render "job_applications/decision_email_fields" %>
+
+              <%= f.submit "Send Rejection Email",
+                    class: "btn btn-danger",
+                    data: {
+                      turbo_confirm: "Are you sure you want to reject this application?"
+                    } %>
+            <% end %>
+          </div>
+
+        </div>
+
+      <% end %>
+
+    </div>
+
+  </div>
+</div>
+<div class="card" style="margin-top: 20px;">
+  <div class="card-header">
+    <h3 class="text-xl font-semibold">Application History</h3>
+  </div>
+  <div class="card-body">
+    <% if @activities.any? %>
+      <div class="space-y-4">
+        <% @activities.each do |activity| %>
+          <div class="border-l-2 border-gray-300 pl-4 pb-3" style="padding-left: 10px; padding-bottom: 10px;">
+            <p class="font-medium">
+              <%= activity.action.humanize %>
+            </p>
+
+            <% if activity.action.in?(%w[assigned reassigned]) %>
+              <p class="text-sm text-gray-600">
+                <% if activity.from_user.present? %>
+                  Reassigned from <strong><%= activity.from_user.name %></strong> to 
+                <% else %>
+                  Assigned to
+                <% end %>
+
+                <strong><%= activity.to_user&.name %></strong>
+              </p>
+            <% end %>
+
+            <p class="text-sm text-gray-500">
+              By <%= activity.actor.name %>
+              &middot;
+              <%= l(activity.created_at, format: :long) %>
+            </p>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-gray-500">No history available.</p>
+    <% end %>
+  </div>
+</div>

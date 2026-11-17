@@ -1,0 +1,174 @@
+
+<% content_for :page_title, "Job Applications" %>
+
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="card-header"
+       style="display:flex;align-items:center;justify-content:space-between">
+
+    <div>
+      <div style="font-size:18px;font-weight:600;">
+        Job Applications
+      </div>
+
+      <div style="font-size:12px;color:var(--text3);margin-top:3px;">
+        Manage job applications and their statuses.
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div style="border-bottom:1px solid var(--border);padding:0 20px;">
+    <div style="display:flex;gap:24px;">
+      <% if current_user.admin? %>
+        <%= link_to job_applications_path(tab: "unassigned"),
+            style: "padding:14px 2px;text-decoration:none;
+            border-bottom:2px solid #{params[:tab].blank? || params[:tab] == 'unassigned' ? 'var(--accent)' : 'transparent'};
+            color:#{params[:tab].blank? || params[:tab] == 'unassigned' ? 'var(--text)' : 'var(--text3)'};" do %>
+
+          Unassigned
+
+          <% if @pending_email_count.to_i > 0 %>
+            <span class="badge badge-amber" style="margin-left:5px;">
+              <%= @pending_email_count %>
+            </span>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%= link_to job_applications_path(tab: "assigned"),
+          style: "padding:14px 2px;text-decoration:none;
+          border-bottom:2px solid #{params[:tab] == 'assigned' ? 'var(--accent)' : 'transparent'};
+          color:#{params[:tab] == 'assigned' ? 'var(--text)' : 'var(--text3)'};" do %>
+
+        Assigned
+
+        <% if @assigned_email_count.to_i > 0 %>
+          <span class="badge badge-amber" style="margin-left:5px;">
+            <%= @assigned_email_count %>
+          </span>
+        <% end %>
+      <% end %>
+
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div style="padding:20px;">
+
+    <% if current_user.recruiter? || params[:tab] == "assigned" %>
+
+      <!-- ASSIGNED APPLICATIONS -->
+      <div style="font-weight:600;margin-bottom:15px;">
+        Assigned Applications
+      </div>
+
+      <% if @email_messages.any? %>
+
+        <div style="overflow-x:auto;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Sender</th>
+                <th>Subject</th>
+                <th>Assigned To</th>
+                <th>Status</th>
+                <th>Received At</th>
+                <th>Updated At</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <% @email_messages.each do |message| %>
+                <tr style="cursor:pointer;"
+                    onclick="window.location='<%= job_application_message_path(message, tab: 'assigned') %>'">
+
+                  <td><%= message.from_email %></td>
+                  <td><%= message.subject.presence || "No subject" %></td>
+                  <td><%= message.assigned_to&.name || "-" %></td>
+
+                  <td>
+                    <span class="badge badge-<%= message.application_status == 'shortlisted' ? 'green' : message.application_status == 'rejected' ? 'red' : 'amber' %>">
+                      <%= message.application_status&.humanize || "-" %>
+                    </span>
+                  </td>
+
+                  <td>
+                    <%= message.received_at&.strftime("%d %b %Y, %I:%M %p") %>
+                  </td>
+
+                  <td>
+                    <%= message.updated_at.strftime("%d %b %Y") %>
+                  </td>
+
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+      <% else %>
+        <div style="text-align:center;padding:40px;color:var(--text3);">
+          No assigned applications found.
+        </div>
+      <% end %>
+
+    <% else %>
+
+      <!-- UNASSIGNED APPLICATIONS -->
+      <div style="font-weight:600;margin-bottom:15px;">
+        New Applications
+      </div>
+
+      <% if @email_messages.any? %>
+
+        <div style="overflow-x:auto;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Sender</th>
+                <th>Subject</th>
+                <th>Received At</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <% @email_messages.each do |message| %>
+                <tr style="cursor:pointer;"
+                    onclick="window.location='<%= job_application_message_path(message, tab: 'unassigned') %>'">
+
+                  <td><%= message.from_email %></td>
+
+                  <td>
+                    <%= message.subject.presence || "No subject" %>
+                  </td>
+
+                  <td>
+                    <%= message.received_at&.strftime("%d %b %Y, %I:%M %p") %>
+                  </td>
+
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+
+      <% else %>
+        <div style="text-align:center;padding:40px;color:var(--text3);">
+          No unassigned applications found.
+        </div>
+      <% end %>
+
+    <% end %>
+
+    <!-- Common pagination -->
+    <% if @email_messages.total_pages > 1 %>
+      <div class="pagination-wrap">
+        <%= paginate @email_messages,
+            params: request.query_parameters %>
+      </div>
+    <% end %>
+
+  </div>
+</div>

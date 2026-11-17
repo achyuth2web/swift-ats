@@ -63,6 +63,13 @@ Rails.application.routes.draw do
     patch :toggle_active, on: :member
   end
 
+  resources :job_applications
+
+  get "job_applications/:message_id", to: "job_applications#show", as: :job_application_message
+  patch "job_applications/:message_id/assign", to: "job_applications#assign", as: :assign_job_application
+  patch "job_applications/:message_id/process", to: "job_applications#process_application", as: :process_job_application
+  get "job_applications/:message_id/attachments/:attachment_index/download", to: "job_applications#download_attachment", as: :download_job_application_attachment
+
   get "email_hub", to: "email_hub#index"
   post "email_hub/send_email", to: "email_hub#send_email", as: :send_email_hubs
   delete "email_hub/clear_log", to: "email_hub#clear_log", as: :email_hub_clear_log

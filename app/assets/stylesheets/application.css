@@ -1680,3 +1680,10 @@ tbody td {
         max-width: 100%;
     }
 }
+
+.job-application-action-div{
+    margin-top: 20px;
+    border: 1px solid;
+    border-radius: 10px;
+    padding: 10px;
+}

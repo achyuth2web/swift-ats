@@ -21,7 +21,7 @@ class DashboardController < ApplicationController
       { user: r, candidates: rc.count, hired: rc.where(status: %w[Offer Hired]).count,
         interviews: iv.count, jobs: rj.count }
     end
-    load_email_hub_stats
+    load_job_application_counts
   end
 
   def load_email_hub_stats
@@ -84,5 +84,36 @@ class DashboardController < ApplicationController
 
   def job_assigned_to_current_user?(job)
     job.recruiters.exists?(id: current_user.id)
+  end
+
+  def load_job_application_counts
+    incoming_emails = EmailMessage.where(direction: "incoming")
+
+    # Admin sees all emails; recruiter sees only their assigned emails.
+    emails = if current_user.admin?
+              incoming_emails
+            else
+              incoming_emails.where(assigned_to_id: current_user.id)
+            end
+
+    # Received emails
+    @emails_received = if current_user.admin?
+                              incoming_emails
+                                .where(status: "received",
+                                        assigned_to_id: nil,
+                                        application_id: nil)
+                                .count
+                            else
+                              emails.where(status: "received").count
+                            end
+
+    # Shortlisted emails
+    @emails_shortlisted = emails.where(application_status: "shortlisted").count
+
+    # Rejected emails
+    @emails_rejected = emails.where(application_status: "rejected").count
+
+    # Emails under review
+    @emails_under_review = emails.where(application_status: "under_review").count
   end
 end
